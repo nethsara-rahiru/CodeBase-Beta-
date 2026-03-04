@@ -1,0 +1,198 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #519cff, #904bb8);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.login-card {
+  background: #fff;
+  width: 350px;
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.logo {
+  font-size: 2.5rem;
+  color: #519cff;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  animation: bounce 1s ease;
+}
+
+.tagline {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.form input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.3s;
+}
+
+.form input:focus {
+  border-color: #904bb8;
+  box-shadow: 0 0 10px rgba(144,75,184,0.3);
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px 0;
+  margin: 0 5px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  background: #519cff;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #417bd6;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(81,156,255,0.4);
+}
+
+.btn-secondary {
+  background: #904bb8;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #7539a5;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(144,75,184,0.4);
+}
+
+.message {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: red;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-20px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-10px);}
+  60% {transform: translateY(-5px);}
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .login-card {
+    width: 90%;
+    padding: 30px 20px;
+  }
+}
+
+
+/* Header */
+.header {
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header h1 {
+  color: #519cff;
+}
+
+.btn-logout {
+  background: #ff4b5c;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.btn-logout:hover {
+  background: #e03e4e;
+  transform: translateY(-2px);
+}
+
+/* Dashboard grid */
+.dashboard-container {
+  padding: 20px;
+}
+
+.section-title {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.card h3 {
+  color: #519cff;
+  margin: 0 0 10px 0;
+}
+
+.card p {
+  color: #555;
+  font-size: 0.9rem;
+}

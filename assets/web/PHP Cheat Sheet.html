@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHP Beginner Cheat Sheet - CodeBase</title>
+
+<!-- Prism CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+
+<style>
+/* ------------------------------
+   GLOBAL STYLES
+-------------------------------*/
+body {
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #0d1117;
+    color: #e6e6e6;
+    line-height: 1.7;
+}
+
+a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+.container {
+    max-width: 900px;
+    margin: 100px auto 40px; /* leave space for fixed topbar */
+    padding: 20px;
+}
+
+/* ------------------------------
+   FIXED TOPBAR
+-------------------------------*/
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    z-index: 999;
+}
+
+.topbar img {
+    height: 40px;
+}
+
+.topbar h1 {
+    font-size: 18px;
+    color: #58a6ff;
+    margin: 0;
+}
+
+/* ------------------------------
+   HEADINGS
+-------------------------------*/
+h1, h2 {
+    color: #58a6ff;
+    margin-top: 30px;
+}
+
+h1 {
+    font-size: 28px;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+/* ------------------------------
+   CODE BOXES
+-------------------------------*/
+.code-box {
+    position: relative;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    border: 1px solid #30363d;
+    overflow: hidden;
+    background: #161b22;
+}
+
+pre {
+    border-radius: 0;
+    padding: 15px;
+    overflow-x: auto;
+    font-size: 14px;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+pre[class*=language-] {
+    margin: 0;
+}
+
+/* ------------------------------
+   COPY BUTTON
+-------------------------------*/
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #238636;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    z-index: 2;
+    transition: 0.2s;
+}
+
+.copy-btn:hover {
+    background: #2ea043;
+}
+
+/* ------------------------------
+   SQL string highlight
+-------------------------------*/
+.token.string.language-sql {
+    color: #f59e0b !important;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<!-- ------------------------------
+     FIXED TOPBAR
+------------------------------->
+<div class="topbar">
+    <img src="img/CodeBase_wide.png" alt="CodeBase Logo">
+    <h1>PHP Beginner Cheat Sheet</h1>
+</div>
+
+<div class="container">
+<h1>PHP Beginner Cheat Sheet</h1>
+
+<!-- 1. PHP Basics -->
+<h2>1. PHP Basics</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">&lt;?php
+// Comments
+echo "Hello World";
+$name = "Nethsara";
+$age = 20;
+
+// Concatenation
+echo "Name: " . $name;
+?&gt;</code></pre>
+</div>
+
+<!-- 2. Operators -->
+<h2>2. Operators</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+// Arithmetic
++ - * / %
+// Assignment
+= += -= *= /=
+// Comparison
+== != === !== &lt; &gt; &lt;= &gt;=
+// Logical
+&& || !
+</code></pre>
+</div>
+
+<!-- 3. Strings -->
+<h2>3. Strings</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+$str = "Hello World";
+echo strlen($str);     					// length
+echo strtoupper($str); 					// UPPERCASE
+echo strtolower($str); 					// lowercase
+echo str_replace("World","PHP",$str); 	// Replace
+
+</code></pre>
+</div>
+
+<!-- 4. Arrays -->
+<h2>4. Arrays</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+$fruits = ["Apple","Banana","Orange"];
+$person = ["name" =&gt; "Nethsara","age" =&gt; 20];
+</code></pre>
+</div>
+
+<!-- 5. Conditionals -->
+<h2>5. Conditionals</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+if ($age &gt; 18) { echo "Adult"; } 
+elseif ($age == 18) { echo "Just Adult"; } 
+else { echo "Minor"; }
+
+echo ($age &gt;= 18) ? "Adult" : "Minor";
+</code></pre>
+</div>
+
+<!-- 6. Loops -->
+<h2>6. Loops</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+for ($i = 0; $i &lt; 5; $i++) { echo $i; }
+
+$i = 0;
+while ($i &lt; 5) { echo $i; $i++; }
+
+foreach ($fruits as $fruit) { echo $fruit; }
+</code></pre>
+</div>
+
+<!-- 7. Functions -->
+<h2>7. Functions</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+function greet($name) { return "Hello $name"; }
+echo greet("Nethsara");
+</code></pre>
+</div>
+
+<!-- 8. Superglobals -->
+<h2>8. Superglobals</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+$_POST['fieldname'];
+$_GET['fieldname'];
+$_SERVER['PHP_SELF'];
+$_COOKIE['name'];
+$_SESSION['name'];
+</code></pre>
+</div>
+
+<!-- 9. Forms -->
+<h2>9. Forms</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+&lt;form method="POST"&gt;
+    &lt;input name="username"&gt;
+    &lt;input type="password" name="password"&gt;
+    &lt;button&gt;Submit&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;?php
+if ($_POST) {
+    $user = $_POST['username'];
+    $pass = $_POST['password'];
+    echo "Username: $user";
+}
+?&gt;
+</code></pre>
+</div>
+
+<!-- 10. Passwords -->
+<h2>10. Passwords</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">
+$hash = password_hash($password, PASSWORD_DEFAULT);
+if (password_verify($password, $hash)) { echo "Correct Password"; }
+else { echo "Wrong Password"; }
+</code></pre>
+</div>
+
+<!-- 11. PDO -->
+<h2>11. PDO</h2>
+<div class="code-box">
+<button class="copy-btn">Copy</button>
+<pre><code class="language-php">&lt;?php
+$dsn = "mysql:host=localhost;dbname=testdb";
+$con = new PDO($dsn, "root", "");
+
+// Select
+$stmt = $con-&gt;prepare(<span class="language-sql">'SELECT * FROM users WHERE phone = :phone'</span>);
+$stmt-&gt;execute([":phone" =&gt; $phone]);
+$row = $stmt-&gt;fetch(PDO::FETCH_ASSOC);
+
+// Insert
+$stmt = $con-&gt;prepare(<span class="language-sql">'INSERT INTO users(name, phone) VALUES(:name, :phone)'</span>);
+$stmt-&gt;execute([":name" =&gt; $name, ":phone" =&gt; $phone]);
+?&gt;</code></pre>
+</div>
+
+<!-- 12. Common Errors -->
+<h2>12. Common Errors</h2>
+<div class="code-box">
+<pre><code>• Missing semicolon ";"
+• Wrong variable name
+• Empty POST fields
+• Using "password_hash()" during login instead of "password_verify()"
+• Not using prepared statements (SQL injection risk)
+</code></pre>
+</div>
+
+</div>
+
+<!-- Prism JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/';
+</script>
+
+<!-- Copy buttons -->
+<script>
+document.querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        let code = btn.nextElementSibling.innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.innerText = "Copied!";
+            setTimeout(() => btn.innerText = "Copy", 1200);
+        });
+    });
+});
+</script>
+
+</body>
+</html>

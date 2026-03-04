@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Content | CodeBase</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(-2px);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--accent-primary);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .logout-btn {
+      margin-left: 12px;
+      padding: 8px 16px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Content Area */
+    .main-container {
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .item-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .item-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .item-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    .item-card:hover::before {
+      opacity: 1;
+    }
+
+    .item-card h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .item-card p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Loader */
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+    }
+
+    .shimmer-loader {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--glass-border);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .main-container {
+        padding: 20px;
+      }
+
+      .user-info {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 16px 20px;
+      }
+
+      .brand-area h1 {
+        font-size: 1.25rem;
+      }
+
+      .main-container {
+        padding: 24px 20px;
+      }
+
+      .course-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .user-info {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header id="navbar">
+    <div class="brand-area">
+      <button class="back-btn" onclick="history.back()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back
+      </button>
+      <h1>Course Content</h1>
+    </div>
+    <div class="user-profile">
+      <img id="userPhoto" src="" alt="">
+      <div class="user-info">
+        <span class="user-name" id="userName">User</span>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div id="loading" class="loader-container">
+      <div class="shimmer-loader"></div>
+      <p style="margin-top: 20px; color: var(--text-muted); font-size: 0.875rem;">Loading content...</p>
+    </div>
+    <div class="content-grid" id="contentContainer" style="display:none;"></div>
+  </main>
+
+  <script type="module">
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    import { getFirestore, doc, getDoc, collection, getDocs }
+      from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    import { app } from "./assets/js/firebase.js";
+
+    const auth = getAuth();
+    const db = getFirestore(app);
+
+    const loading = document.getElementById("loading");
+    const contentContainer = document.getElementById("contentContainer");
+
+    const selectedCourseId = localStorage.getItem("selectedCourseId");
+
+    const navbar = document.getElementById("navbar");
+
+    // If opened inside app (appCode exists), remove navbar
+    if (localStorage.getItem("appCode")) {
+      navbar.style.display = "none"; // safely remove navbar
+    }
+
+    if (!selectedCourseId) {
+      loading.style.display = "none";
+      contentContainer.style.display = "block";
+      contentContainer.innerHTML = "<p>No course selected!</p>";
+    }
+
+    // FAST LOAD USING LOCALSTORAGE
+    let cachedUser = localStorage.getItem("userData");
+    if (cachedUser) {
+      try {
+        cachedUser = JSON.parse(cachedUser);
+        document.getElementById("userName").innerText =
+          `${cachedUser.name} (${cachedUser.registrationNumber})`;
+        document.getElementById("userPhoto").src = cachedUser.photoURL;
+      } catch { }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        if (localStorage.getItem("appCode") == "App") {
+          // Assign user object from localStorage
+          user = {
+            uid: localStorage.getItem("uid"),
+            displayName: localStorage.getItem("displayName"),
+            email: localStorage.getItem("email"),
+            photoURL: localStorage.getItem("photoUrl")
+          };
+        } else {
+          // No Firebase user and no appCode -> redirect to login
+          window.location.href = "index.html";
+          return;
+        }
+      }
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        window.location.href = "register.html";
+        return;
+      }
+
+      const data = snap.data();
+
+      // Update UI
+      document.getElementById("userName").innerText =
+        `${data.name} (${data.registrationNumber})`;
+      document.getElementById("userPhoto").src = user.photoURL;
+
+      // Cache for fast load
+      localStorage.setItem("userData", JSON.stringify({
+        name: data.name,
+        registrationNumber: data.registrationNumber,
+        photoURL: user.photoURL
+      }));
+
+      loadContent();
+    });
+
+    async function loadContent() {
+      const contentRef = collection(db, "courses", selectedCourseId, "content");
+      const contentSnap = await getDocs(contentRef);
+
+      contentContainer.innerHTML = "";
+      loading.style.display = "none";
+      contentContainer.style.display = "grid";
+
+      if (contentSnap.empty) {
+        contentContainer.innerHTML = "<p>No content found.</p>";
+        return;
+      }
+
+      const items = [];
+
+      contentSnap.forEach(docItem => {
+        const c = docItem.data();
+        items.push({
+          id: docItem.id,
+          title: c.tittle,
+          description: c.description || ""
+        });
+      });
+
+      // SORTING LOGIC
+      items.sort((a, b) => {
+        // Extract leading numbers: "01 - Something"
+        const numA = parseInt(a.title);
+        const numB = parseInt(b.title);
+
+        const isNumA = !isNaN(numA);
+        const isNumB = !isNaN(numB);
+
+        if (isNumA && isNumB) {
+          return numA - numB;               // numeric sort
+        }
+
+        if (isNumA && !isNumB) return -1;    // numbers first
+        if (!isNumA && isNumB) return 1;
+
+        return a.title.localeCompare(b.title); // normal alphabetical
+      });
+
+      // RENDER CARDS
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        card.innerHTML = `
+          <h3>${item.title}</h3>
+          <p>${item.description}</p>
+        `;
+
+        card.addEventListener("click", () => {
+          localStorage.setItem("selectedContentId", item.id);
+          window.location.href = "resources.html";
+        });
+
+        contentContainer.appendChild(card);
+      });
+
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        localStorage.clear();
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+
+</body>
+
+</html>

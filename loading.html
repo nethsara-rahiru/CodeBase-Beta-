@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading | CodeBase</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #111827, #1e3a8a);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      overflow: hidden;
+    }
+
+    .logo {
+      width: 40%;
+      filter: drop-shadow(0px 0px 6px rgba(0,0,0,0.4));
+      animation: breathe 2.4s ease-in-out infinite;
+    }
+
+    /* 💨 Smooth breathing animation */
+    @keyframes breathe {
+      0% {
+        transform: scale(1);
+        opacity: 0.95;
+        filter: drop-shadow(0px 0px 4px rgba(255,255,255,0.2));
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+        filter: drop-shadow(0px 0px 10px rgba(255,255,255,0.45));
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0.95;
+        filter: drop-shadow(0px 0px 4px rgba(255,255,255,0.2));
+      }
+    }
+
+    .txt {
+      margin-top: 20px;
+      font-size: 16px;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <img src="assets/img/CodeBase_wide.png" class="logo" alt="CodeBase Logo">
+
+  <div class="txt">Checking your account...</div>
+
+  <script type="module">
+    import { app } from "./assets/js/firebase.js";
+    import { getAuth, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const auth = getAuth(app);
+
+    // -------------------------------------------------
+    // 🔍 Check login instantly
+    // -------------------------------------------------
+    onAuthStateChanged(auth, (user) => {
+      setTimeout(() => {   // small delay for smooth animation
+        if (user) {
+          window.location.href = "dashboard.html";
+        } else {
+          if(localStorage.getItem("appCode") == "App" && localStorage.getItem("uid") && localStorage.getItem("displayName") && localStorage.getItem("email")  && localStorage.getItem("photoUrl")){
+            
+          }
+          else{
+            window.location.href = "index.html";
+          }
+        }
+      }, 900);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resources | CodeBase</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(-2px);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--accent-primary);
+    }
+
+    .logout-btn {
+      margin-left: 12px;
+      padding: 8px 16px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Content Area */
+    .main-container {
+      flex: 1;
+      padding: 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .resource-card {
+      position: relative;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 120px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: default;
+    }
+
+    .resource-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-info {
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-info h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-main);
+      max-width: 70%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent-primary);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      width: fit-content;
+    }
+
+    .open-btn {
+      z-index: 5;
+      padding: 12px 24px;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .open-btn:hover {
+      transform: scale(1.05);
+      background: #4f46e5;
+    }
+
+    .card-thumb {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 45%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 1));
+      -webkit-mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 1));
+      opacity: 0;
+      transform: translateX(40px);
+      z-index: 1;
+      transition: opacity 0.8s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card-thumb.show {
+      opacity: 0.4;
+      transform: translateX(0);
+    }
+
+    .resource-card:hover .card-thumb.show {
+      opacity: 0.6;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .main-container {
+        padding: 16px;
+      }
+
+      .resource-card {
+        padding: 16px;
+        min-height: auto;
+      }
+
+      .card-thumb {
+        width: 100%;
+        height: 120px;
+        position: relative;
+        transform: none !important;
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
+        border-radius: 12px;
+        margin-top: 12px;
+        opacity: 0.6 !important;
+      }
+
+      .card-info h3 {
+        max-width: 100%;
+        font-size: 1rem;
+      }
+
+      .user-info {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header id="navbar">
+    <div class="brand-area">
+      <button class="back-btn" onclick="history.back()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back
+      </button>
+      <h1>Resources</h1>
+    </div>
+    <div class="user-profile">
+      <img id="userPhoto" src="" alt="">
+      <div class="user-info">
+        <span class="user-name" id="userName">User</span>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <main class="main-container" id="resourcesContainer">
+    <p style="color: var(--text-muted); font-size: 0.875rem;">Loading resources...</p>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
+  <script type="module">
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { app } from "./assets/js/firebase.js";
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const resourcesContainer = document.getElementById("resourcesContainer");
+    const userPhoto = document.getElementById("userPhoto");
+    const userName = document.getElementById("userName");
+
+    const selectedCourseId = localStorage.getItem("selectedCourseId");
+    const selectedContentId = localStorage.getItem("selectedContentId");
+
+    const navbar = document.getElementById("navbar");
+
+    // If opened inside app (appCode exists), remove navbar
+    if (localStorage.getItem("appCode")) {
+      navbar.style.display = "none"; // safely remove navbar
+    }
+
+    // Helper: Encode / decode IDs
+    const encodeId = id => btoa(id);
+    const decodeId = encoded => atob(encoded);
+
+    // Helper: Fetch image safely
+    async function fetchImage(url) {
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        return URL.createObjectURL(blob);
+      } catch (e) {
+        console.error("Image fetch failed:", e);
+        return "assets/img/default-thumbnail.png";
+      }
+    }
+
+    // Redirect if no selection
+    if (!selectedCourseId || !selectedContentId) {
+      resourcesContainer.innerHTML = "<p style='opacity:0.7;'>No content selected!</p>";
+    }
+
+    // Auth check
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        if (localStorage.getItem("appCode") == "App") {
+          // Assign user object from localStorage
+          user = {
+            uid: localStorage.getItem("uid"),
+            displayName: localStorage.getItem("displayName"),
+            email: localStorage.getItem("email"),
+            photoURL: localStorage.getItem("photoUrl")
+          };
+        } else {
+          // No Firebase user and no appCode -> redirect to login
+          window.location.href = "index.html";
+          return;
+        }
+      }
+
+      // Load user data
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) { window.location.href = "register.html"; return; }
+
+      const data = snap.data();
+      document.getElementById("userName").textContent = `${data.name} (${data.registrationNumber})`;
+      userPhoto.src = user.photoURL || "assets/img/default.png";
+
+      // Load resources
+      loadResources();
+    });
+
+    async function loadResources() {
+      const resourcesRef = collection(db, "courses", selectedCourseId, "content", selectedContentId, "resources");
+      const resourcesSnap = await getDocs(resourcesRef);
+
+      resourcesContainer.innerHTML = "";
+      if (resourcesSnap.empty) {
+        resourcesContainer.innerHTML = "<p style='opacity:0.7;'>No resources found.</p>";
+        return;
+      }
+
+      // Collect all items
+      const items = resourcesSnap.docs.map(docItem => ({
+        id: docItem.id,
+        title: docItem.data().title || docItem.id,
+        type: docItem.data().type || "link",
+        link: docItem.data().link || ""
+      }));
+
+      // Sort: numbers first, then alphabetically
+      items.sort((a, b) => {
+        const numA = parseInt(a.title);
+        const numB = parseInt(b.title);
+        const isNumA = !isNaN(numA);
+        const isNumB = !isNaN(numB);
+        if (isNumA && isNumB) return numA - numB;
+        if (isNumA && !isNumB) return -1;
+        if (!isNumA && isNumB) return 1;
+        return a.title.localeCompare(b.title);
+      });
+
+      // Render cards
+      for (const r of items) {
+        const card = document.createElement("div");
+        card.className = "resource-card";
+
+        let thumbUrl = "assets/img/default-thumbnail.png";
+        let videoIdEncoded = null;
+
+        // Thumbnail logic
+        if (r.type.toLowerCase() === "video") {
+          const ytMatch = r.link.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/);
+          if (ytMatch) {
+            videoIdEncoded = encodeId(ytMatch[1]);
+            const ytThumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+            thumbUrl = await fetchImage(ytThumbUrl);
+          }
+        } else if (r.type.toLowerCase() === "link") {
+          try {
+            const url = new URL(r.link);
+            thumbUrl = await fetchImage(`https://www.google.com/s2/favicons?sz=64&domain=${url.hostname}`);
+          } catch { }
+        }
+
+        card.innerHTML = `
+          <div class="card-info">
+            <span class="type-badge">${r.type}</span>
+            <h3>${r.title}</h3>
+          </div>
+          <button class="open-btn">Open Resource</button>
+          <div class="card-thumb" style="background:url('${thumbUrl}') center/cover no-repeat;"></div>
+        `;
+
+        // Animate thumbnail
+        const thumbDiv = card.querySelector('.card-thumb');
+        setTimeout(() => thumbDiv.classList.add('show'), 100);
+
+        // Open button
+        card.querySelector(".open-btn").addEventListener("click", () => {
+          if (!r.link) return;
+
+          const type = r.type.toLowerCase();
+          if (type === "video" && videoIdEncoded) {
+            const videoId = decodeId(videoIdEncoded);
+            localStorage.setItem("videoLink", `https://www.youtube.com/watch?v=${videoId}`);
+            window.location.href = "player.html";
+            return;
+          }
+
+          if (type === "pdf") {
+            let fileId = null;
+            const m1 = r.link.match(/\/file\/d\/([a-zA-Z0-9_-]+)\//);
+            const m2 = r.link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m1) fileId = m1[1];
+            if (m2) fileId = m2[1];
+            if (!fileId) { alert("Invalid PDF link format!"); return; }
+            window.location.href = `reader.html?id=${fileId}`;
+            return;
+          }
+
+          window.open(r.link, "_blank");
+        });
+
+        resourcesContainer.appendChild(card);
+      }
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        localStorage.clear();
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+
+</body>
+
+</html>

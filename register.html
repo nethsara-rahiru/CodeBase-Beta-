@@ -1,0 +1,265 @@
+<!----register.html-->>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - CodeBase</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 30px;
+      border-radius: 16px;
+      width: 340px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .email-card {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 50px;
+      font-size: 15px;
+      word-break: break-all;
+    }
+
+    .input-group {
+      position: relative;
+      margin: 20px 0;
+      width: 100%;
+    }
+
+    .input-group input {
+      width: 316px;
+      padding: 14px 10px;
+      font-size: 16px;
+      border: 2px solid #888;
+      outline: none;
+      border-radius: 10px;
+      transition: 0.3s ease;
+      background: #f8f8f8;
+      color: #000;
+    }
+
+    .input-group input:focus {
+      border-color: #2979ff;
+      background: #fff;
+      box-shadow: 0 0 8px rgba(41, 121, 255, 0.4);
+    }
+
+    .label {
+      position: absolute;
+      top: 14px;
+      left: 12px;
+      color: #666;
+      pointer-events: none;
+      font-size: 15px;
+      transition: 0.3s ease;
+      background: transparent;
+      padding: 0 6px;
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label {
+      top: -15px;
+      font-size: 13px;
+      color: #ffffff;
+    }
+
+    #level {
+      width: 316px;
+      padding: 14px 10px;
+      font-size: 16px;
+      border: 2px solid #888;
+      outline: none;
+      border-radius: 10px;
+      transition: 0.3s ease;
+      background: #f8f8f8;
+      color: #000;
+    }
+
+    .sLabel {
+      top: -15px;
+      left: 20px;
+      font-size: 13px;
+      color: #ffffff;
+      position: absolute;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 50px;
+      background: #fff;
+      color: #222;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #e9e9e9;
+    }
+
+    @media (max-width: 600px) {
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <h2>Register</h2>
+    <p>Verify your details</p>
+
+    <!-- USER EMAIL DISPLAY -->
+    <div id="emailCard" class="email-card"></div>
+
+    <!-- FULL NAME -->
+    <div class="input-group">
+      <input type="text" id="name" placeholder=" " readonly>
+      <label for="name" class="label">Full Name</label>
+    </div>
+
+    <!-- REGISTRATION NUMBER -->
+    <div class="input-group">
+      <input type="text" id="regno" maxlength="15" placeholder=" " required>
+      <label for="regno" class="label">Registration Number</label>
+    </div>
+
+    <!-- Year -->
+    <div class="input-group">
+      <label class="sLabel">Acadamic Year</label>
+      <select id="level" required>
+        <option value="1">1st Year</option>
+        <option value="2">2nd Year</option>
+        <option value="3">3rd Year</option>
+        <option value="4">4th Year</option>
+      </select>
+    </div>
+
+    <!-- PHONE -->
+    <div class="input-group">
+      <input type="text" id="phone" placeholder=" ">
+      <label for="phone" class="label">Phone Number</label>
+    </div>
+
+    <button onclick="submitRegistration()">
+      Complete Registration
+    </button>
+
+  </div>
+
+  <script type="module" src="assets/js/firebase.js"></script>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user) {
+      window.location.href = "index.html";
+    }
+
+    // Set email + name
+    document.getElementById("emailCard").textContent = user.email;
+    document.getElementById("name").value = user.name;
+
+    // Extract registration number from email BEFORE the '@'
+    const emailPrefix = user.email.split("@")[0];  // 2022ict62
+
+    // Convert to formatted REG NO → 2022/ICT/62
+    function formatRegNo(raw) {
+      raw = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+      // Extract first 4 digits → YEAR
+      const year = raw.substring(0, 4);
+
+      // After year, find first number → split dept & number
+      let dept = "";
+      let num = "";
+
+      for (let i = 4; i < raw.length; i++) {
+        if (/[0-9]/.test(raw[i])) {
+          dept = raw.substring(4, i);
+          num = raw.substring(i);
+          break;
+        }
+      }
+
+      // If still no number found, assume all letters are dept
+      if (dept === "") {
+        dept = raw.substring(4);
+      }
+
+      let result = year;
+
+      if (dept) result += "/" + dept;
+      if (num) result += "/" + num;  // add only if number exists
+
+      return result;
+    }
+
+    const allowedUserDetails = JSON.parse(localStorage.getItem("allowedUserDetails"));
+    let autoReg;
+
+    if (allowedUserDetails && allowedUserDetails.regNo) {
+      autoReg = allowedUserDetails.regNo; // Use saved regNo
+    } else {
+      autoReg = formatRegNo(emailPrefix); // Fallback
+    }
+
+    document.getElementById("regno").value = autoReg;
+
+    // Auto-format on input
+    document.getElementById("regno").addEventListener("input", function () {
+      this.value = formatRegNo(this.value);
+    });
+
+    // Phone validation
+    function validatePhone(phone) {
+      return /^07[0-9]{8}$/.test(phone);
+    }
+
+    // Registration Number validation
+    function validateRegNo() {
+      return autoReg === document.getElementById("regno").value;
+    }
+
+    // Final submission
+    function submitRegistration() {
+      const reg = document.getElementById("regno").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const level = document.getElementById("level").value.trim();
+
+      if (!validatePhone(phone)) {
+        alert("Invalid phone number. Use Sri Lankan format: 07XXXXXXXX");
+        return;
+      }
+
+      //if (!validateRegNo()) {
+      //  alert("Registration Number does not belogs to the Email");
+      //  return;
+      //}
+
+      registerUser(reg, phone, level);
+    }
+  </script>
+
+</body>
+</html>

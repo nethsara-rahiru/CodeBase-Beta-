@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player | CodeBase</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(-2px);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--accent-primary);
+    }
+
+    .logout-btn {
+      margin-left: 12px;
+      padding: 8px 16px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Player Area */
+    .player-section {
+      flex: 1;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .player-container {
+      width: 100%;
+      height: 100%;
+      max-width: 1200px;
+      background: black;
+      border-radius: 32px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Blocks unwanted YT elements */
+    .iframe-overlay {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 15%;
+      background: transparent;
+      z-index: 10;
+    }
+
+    .iframe-overlay-mid {
+      position: absolute;
+      top: 35%;
+      right: 0;
+      width: 100%;
+      height: 10%;
+      background: transparent;
+      z-index: 10;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 12px 16px;
+      }
+
+      .brand-area .back-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+      }
+
+      .player-section {
+        padding: 10px;
+      }
+
+      .player-container {
+        border-radius: 20px;
+        aspect-ratio: 16/9;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="brand-area">
+      <button class="back-btn" onclick="history.back()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back
+      </button>
+      <span id="userName" style="font-weight: 700; font-size: 0.875rem; opacity: 0.8;">Student</span>
+    </div>
+    <div class="user-profile">
+      <img id="userPhoto" src="" alt="">
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <main class="player-section">
+    <div class="player-container">
+      <iframe id="ytplayer" allow="autoplay" allowfullscreen></iframe>
+      <div class="iframe-overlay"></div>
+      <div class="iframe-overlay-mid"></div>
+    </div>
+  </main>
+
+
+
+  <script type="module">
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc }
+      from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { app } from "./assets/js/firebase.js";
+
+    const auth = getAuth();
+    const db = getFirestore(app);
+    const frame = document.getElementById("ytplayer");
+
+    const link = localStorage.getItem("videoLink");
+
+    if (!link) {
+      frame.srcdoc = "<h2 style='color:white;text-align:center;'>Invalid Video Link!</h2>";
+    } else {
+      const embed = convertLink(link);
+      frame.src = embed;
+    }
+
+    function convertLink(url) {
+      // Already an embed link
+      if (url.includes("youtube.com/embed/")) return url.includes("?") ? url + "&autoplay=1&color=white" : url + "?autoplay=1&color=white";
+
+      let videoId;
+
+      // YouTube full link
+      if (url.includes("youtube.com/watch")) {
+        const urlObj = new URL(url);
+        videoId = urlObj.searchParams.get("v");
+      }
+
+      // YouTube short link
+      else if (url.includes("youtu.be/")) {
+        const parts = url.split("youtu.be/");
+        videoId = parts[1].split(/[?&]/)[0];
+      }
+
+      if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1`;
+
+      // Google Drive
+      if (url.includes("drive.google.com")) {
+        const match = url.match(/[-\w]{25,}/);
+        if (match) return `https://drive.google.com/file/d/${match[0]}/preview`;
+      }
+
+      // Direct MP4
+      if (url.endsWith(".mp4")) return url;
+
+      return "";
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        if (localStorage.getItem("appCode") == "App") {
+          // Assign user object from localStorage
+          user = {
+            uid: localStorage.getItem("uid"),
+            displayName: localStorage.getItem("displayName"),
+            email: localStorage.getItem("email"),
+            photoURL: localStorage.getItem("photoUrl")
+          };
+        } else {
+          // No Firebase user and no appCode -> redirect to login
+          window.location.href = "index.html";
+          return;
+        }
+      }
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        document.getElementById("userName").innerText = `${data.name} (${data.registrationNumber})`;
+        document.getElementById("userPhoto").src = user.photoURL || "assets/img/default.png";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        localStorage.clear();
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+
+</body>
+
+</html>
