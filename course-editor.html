@@ -245,8 +245,8 @@
                 }
 
                 const courseYear = courseId[2];
-                const yearMatch = (currentPerms.allowedYears || []).length === 0 || currentPerms.allowedYears.includes(courseYear);
-                const courseMatch = (currentPerms.allowedCourses || []).length === 0 || currentPerms.allowedCourses.includes(courseId);
+                const yearMatch = (currentPerms.allowedYears || []).includes(courseYear);
+                const courseMatch = (currentPerms.allowedCourses || []).includes(courseId);
 
                 if (!yearMatch && !courseMatch || !currentPerms.canManageCourses) {
                     window.location.href = "access-denied.html"; return;

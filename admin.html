@@ -1154,9 +1154,9 @@
 
         // Filter based on allowedYears and allowedCourses if not owner
         if (userData.role !== "owner") {
-          const yearMatch = allowedYears.length === 0 || allowedYears.includes(courseYear);
-          const courseMatch = allowedCourses.length === 0 || allowedCourses.includes(d.id);
-
+          const yearMatch = allowedYears.includes(courseYear);
+          const courseMatch = allowedCourses.includes(d.id);
+          
           if (!yearMatch && !courseMatch) {
             return;
           }
