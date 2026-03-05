@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Details | CodeBase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero {
+            height: 200px;
+            background: linear-gradient(135deg, var(--accent-primary), #818cf8);
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 40px;
+        }
+
+        .org-logo-wrap {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 24px;
+            position: absolute;
+            bottom: -60px;
+            left: 40px;
+            padding: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .org-logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .content {
+            padding: 80px 40px 40px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .org-name {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
+
+        .org-category {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.1em;
+        }
+
+        .org-description {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .social-icon:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .info-item h5 {
+            margin: 0 0 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .info-item p {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .edit-fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        /* Inline Editor */
+        .editor-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .editor-card {
+            background: #1e293b;
+            width: 100%;
+            max-width: 600px;
+            padding: 32px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <div class="container">
+        <div class="hero" id="orgHero">
+            <div class="org-logo-wrap">
+                <img id="orgLogo" src="" alt="Org Logo">
+            </div>
+        </div>
+        <div class="content">
+            <div class="header-row">
+                <div>
+                    <p class="org-category" id="orgCategory">University Organization</p>
+                    <h1 class="org-name" id="orgName">Organization Name</h1>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="joinBtn">Join Now</button>
+                </div>
+            </div>
+            <p class="org-description" id="orgDesc">Loading description...</p>
+
+            <div class="social-links" id="socialLinks">
+                <!-- Dynamic Social Links -->
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <h5>Website</h5>
+                    <p id="orgWebsite">N/A</p>
+                </div>
+                <div class="info-item">
+                    <h5>Contact Email</h5>
+                    <p id="orgEmail">N/A</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="edit-fab" id="editBtn" onclick="toggleEditor()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+        </svg>
+    </div>
+
+    <div class="editor-overlay" id="editorOverlay">
+        <div class="editor-card">
+            <h3>Edit Organization</h3>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="editDescription" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="editCategory"
+                    style="width:100%; padding:12px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:12px; color:white;">
+                    <option value="Faculty">Faculty</option>
+                    <option value="University">University</option>
+                    <option value="National">National</option>
+                    <option value="International">International</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Religious">Religious</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Facebook Link</label>
+                    <input type="text" id="editFb">
+                </div>
+                <div class="form-group">
+                    <label>YouTube Link</label>
+                    <input type="text" id="editYt">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Website</label>
+                    <input type="text" id="editWebsite">
+                </div>
+                <div class="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" id="editContactEmail">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Theme Color</label>
+                <input type="color" id="editColor" style="height: 50px;">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveChanges()">Save Changes</button>
+                <button class="btn btn-outline" onclick="toggleEditor()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { app } from "./assets/js/firebase.js";
+
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const urlParams = new URLSearchParams(window.location.search);
+        const orgId = urlParams.get("id");
+
+        if (!orgId) window.location.href = "dashboard.html";
+
+        let currentOrgData = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = "index.html"; return; }
+
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            const userData = userSnap.data();
+
+            await loadOrgDetails();
+            checkPermissions(userData);
+        });
+
+        async function loadOrgDetails() {
+            const snap = await getDoc(doc(db, "organizations", orgId));
+            if (!snap.exists()) { window.location.href = "dashboard.html"; return; }
+
+            const data = snap.data();
+            currentOrgData = data;
+
+            document.getElementById("orgName").textContent = data.name;
+            document.getElementById("orgDesc").textContent = data.description || "No description available.";
+            document.getElementById("orgCategory").textContent = data.category || "University Organization";
+            document.getElementById("orgLogo").src = data.icon || "";
+            document.getElementById("orgHero").style.background = `linear-gradient(135deg, ${data.color || '#4f46e5'}, #818cf8)`;
+
+            document.getElementById("editName").value = data.name;
+            document.getElementById("editDescription").value = data.description || "";
+            document.getElementById("editCategory").value = data.category || "University";
+            document.getElementById("editColor").value = data.color || "#4f46e5";
+            document.getElementById("editFb").value = data.fb || "";
+            document.getElementById("editYt").value = data.yt || "";
+            document.getElementById("editWebsite").value = data.website || "";
+            document.getElementById("editContactEmail").value = data.contactEmail || "";
+
+            // Dynamic Social Icons
+            const socialHost = document.getElementById("socialLinks");
+            socialHost.innerHTML = "";
+            if (data.fb) socialHost.innerHTML += `<a href="${data.fb}" target="_blank" class="social-icon" title="Facebook"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>`;
+            if (data.yt) socialHost.innerHTML += `<a href="${data.yt}" target="_blank" class="social-icon" title="YouTube"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-1.94C18.88 4 12 4 12 4s-6.88 0-8.6.48a2.78 2.78 0 0 0-1.94 1.94C1 8.14 1 12 1 12s0 3.86.48 5.58a2.78 2.78 0 0 0 1.94 1.94c1.72.48 8.6.48 8.6.48s6.88 0 8.6-.48a2.78 2.78 0 0 0 1.94-1.94C23 15.86 23 12 23 12s0-3.86-.48-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"></polygon></svg></a>`;
+            if (data.website) socialHost.innerHTML += `<a href="${data.website}" target="_blank" class="social-icon" title="Website"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></a>`;
+
+            document.getElementById("orgWebsite").innerHTML = data.website ? `<a href="${data.website}" target="_blank" style="color:var(--accent-primary); text-decoration:none;">${data.website.replace(/^https?:\/\//, '')}</a>` : "N/A";
+            document.getElementById("orgEmail").textContent = data.contactEmail || "N/A";
+
+            // Update Join Btn
+            const joinBtn = document.getElementById("joinBtn");
+            if (data.joinLink) {
+                joinBtn.onclick = () => window.open(data.joinLink, "_blank");
+            } else {
+                const joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");
+                joinBtn.textContent = joined.includes(orgId) ? "Leave Organization" : "Join Now";
+                joinBtn.classList.toggle("btn-outline", joined.includes(orgId));
+                joinBtn.onclick = () => toggleJoin(joinBtn);
+            }
+        }
+
+        async function checkPermissions(userData) {
+            if (userData.role === "owner") {
+                document.getElementById("editBtn").style.display = "flex";
+                return;
+            }
+
+            if (["admin", "editor"].includes(userData.role)) {
+                const roleSnap = await getDoc(doc(db, "roles", userData.customRoleId || "none"));
+                if (roleSnap.exists()) {
+                    const perms = roleSnap.data().permissions;
+                    const canEdit = perms.canManageOrgs &&
+                        ((perms.allowedOrgs || []).length === 0 || perms.allowedOrgs.includes(orgId));
+                    if (canEdit) {
+                        document.getElementById("editBtn").style.display = "flex";
+                    }
+                }
+            }
+        }
+
+        window.toggleEditor = () => {
+            const overlay = document.getElementById("editorOverlay");
+            overlay.style.display = overlay.style.display === "flex" ? "none" : "flex";
+        };
+
+        window.saveChanges = async () => {
+            const updates = {
+                name: document.getElementById("editName").value,
+                description: document.getElementById("editDescription").value,
+                category: document.getElementById("editCategory").value,
+                color: document.getElementById("editColor").value,
+                fb: document.getElementById("editFb").value,
+                yt: document.getElementById("editYt").value,
+                website: document.getElementById("editWebsite").value,
+                contactEmail: document.getElementById("editContactEmail").value
+            };
+
+            await updateDoc(doc(db, "organizations", orgId), updates);
+            toggleEditor();
+            loadOrgDetails();
+        };
+
+        function toggleJoin(btn) {
+            let joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");
+            if (joined.includes(orgId)) {
+                joined = joined.filter(id => id !== orgId);
+                btn.textContent = "Join Now";
+                btn.classList.remove("btn-outline");
+            } else {
+                joined.push(orgId);
+                btn.textContent = "Leave Organization";
+                btn.classList.add("btn-outline");
+            }
+            localStorage.setItem("joinedOrgs", JSON.stringify(joined));
+        }
+    </script>
+</body>
+
+</html>

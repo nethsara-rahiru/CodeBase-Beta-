@@ -914,6 +914,11 @@
             <div class="year-btn role-year" data-year="3">Year 3</div>
             <div class="year-btn role-year" data-year="4">Year 4</div>
           </div>
+          <label style="font-size: 0.875rem; font-weight: 700; margin-top: 10px;">Organization Access</label>
+          <div class="form-group">
+            <input type="text" id="roleAllowedOrgs" placeholder="Specific Org IDs (Comma separated)"
+              style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+          </div>
         </div>
         <div class="modal-actions">
           <button class="cancel-btn" onclick="closeRoleModal()">Cancel</button>
@@ -1156,7 +1161,7 @@
         if (userData.role !== "owner") {
           const yearMatch = allowedYears.includes(courseYear);
           const courseMatch = allowedCourses.includes(d.id);
-          
+
           if (!yearMatch && !courseMatch) {
             return;
           }
@@ -1318,6 +1323,7 @@
         document.getElementById("roleStaff").checked = p.canManageStaff;
         document.getElementById("roleDelete").checked = p.canManageDelete;
         document.getElementById("roleAllowedCourses").value = (p.allowedCourses || []).join(', ');
+        document.getElementById("roleAllowedOrgs").value = (p.allowedOrgs || []).join(', ');
         selectedRoleYears = p.allowedYears || [];
       } else {
         document.getElementById("roleModalTitle").textContent = "Create Role";
@@ -1329,6 +1335,7 @@
         document.getElementById("roleStaff").checked = false;
         document.getElementById("roleDelete").checked = false;
         document.getElementById("roleAllowedCourses").value = "";
+        document.getElementById("roleAllowedOrgs").value = "";
         selectedRoleYears = [];
       }
       updateRoleYearButtons();
@@ -1364,7 +1371,8 @@
         canManageStaff: document.getElementById("roleStaff").checked,
         canManageDelete: document.getElementById("roleDelete").checked,
         allowedYears: selectedRoleYears,
-        allowedCourses: document.getElementById("roleAllowedCourses").value.split(',').map(s => s.trim()).filter(s => s)
+        allowedCourses: document.getElementById("roleAllowedCourses").value.split(',').map(s => s.trim()).filter(s => s),
+        allowedOrgs: document.getElementById("roleAllowedOrgs").value.split(',').map(s => s.trim()).filter(s => s)
       };
 
       await setDoc(doc(db, "roles", roleId), { name, permissions: perms });

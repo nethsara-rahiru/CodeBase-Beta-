@@ -974,6 +974,11 @@
         const card = document.createElement("div");
         card.className = "org-card";
         card.dataset.org = d.id;
+        card.style.cursor = "pointer";
+        card.onclick = (e) => {
+          if (e.target.classList.contains('join-btn')) return;
+          window.location.href = `org.html?id=${d.id}`;
+        };
         const iconContent = data.icon && data.icon.startsWith("http")
           ? `<img src="${data.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`
           : (data.icon || d.id[0]);
