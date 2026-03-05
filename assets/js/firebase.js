@@ -101,6 +101,15 @@ window.googleLogin = async function () {
         return;
       }
 
+      // Check maintenance mode
+      const sysSnap = await getDoc(doc(db, "system", "settings"));
+      if (sysSnap.exists() && sysSnap.data().maintenance && (userDoc.data().role || "student") === "student") {
+        alert("Site is under maintenance. Only staff allowed.");
+        await signOut(auth);
+        localStorage.removeItem("user");
+        return;
+      }
+
       // Redirect based on role
       redirectByRole(userDoc.data().role || "student");
     } else {
@@ -138,6 +147,20 @@ window.registerUser = async function (regNumber, phone, level) {
   if (!bannedSnap.empty) {
     alert("This registration number is banned.");
     return;
+  }
+
+  // Check registration setting
+  const sysSnap = await getDoc(doc(db, "system", "settings"));
+  if (sysSnap.exists()) {
+    const sysData = sysSnap.data();
+    if (sysData.maintenance) {
+      alert("System is currently under maintenance.");
+      return;
+    }
+    if (sysData.registration === false) {
+      alert("Public registration is currently disabled.");
+      return;
+    }
   }
 
   const userRef = doc(db, "users", user.uid);

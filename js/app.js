@@ -3,7 +3,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 // Firebase configuration (your provided config)
 const firebaseConfig = {
@@ -31,6 +31,20 @@ const message = document.getElementById("message");
 
 // Signup
 signupBtn.addEventListener("click", async () => {
+    // Check registration setting
+    const sysSnap = await getDoc(doc(db, "system", "settings"));
+    if (sysSnap.exists()) {
+        const sysData = sysSnap.data();
+        if (sysData.maintenance) {
+            message.textContent = "System is currently under maintenance.";
+            return;
+        }
+        if (sysData.registration === false) {
+            message.textContent = "Public registration is currently disabled.";
+            return;
+        }
+    }
+
     if (regNumber.value === "" || password.value === "") {
         message.textContent = "Please fill all fields";
         return;
@@ -62,6 +76,17 @@ loginBtn.addEventListener("click", async () => {
     try {
         const email = regNumber.value + "@codebase.com";
         const userCredential = await signInWithEmailAndPassword(auth, email, password.value);
+
+        // Check maintenance mode after login (staff can still enter)
+        const sysSnap = await getDoc(doc(db, "system", "settings"));
+        const userSnap = await getDoc(doc(db, "users", regNumber.value));
+        const userData = userSnap.data() || {};
+
+        if (sysSnap.exists() && sysSnap.data().maintenance && userData.role === "student") {
+            await auth.signOut();
+            message.textContent = "Site is under maintenance. Only staff allowed.";
+            return;
+        }
 
         // Redirect to dashboard
         window.location.href = "dashboard.html";

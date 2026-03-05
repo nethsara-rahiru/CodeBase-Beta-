@@ -437,6 +437,198 @@
       max-height: 100%;
       object-fit: contain;
     }
+
+    /* Clickable Table Rows */
+    .clickable-row {
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .clickable-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      margin-bottom: 24px;
+    }
+
+    .permission-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .permission-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 16px;
+      border-radius: 12px;
+    }
+
+    .checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-wrap input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .year-toggle-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .year-btn {
+      padding: 8px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .year-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .cancel-btn {
+      background: none;
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* Toggle Switch Styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked+.slider {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    .system-controls {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .control-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .role-item-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .role-item-card h4 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
   </style>
 </head>
 
@@ -462,6 +654,7 @@
       <div class="nav-item" data-tab="landing">Landing Page</div>
       <div class="nav-item" data-tab="courses">Courses</div>
       <div class="nav-item" data-tab="organizations">Organizations</div>
+      <div class="nav-item" data-tab="staff">Staff Management</div>
       <div class="nav-item" data-tab="users">Users</div>
     </nav>
   </aside>
@@ -481,6 +674,34 @@
         </div>
         <div class="stat-card"><span class="stat-val" id="statOrgs">0</span><span
             class="stat-label">Organizations</span></div>
+      </div>
+      <div class="section-header" style="margin-top: 40px;">
+        <h2>System Controls</h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Manage global site access and registration</p>
+      </div>
+
+      <div class="system-controls">
+        <div class="control-card">
+          <div>
+            <h4 style="margin:0; font-size:1rem;">Public Registration</h4>
+            <p style="margin:4px 0 0; font-size:0.75rem; color:var(--text-muted);">Allow new students to sign up</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sysReg" onchange="updateSystemSetting('registration', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="control-card">
+          <div>
+            <h4 style="margin:0; font-size:1rem;">Maintenance Mode</h4>
+            <p style="margin:4px 0 0; font-size:0.75rem; color:var(--text-muted);">Restrict public access to site</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sysMaint" onchange="updateSystemSetting('maintenance', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -587,6 +808,39 @@
       </div>
     </div>
 
+    <!-- Tab 6: Staff Management -->
+    <div class="tab-content" id="staffTab">
+      <div class="admin-card" style="margin-bottom: 24px;">
+        <div class="section-header">
+          <h2>Manage Roles</h2>
+          <button class="action-btn" onclick="openRoleModal()">+ Create Role</button>
+        </div>
+        <div id="roleGrid" class="role-grid">
+          <!-- Roles will appear here -->
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="section-header">
+          <h2>Staff Directory</h2>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Assign roles to your team</p>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Assigned Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Tab 5: Users -->
     <div class="tab-content" id="usersTab">
       <div class="admin-card">
@@ -608,6 +862,61 @@
           </table>
         </div>
       </div>
+    </div>
+
+    <!-- Role Modal -->
+    <div id="roleModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="roleModalTitle">Create Role</h2>
+        </div>
+        <div class="permission-group">
+          <div class="form-group">
+            <label style="font-size: 0.875rem; font-weight: 700;">Role Name</label>
+            <input type="text" id="roleNameInput" placeholder="e.g., Year 1 Admin"
+              style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+          </div>
+
+          <label style="font-size: 0.875rem; font-weight: 700; margin-top: 10px;">Tab Access</label>
+          <div class="permission-item">
+            <span>Manage Landing Page</span>
+            <label class="switch"><input type="checkbox" id="roleLanding"><span class="slider"></span></label>
+          </div>
+          <div class="permission-item">
+            <span>Manage Organizations</span>
+            <label class="switch"><input type="checkbox" id="roleOrgs"><span class="slider"></span></label>
+          </div>
+          <div class="permission-item">
+            <span>Manage Courses</span>
+            <label class="switch"><input type="checkbox" id="roleCourses"><span class="slider"></span></label>
+          </div>
+          <div class="permission-item">
+            <span>Manage Users</span>
+            <label class="switch"><input type="checkbox" id="roleUsers"><span class="slider"></span></label>
+          </div>
+          <div class="permission-item">
+            <span>Destructive Actions</span>
+            <label class="switch"><input type="checkbox" id="roleDelete"><span class="slider"></span></label>
+          </div>
+
+          <label style="font-size: 0.875rem; font-weight: 700; margin-top: 10px;">Course/Year Access</label>
+          <div class="form-group">
+            <input type="text" id="roleAllowedCourses" placeholder="Specific Course IDs (Comma separated)"
+              style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+          </div>
+          <div class="year-toggle-grid">
+            <div class="year-btn role-year" data-year="1">Year 1</div>
+            <div class="year-btn role-year" data-year="2">Year 2</div>
+            <div class="year-btn role-year" data-year="3">Year 3</div>
+            <div class="year-btn role-year" data-year="4">Year 4</div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="cancel-btn" onclick="closeRoleModal()">Cancel</button>
+          <button class="action-btn" id="saveRoleBtn">Save Role</button>
+        </div>
+      </div>
+    </div>
     </div>
   </main>
 
@@ -670,10 +979,15 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "index.html"; return; }
       const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists() || !["owner", "admin", "editor"].includes(snap.data().role)) {
+      const userData = snap.data();
+      if (!snap.exists() || !["owner", "admin", "editor"].includes(userData.role)) {
         window.location.href = "access-denied.html"; return;
       }
+
+      // Ensure permissions are loaded BEFORE triggering initial tab load
+      await enforcePermissions(userData);
       loadTabData("dashboard");
+      loadSystemSettings();
     });
 
     async function loadTabData(tab) {
@@ -681,7 +995,65 @@
       if (tab === "landing") loadSlideshow();
       if (tab === "courses") loadCourses();
       if (tab === "organizations") loadOrgs();
+      if (tab === "staff") loadStaff();
       if (tab === "users") loadUsers();
+    }
+
+    async function loadSystemSettings() {
+      const snap = await getDoc(doc(db, "system", "settings"));
+      if (snap.exists()) {
+        const data = snap.data();
+        const regInput = document.getElementById("sysReg");
+        const maintInput = document.getElementById("sysMaint");
+        if (regInput) regInput.checked = data.registration !== false;
+        if (maintInput) maintInput.checked = data.maintenance || false;
+      }
+    }
+
+    window.updateSystemSetting = async (key, value) => {
+      if (!currentAdminPerms.isOwner) {
+        alert("Only the owner can modify system settings.");
+        loadSystemSettings(); return;
+      }
+      await setDoc(doc(db, "system", "settings"), { [key]: value }, { merge: true });
+    };
+
+    let globalCurrentRoleId = null;
+    let selectedRoleYears = [];
+    let cachedRoles = [];
+    let currentAdminPerms = {}; // Fixed: Added global declaration
+
+    // Role-based UI visibility
+    async function enforcePermissions(userData) {
+      if (userData.role === "owner") {
+        currentAdminPerms = { isOwner: true };
+      } else {
+        // Fetch role details for staff
+        const roleSnap = await getDoc(doc(db, "roles", userData.customRoleId || "none"));
+        const perms = roleSnap.exists() ? roleSnap.data().permissions : {};
+        currentAdminPerms = perms;
+      }
+
+      const tabMap = {
+        landing: perms.canManageLanding,
+        organizations: perms.canManageOrgs,
+        courses: perms.canManageCourses,
+        users: perms.canManageUsers,
+        staff: false
+      };
+
+      document.querySelectorAll('.nav-item').forEach(item => {
+        const tab = item.dataset.tab;
+        if (tabMap[tab] === false) {
+          item.style.display = 'none';
+        }
+      });
+
+      // If current tab is hidden, switch to dashboard
+      const activeTab = document.querySelector('.nav-item.active').dataset.tab;
+      if (tabMap[activeTab] === false) {
+        document.querySelector('[data-tab="dashboard"]').click();
+      }
     }
 
     // DASHBOARD
@@ -696,6 +1068,7 @@
 
     // LANDING
     async function loadSlideshow() {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageLanding) return;
       const snap = await getDocs(collection(db, "slideshow"));
       const body = document.getElementById("slideTable");
       body.innerHTML = "";
@@ -708,6 +1081,9 @@
 
     document.getElementById("slideForm").onsubmit = async (e) => {
       e.preventDefault();
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageLanding) {
+        alert("Permission denied."); return;
+      }
       const btn = document.getElementById("saveSlideBtn");
       const file = document.getElementById("slideImgInput").files[0];
       if (!file) return;
@@ -734,35 +1110,72 @@
     };
 
     window.deleteSlide = async (id) => {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageDelete) {
+        alert("You do not have permission to delete slides."); return;
+      }
       if (confirm("Delete slide?")) { await deleteDoc(doc(db, "slideshow", id)); loadSlideshow(); }
     };
 
     // COURSES
     async function loadCourses() {
+      const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+      const userData = userSnap.data();
+
+      let perms = {};
+      if (userData.role !== "owner") {
+        const roleSnap = await getDoc(doc(db, "roles", userData.customRoleId || "none"));
+        if (roleSnap.exists()) perms = roleSnap.data().permissions;
+      }
+
+      const allowedYears = perms.allowedYears || [];
+      const allowedCourses = perms.allowedCourses || [];
+
       const snap = await getDocs(collection(db, "courses"));
       const body = document.getElementById("courseTableBody");
       body.innerHTML = "";
       snap.forEach(d => {
         const data = d.data();
+        const courseYear = d.id[2];
+
+        // Filter based on allowedYears and allowedCourses if not owner
+        if (userData.role !== "owner") {
+          const yearMatch = allowedYears.length === 0 || allowedYears.includes(courseYear);
+          const courseMatch = allowedCourses.length === 0 || allowedCourses.includes(d.id);
+
+          if (!yearMatch && !courseMatch) {
+            return;
+          }
+        }
+
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td>${d.id[2]}</td><td>${d.id[3]}</td><td><button class="btn-delete" onclick="deleteCourse('${d.id}')">Delete</button></td>`;
+        row.className = "clickable-row";
+        row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td>${d.id[2]}</td><td>${d.id[3]}</td><td><button class="btn-delete" onclick="deleteCourse(event, '${d.id}')">Delete</button></td>`;
+        row.onclick = () => window.location.href = `course-editor.html?id=${d.id}`;
         body.appendChild(row);
       });
     }
 
     document.getElementById("courseForm").onsubmit = async (e) => {
       e.preventDefault();
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageCourses) {
+        alert("Permission denied."); return;
+      }
       const id = document.getElementById("newCourseId").value;
       await setDoc(doc(db, "courses", id), { name: document.getElementById("newCourseName").value });
       e.target.reset(); loadCourses();
     };
 
-    window.deleteCourse = async (id) => {
+    window.deleteCourse = async (event, id) => {
+      event.stopPropagation();
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageDelete) {
+        alert("You do not have permission to delete courses."); return;
+      }
       if (confirm("Delete course?")) { await deleteDoc(doc(db, "courses", id)); loadCourses(); }
     };
 
     // ORGANIZATIONS
     async function loadOrgs() {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageOrgs) return;
       const snap = await getDocs(collection(db, "organizations"));
       const body = document.getElementById("orgTableBody");
       body.innerHTML = "";
@@ -780,6 +1193,9 @@
 
     document.getElementById("orgForm").onsubmit = async (e) => {
       e.preventDefault();
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageOrgs) {
+        alert("Permission denied."); return;
+      }
       const btn = document.getElementById("saveOrgBtn");
       const file = document.getElementById("orgLogoInput").files[0];
       if (!file) return;
@@ -809,11 +1225,162 @@
     };
 
     window.deleteOrg = async (id) => {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageDelete) {
+        alert("You do not have permission to delete organizations."); return;
+      }
       if (confirm("Delete organization?")) { await deleteDoc(doc(db, "organizations", id)); loadOrgs(); }
+    };
+
+    // STAFF MANAGEMENT (RBAC)
+    window.loadStaff = async () => {
+      if (!currentAdminPerms.isOwner) return;
+      // 1. Fetch Roles
+      const roleSnap = await getDocs(collection(db, "roles"));
+      cachedRoles = [];
+      const roleGrid = document.getElementById("roleGrid");
+      roleGrid.innerHTML = "";
+      roleSnap.forEach(d => {
+        const roleData = d.data();
+        cachedRoles.push({ id: d.id, ...roleData });
+
+        const card = document.createElement("div");
+        card.className = "role-item-card";
+        card.innerHTML = `
+          <h4>${roleData.name}</h4>
+          <small>${Object.keys(roleData.permissions).filter(k => roleData.permissions[k] === true).length} Perms Active</small>
+          <div style="display:flex; gap:8px;">
+            <button class="action-btn secondary" style="padding:6px 12px; font-size:0.75rem;" onclick="openRoleModal('${d.id}')">Edit</button>
+            <button class="btn-delete" style="padding:4px 8px; font-size:0.7rem;" onclick="deleteRole('${d.id}')">Delete</button>
+          </div>
+        `;
+        roleGrid.appendChild(card);
+      });
+
+      // 2. Fetch Staff
+      const userSnap = await getDocs(collection(db, "users"));
+      const body = document.getElementById("staffTableBody");
+      body.innerHTML = "";
+      userSnap.forEach(d => {
+        const data = d.data();
+        if (["admin", "editor"].includes(data.role)) {
+          const row = document.createElement("tr");
+          const roleId = data.customRoleId || "";
+          const assignedRole = cachedRoles.find(r => r.id === roleId);
+
+          row.innerHTML = `
+            <td>${data.name}<br><small>${data.email}</small></td>
+            <td>
+              <select onchange="assignStaffRole('${d.id}', this.value)" style="padding:6px; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--glass-border); border-radius:8px;">
+                <option value="">No Role</option>
+                ${cachedRoles.map(r => `<option value="${r.id}" ${roleId === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <span class="role-badge" style="background:${assignedRole ? 'var(--success)' : 'var(--text-muted)'}">
+                ${assignedRole ? assignedRole.name : 'No Role'}
+              </span>
+            </td>
+            <td>
+              <button class="btn-ban" style="padding:6px 12px; font-size:0.75rem;" onclick="denyStaffAccess('${data.registrationNumber}')">Deny Access</button>
+            </td>
+          `;
+          body.appendChild(row);
+        }
+      });
+    }
+
+    window.openRoleModal = async (roleId = null) => {
+      globalCurrentRoleId = roleId;
+      if (roleId) {
+        const role = cachedRoles.find(r => r.id === roleId);
+        const p = role.permissions;
+        document.getElementById("roleModalTitle").textContent = "Edit Role";
+        document.getElementById("roleNameInput").value = role.name;
+        document.getElementById("roleLanding").checked = p.canManageLanding;
+        document.getElementById("roleOrgs").checked = p.canManageOrgs;
+        document.getElementById("roleCourses").checked = p.canManageCourses;
+        document.getElementById("roleUsers").checked = p.canManageUsers;
+        document.getElementById("roleDelete").checked = p.canManageDelete;
+        document.getElementById("roleAllowedCourses").value = (p.allowedCourses || []).join(', ');
+        selectedRoleYears = p.allowedYears || [];
+      } else {
+        document.getElementById("roleModalTitle").textContent = "Create Role";
+        document.getElementById("roleNameInput").value = "";
+        document.getElementById("roleLanding").checked = false;
+        document.getElementById("roleOrgs").checked = false;
+        document.getElementById("roleCourses").checked = false;
+        document.getElementById("roleUsers").checked = false;
+        document.getElementById("roleDelete").checked = false;
+        document.getElementById("roleAllowedCourses").value = "";
+        selectedRoleYears = [];
+      }
+      updateRoleYearButtons();
+      document.getElementById("roleModal").classList.add("active");
+    }
+
+    window.closeRoleModal = () => document.getElementById("roleModal").classList.remove("active");
+
+    function updateRoleYearButtons() {
+      document.querySelectorAll(".role-year").forEach(btn => {
+        btn.classList.toggle("active", selectedRoleYears.includes(btn.dataset.year));
+      });
+    }
+
+    document.querySelectorAll(".role-year").forEach(btn => {
+      btn.onclick = () => {
+        const y = btn.dataset.year;
+        selectedRoleYears = selectedRoleYears.includes(y) ? selectedRoleYears.filter(i => i !== y) : [...selectedRoleYears, y];
+        updateRoleYearButtons();
+      };
+    });
+
+    document.getElementById("saveRoleBtn").onclick = async () => {
+      const name = document.getElementById("roleNameInput").value.trim();
+      if (!name) return alert("Please enter a role name");
+
+      const roleId = globalCurrentRoleId || name.toLowerCase().replace(/\s+/g, '-');
+      const perms = {
+        canManageLanding: document.getElementById("roleLanding").checked,
+        canManageOrgs: document.getElementById("roleOrgs").checked,
+        canManageCourses: document.getElementById("roleCourses").checked,
+        canManageUsers: document.getElementById("roleUsers").checked,
+        canManageDelete: document.getElementById("roleDelete").checked,
+        allowedYears: selectedRoleYears,
+        allowedCourses: document.getElementById("roleAllowedCourses").value.split(',').map(s => s.trim()).filter(s => s)
+      };
+
+      await setDoc(doc(db, "roles", roleId), { name, permissions: perms });
+      closeRoleModal();
+      loadStaff();
+    };
+
+    window.deleteRole = async (id) => {
+      if (confirm("Delete this role? Staff assigned to it will lose permissions.")) {
+        await deleteDoc(doc(db, "roles", id));
+        loadStaff();
+      }
+    };
+
+    window.assignStaffRole = async (uid, roleId) => {
+      if (!currentAdminPerms.isOwner) {
+        alert("Only the owner can assign roles to staff members.");
+        loadStaff(); return;
+      }
+      await updateDoc(doc(db, "users", uid), { customRoleId: roleId });
+      loadStaff();
+    };
+
+    window.denyStaffAccess = async (regNo) => {
+      if (confirm(`Immediately deny access for staff with Reg No: ${regNo}?`)) {
+        await setDoc(doc(collection(db, "login_control", "access", "bannedReg")), { regNo });
+        alert("Access denied. Staff member is now banned.");
+        loadStaff();
+      }
     };
 
     // USERS
     async function loadUsers() {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
       const snap = await getDocs(collection(db, "users"));
       const body = document.getElementById("userTableBody");
       body.innerHTML = "";
@@ -835,11 +1402,23 @@
     }
 
     window.updateRole = async (uid, newRole) => {
+      const snap = await getDoc(doc(db, "users", uid));
+      const targetData = snap.data();
+
+      // Security: Only owners can change roles of other staff members
+      if (!currentAdminPerms.isOwner && ["owner", "admin", "editor"].includes(targetData.role)) {
+        alert("Only the owner can change staff roles.");
+        loadUsers(); return;
+      }
+
       await updateDoc(doc(db, "users", uid), { role: newRole });
       loadUsers();
     };
 
     window.banUser = async (regNo) => {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageDelete) {
+        alert("You do not have permission to ban users."); return;
+      }
       if (confirm(`Ban user with Reg No: ${regNo}?`)) {
         await setDoc(doc(collection(db, "login_control", "access", "bannedReg")), { regNo });
         alert("User banned.");
