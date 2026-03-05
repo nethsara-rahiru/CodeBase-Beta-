@@ -565,6 +565,8 @@
           </div>
           <div class="form-group"><label>Color</label><input type="color" id="orgColor" value="#6366f1"></div>
           <div class="form-group"><label>Description</label><input type="text" id="orgDesc" required></div>
+          <div class="form-group"><label>Join Link (Optional)</label><input type="url" id="orgJoinLink"
+              placeholder="https://forms.gle/..."></div>
           <div class="form-group" style="justify-content: flex-end;"><button type="submit" class="action-btn"
               id="saveOrgBtn">Add Org</button></div>
         </form>
@@ -575,6 +577,7 @@
                 <th>Icon</th>
                 <th>Name</th>
                 <th>Desc</th>
+                <th>Join Link</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -766,7 +769,11 @@
       snap.forEach(d => {
         const data = d.data();
         const row = document.createElement("tr");
-        row.innerHTML = `<td><img src="${data.icon}" width="40" height="40" style="border-radius:8px; object-fit:cover;"></td><td>${data.name}</td><td>${data.description}</td><td><button class="btn-delete" onclick="deleteOrg('${d.id}')">Delete</button></td>`;
+        row.innerHTML = `<td><img src="${data.icon}" width="40" height="40" style="border-radius:8px; object-fit:cover;"></td>
+          <td>${data.name}</td>
+          <td>${data.description}</td>
+          <td>${data.joinLink ? `<a href="${data.joinLink}" target="_blank" style="color:var(--accent-primary); font-size:0.8rem;">Link</a>` : 'Internal'}</td>
+          <td><button class="btn-delete" onclick="deleteOrg('${d.id}')">Delete</button></td>`;
         body.appendChild(row);
       });
     }
@@ -787,7 +794,8 @@
           name: document.getElementById("orgName").value,
           icon: logoUrl,
           color: document.getElementById("orgColor").value,
-          description: document.getElementById("orgDesc").value
+          description: document.getElementById("orgDesc").value,
+          joinLink: document.getElementById("orgJoinLink").value || ""
         });
         e.target.reset();
         document.getElementById("orgPreview").innerHTML = '<span style="color:var(--text-muted); font-size:0.8rem;">Preview</span>';

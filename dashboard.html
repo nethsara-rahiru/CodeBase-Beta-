@@ -989,8 +989,8 @@
           <p class="org-desc">${data.description}</p>
           <div class="org-action">
             <span style="font-size: 0.8rem; color: var(--text-muted);">Join to see members</span>
-            <button class="join-btn" onclick="toggleOrg(this, '${d.id}')">Join</button>
-          </div>`;
+            <button class="join-btn" onclick="toggleOrg(this, '${d.id}', '${data.joinLink || ''}')">Join</button>
+          </div>` ;
         orgHost.appendChild(card);
       });
       renderJoinedOrgs();
@@ -1131,7 +1131,11 @@
       });
     }
 
-    window.toggleOrg = (btn, orgId) => {
+    window.toggleOrg = (btn, orgId, joinLink = "") => {
+      if (joinLink) {
+        window.open(joinLink, "_blank");
+        return;
+      }
       let joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");
       joined = joined.includes(orgId) ? joined.filter(id => id !== orgId) : [...joined, orgId];
       localStorage.setItem("joinedOrgs", JSON.stringify(joined));
