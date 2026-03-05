@@ -895,6 +895,10 @@
             <label class="switch"><input type="checkbox" id="roleUsers"><span class="slider"></span></label>
           </div>
           <div class="permission-item">
+            <span>Manage Staff & Roles</span>
+            <label class="switch"><input type="checkbox" id="roleStaff"><span class="slider"></span></label>
+          </div>
+          <div class="permission-item">
             <span>Destructive Actions</span>
             <label class="switch"><input type="checkbox" id="roleDelete"><span class="slider"></span></label>
           </div>
@@ -1025,33 +1029,44 @@
 
     // Role-based UI visibility
     async function enforcePermissions(userData) {
+      let perms = {};
       if (userData.role === "owner") {
         currentAdminPerms = { isOwner: true };
+        perms = {
+          canManageLanding: true,
+          canManageOrgs: true,
+          canManageCourses: true,
+          canManageUsers: true,
+          canManageStaff: true
+        };
       } else {
-        // Fetch role details for staff
         const roleSnap = await getDoc(doc(db, "roles", userData.customRoleId || "none"));
-        const perms = roleSnap.exists() ? roleSnap.data().permissions : {};
+        perms = roleSnap.exists() ? roleSnap.data().permissions : {};
         currentAdminPerms = perms;
       }
 
       const tabMap = {
+        dashboard: true,
         landing: perms.canManageLanding,
         organizations: perms.canManageOrgs,
         courses: perms.canManageCourses,
         users: perms.canManageUsers,
-        staff: false
+        staff: perms.canManageStaff || userData.role === "owner"
       };
 
       document.querySelectorAll('.nav-item').forEach(item => {
         const tab = item.dataset.tab;
-        if (tabMap[tab] === false) {
+        if (tabMap[tab]) {
+          item.style.display = 'flex';
+        } else {
           item.style.display = 'none';
         }
       });
 
       // If current tab is hidden, switch to dashboard
-      const activeTab = document.querySelector('.nav-item.active').dataset.tab;
-      if (tabMap[activeTab] === false) {
+      const activeTabItem = document.querySelector('.nav-item.active');
+      const activeTab = activeTabItem ? activeTabItem.dataset.tab : "dashboard";
+      if (!tabMap[activeTab]) {
         document.querySelector('[data-tab="dashboard"]').click();
       }
     }
@@ -1300,6 +1315,7 @@
         document.getElementById("roleOrgs").checked = p.canManageOrgs;
         document.getElementById("roleCourses").checked = p.canManageCourses;
         document.getElementById("roleUsers").checked = p.canManageUsers;
+        document.getElementById("roleStaff").checked = p.canManageStaff;
         document.getElementById("roleDelete").checked = p.canManageDelete;
         document.getElementById("roleAllowedCourses").value = (p.allowedCourses || []).join(', ');
         selectedRoleYears = p.allowedYears || [];
@@ -1310,6 +1326,7 @@
         document.getElementById("roleOrgs").checked = false;
         document.getElementById("roleCourses").checked = false;
         document.getElementById("roleUsers").checked = false;
+        document.getElementById("roleStaff").checked = false;
         document.getElementById("roleDelete").checked = false;
         document.getElementById("roleAllowedCourses").value = "";
         selectedRoleYears = [];
@@ -1344,6 +1361,7 @@
         canManageOrgs: document.getElementById("roleOrgs").checked,
         canManageCourses: document.getElementById("roleCourses").checked,
         canManageUsers: document.getElementById("roleUsers").checked,
+        canManageStaff: document.getElementById("roleStaff").checked,
         canManageDelete: document.getElementById("roleDelete").checked,
         allowedYears: selectedRoleYears,
         allowedCourses: document.getElementById("roleAllowedCourses").value.split(',').map(s => s.trim()).filter(s => s)
