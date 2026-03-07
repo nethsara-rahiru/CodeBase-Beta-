@@ -304,6 +304,15 @@
                 </select>
             </div>
             <div class="form-group"><label>URL</label><input type="url" id="resLink-${m.id}" required></div>
+            <div class="form-group"><label>Creator Registration No</label><input type="text" id="resOwnerReg-${m.id}" placeholder="e.g. 2022/ICT/62" required></div>
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+                <input type="checkbox" id="resOriginal-${m.id}" style="width: 20px; height: 20px;">
+                <label style="margin: 0;">Original Creation</label>
+            </div>
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 0px;">
+                <input type="checkbox" id="resPinned-${m.id}" style="width: 20px; height: 20px;">
+                <label style="margin: 0;">Pin Resource</label>
+            </div>
             <div class="form-group" style="justify-content: flex-end;"><button type="submit" class="action-btn secondary">Add Resource</button></div>
           </form>
         `;
@@ -332,10 +341,16 @@
                 item.innerHTML = `
           <div>
             <span class="type-badge">${r.type}</span>
+            ${r.isPinned ? '<span class="type-badge" style="background:#f59e0b; color:white;">📌 Pinned</span>' : ''}
             <span style="font-weight:600;">${r.title}</span>
             <a href="${r.link}" target="_blank" style="color:var(--accent-primary); margin-left:10px; font-size:0.8rem;">View</a>
           </div>
-          <button class="btn-danger" onclick="deleteResource('${moduleId}', '${r.id}')">Remove</button>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="action-btn secondary" style="padding:6px 12px; font-size:0.75rem;" onclick="togglePin('${moduleId}', '${r.id}', ${r.isPinned || false})">
+                ${r.isPinned ? 'Unpin' : 'Pin'}
+            </button>
+            <button class="btn-danger" onclick="deleteResource('${moduleId}', '${r.id}')">Remove</button>
+          </div>
         `;
                 host.appendChild(item);
             });
@@ -363,14 +378,27 @@
             if (!currentPerms.isOwner && !currentPerms.canManageCourses) {
                 alert("Permission denied."); return;
             }
+
+            const currentUser = auth.currentUser;
+            const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+            const userName = userSnap.exists() ? userSnap.data().name : currentUser.displayName || "Unknown Admin";
+
             const title = document.getElementById(`resTitle-${moduleId}`).value;
             const type = document.getElementById(`resType-${moduleId}`).value;
             const link = document.getElementById(`resLink-${moduleId}`).value;
+            const ownerReg = document.getElementById(`resOwnerReg-${moduleId}`).value;
+            const isOriginal = document.getElementById(`resOriginal-${moduleId}`).checked;
+            const isPinned = document.getElementById(`resPinned-${moduleId}`).checked;
 
             await addDoc(collection(db, "courses", courseId, "content", moduleId, "resources"), {
                 title: title,
                 type: type,
-                link: link
+                link: link,
+                ownerReg: ownerReg,
+                isOriginal: isOriginal,
+                isPinned: isPinned,
+                uploadedBy: userSnap.data().registrationNumber || userName,
+                uploadedAt: new Date().toISOString()
             });
 
             e.target.reset();
@@ -397,6 +425,16 @@
                 await deleteDoc(doc(db, "courses", courseId, "content", moduleId, "resources", resId));
                 loadResources(moduleId);
             }
+        };
+
+        window.togglePin = async (moduleId, resId, currentStatus) => {
+            if (!currentPerms.isOwner && !currentPerms.canManageCourses) {
+                alert("Permission denied."); return;
+            }
+            await updateDoc(doc(db, "courses", courseId, "content", moduleId, "resources", resId), {
+                isPinned: !currentStatus
+            });
+            loadResources(moduleId);
         };
 
     </script>

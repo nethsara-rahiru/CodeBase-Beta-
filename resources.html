@@ -180,6 +180,34 @@
       width: fit-content;
     }
 
+    .original-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+
+    .owner-info {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .owner-info span b {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
     .open-btn {
       z-index: 5;
       padding: 12px 24px;
@@ -262,6 +290,204 @@
         display: none;
       }
     }
+
+    /* Tabs */
+    .tab-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 4px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      width: fit-content;
+    }
+
+    .tab-btn {
+      padding: 10px 24px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Category Filters */
+    .category-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .cat-pill {
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cat-pill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    .cat-pill.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Pinned Section */
+    .pinned-section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      color: #f59e0b;
+    }
+
+    /* Interaction Bar */
+    .interaction-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .interaction-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .interaction-btn:hover {
+      color: var(--text-main);
+    }
+
+    .interaction-btn.active.like {
+      color: #10b981;
+    }
+
+    .interaction-btn.active.dislike {
+      color: #ef4444;
+    }
+
+    /* Modals */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 500px;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .grid-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: white;
+    }
+
+    .share-btn {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      padding: 16px 24px;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+      z-index: 90;
+      transition: all 0.3s;
+    }
+
+    .share-btn:hover {
+      transform: translateY(-4px) scale(1.05);
+    }
   </style>
 </head>
 
@@ -287,21 +513,110 @@
     </div>
   </header>
 
-  <main class="main-container" id="resourcesContainer">
-    <p style="color: var(--text-muted); font-size: 0.875rem;">Loading resources...</p>
+  <main class="main-container">
+    <div class="tab-header">
+      <button class="tab-btn active" id="tabCourse">Course Content</button>
+      <button class="tab-btn" id="tabCommunity">Community Hub</button>
+    </div>
+
+    <div id="pinnedSection" class="pinned-section" style="display:none;">
+      <div class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22L12,22.8L12.8,22V16H18V14L16,12Z" />
+        </svg>
+        Pinned Resources
+      </div>
+      <div id="pinnedContainer" class="main-container" style="padding:0; margin:0; max-width:none;"></div>
+    </div>
+
+    <div id="resourcesContainer">
+      <div id="categoryBar" class="category-bar" style="display:none;">
+        <button class="cat-pill active" data-type="all">All</button>
+        <button class="cat-pill" data-type="video">Videos</button>
+        <button class="cat-pill" data-type="pdf">PDFs</button>
+        <button class="cat-pill" data-type="github">GitHub</button>
+        <button class="cat-pill" data-type="link">Links</button>
+      </div>
+      <div id="itemsGrid">
+        <p style="color: var(--text-muted); font-size: 0.875rem;">Loading resources...</p>
+      </div>
+    </div>
   </main>
+
+  <button id="addCommunityBtn" class="share-btn" style="display:none;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    Share with Community
+  </button>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <h2 style="margin-bottom:24px;">Share Resource</h2>
+      <form id="uploadForm" class="grid-form">
+        <div class="form-group"><label>Title</label><input type="text" id="upTitle" required></div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="upType">
+            <option value="link">Link</option>
+            <option value="pdf">PDF (Drive Link)</option>
+            <option value="video">YouTube Video</option>
+            <option value="github">GitHub Project</option>
+          </select>
+        </div>
+        <div class="form-group"><label>URL</label><input type="url" id="upLink" required></div>
+        <div class="form-group"><label>Creator Reg No</label><input type="text" id="upOwnerReg"
+            placeholder="e.g. 2022/ICT/62" required></div>
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+          <input type="checkbox" id="upIsOriginal" style="width: 20px; height: 20px;">
+          <label style="margin: 0; text-transform: none; font-size: 0.85rem;">I am the creator</label>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:12px;">
+          <button type="button" class="tab-btn" style="flex:1; background:rgba(255,255,255,0.05);"
+            onclick="closeModal()">Cancel</button>
+          <button type="submit" class="tab-btn active" style="flex:1;">Post to Community</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Comments Modal -->
+  <div id="commentsModal" class="modal">
+    <div class="modal-content" style="max-height:80vh; display:flex; flex-direction:column;">
+      <h2 style="margin-bottom:16px;">Comments</h2>
+      <div id="commentsList"
+        style="flex:1; overflow-y:auto; margin-bottom:16px; display:flex; flex-direction:column; gap:12px; padding-right:8px;">
+        <!-- Comments load here -->
+      </div>
+      <form id="commentForm" style="display:flex; gap:12px;">
+        <input type="text" id="commentInput" placeholder="Write a comment..."
+          style="flex:1; padding:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white;"
+          required>
+        <button type="submit" class="tab-btn active" style="padding:12px;">Post</button>
+      </form>
+      <button onclick="closeComments()" class="tab-btn"
+        style="margin-top:16px; width:100%; background:rgba(255,255,255,0.05);">Close</button>
+    </div>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { app } from "./assets/js/firebase.js";
 
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const resourcesContainer = document.getElementById("resourcesContainer");
+    const resourcesContainer = document.getElementById("itemsGrid");
+    const categoryBar = document.getElementById("categoryBar");
     const userPhoto = document.getElementById("userPhoto");
     const userName = document.getElementById("userName");
+    let currentTab = "course";
+    let currentCategory = "all";
+    let currentUserData = null;
 
     const selectedCourseId = localStorage.getItem("selectedCourseId");
     const selectedContentId = localStorage.getItem("selectedContentId");
@@ -358,6 +673,7 @@
       if (!snap.exists()) { window.location.href = "register.html"; return; }
 
       const data = snap.data();
+      currentUserData = { uid: user.uid, ...data };
       document.getElementById("userName").textContent = `${data.name} (${data.registrationNumber})`;
       userPhoto.src = user.photoURL || "assets/img/default.png";
 
@@ -365,101 +681,277 @@
       loadResources();
     });
 
+    // Tab Events
+    document.getElementById("tabCourse").onclick = () => switchTab("course");
+    document.getElementById("tabCommunity").onclick = () => switchTab("community");
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById("tabCourse").classList.toggle("active", tab === "course");
+      document.getElementById("tabCommunity").classList.toggle("active", tab === "community");
+      document.getElementById("addCommunityBtn").style.display = tab === "community" ? "flex" : "none";
+      categoryBar.style.display = tab === "community" ? "flex" : "none";
+      loadResources();
+    }
+
+    // Category Events
+    document.querySelectorAll(".cat-pill").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        currentCategory = btn.dataset.type;
+        loadResources();
+      };
+    });
+
     async function loadResources() {
-      const resourcesRef = collection(db, "courses", selectedCourseId, "content", selectedContentId, "resources");
-      const resourcesSnap = await getDocs(resourcesRef);
+      resourcesContainer.innerHTML = "<p style='opacity:0.7;'>Loading...</p>";
+      document.getElementById("pinnedSection").style.display = "none";
+      const pinnedContainer = document.getElementById("pinnedContainer");
+      pinnedContainer.innerHTML = "";
 
-      resourcesContainer.innerHTML = "";
-      if (resourcesSnap.empty) {
-        resourcesContainer.innerHTML = "<p style='opacity:0.7;'>No resources found.</p>";
-        return;
-      }
+      if (currentTab === "course") {
+        const resourcesRef = collection(db, "courses", selectedCourseId, "content", selectedContentId, "resources");
+        const snap = await getDocs(resourcesRef);
 
-      // Collect all items
-      const items = resourcesSnap.docs.map(docItem => ({
-        id: docItem.id,
-        title: docItem.data().title || docItem.id,
-        type: docItem.data().type || "link",
-        link: docItem.data().link || ""
-      }));
+        const allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const pinnedItems = allItems.filter(i => i.isPinned);
+        const regularItems = allItems.filter(i => !i.isPinned);
 
-      // Sort: numbers first, then alphabetically
-      items.sort((a, b) => {
-        const numA = parseInt(a.title);
-        const numB = parseInt(b.title);
-        const isNumA = !isNaN(numA);
-        const isNumB = !isNaN(numB);
-        if (isNumA && isNumB) return numA - numB;
-        if (isNumA && !isNumB) return -1;
-        if (!isNumA && isNumB) return 1;
-        return a.title.localeCompare(b.title);
-      });
+        // Sort regular items
+        regularItems.sort((a, b) => {
+          const numA = parseInt(a.title); const numB = parseInt(b.title);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return (a.title || '').localeCompare(b.title || '');
+        });
 
-      // Render cards
-      for (const r of items) {
-        const card = document.createElement("div");
-        card.className = "resource-card";
-
-        let thumbUrl = "assets/img/default-thumbnail.png";
-        let videoIdEncoded = null;
-
-        // Thumbnail logic
-        if (r.type.toLowerCase() === "video") {
-          const ytMatch = r.link.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/);
-          if (ytMatch) {
-            videoIdEncoded = encodeId(ytMatch[1]);
-            const ytThumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
-            thumbUrl = await fetchImage(ytThumbUrl);
-          }
-        } else if (r.type.toLowerCase() === "link") {
-          try {
-            const url = new URL(r.link);
-            thumbUrl = await fetchImage(`https://www.google.com/s2/favicons?sz=64&domain=${url.hostname}`);
-          } catch { }
+        if (pinnedItems.length > 0) {
+          document.getElementById("pinnedSection").style.display = "block";
+          for (const item of pinnedItems) pinnedContainer.appendChild(await renderCard(item));
         }
 
-        card.innerHTML = `
+        resourcesContainer.innerHTML = "";
+        if (regularItems.length === 0 && pinnedItems.length === 0) {
+          resourcesContainer.innerHTML = "<p style='opacity:0.7;'>No resources found.</p>";
+        } else {
+          for (const item of regularItems) resourcesContainer.appendChild(await renderCard(item));
+        }
+      } else {
+        // Community Hub
+        const commRef = collection(db, "community_resources");
+        const snap = await getDocs(commRef);
+
+        const items = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+          likes: d.data().likes || [],
+          dislikes: d.data().dislikes || [],
+          commentCount: d.data().commentCount || 0
+        }));
+
+        // Ranking Logic: (Likes - Dislikes) + (Comments * 2)
+        items.sort((a, b) => {
+          const scoreA = (a.likes.length - a.dislikes.length) + (a.commentCount * 2);
+          const scoreB = (b.likes.length - b.dislikes.length) + (b.commentCount * 2);
+          return scoreB - scoreA;
+        });
+
+        // Filter by Category
+        const filteredItems = currentCategory === "all"
+          ? items
+          : items.filter(i => i.type?.toLowerCase() === currentCategory);
+
+        resourcesContainer.innerHTML = "";
+        if (filteredItems.length === 0) {
+          resourcesContainer.innerHTML = `<p style='opacity:0.7;'>No ${currentCategory === 'all' ? '' : currentCategory} resources found.</p>`;
+        } else {
+          for (const item of filteredItems) resourcesContainer.appendChild(await renderCard(item, true));
+        }
+      }
+    }
+
+    async function renderCard(r, isCommunity = false) {
+      const card = document.createElement("div");
+      card.className = "resource-card";
+
+      let thumbUrl = "assets/img/default-thumbnail.png";
+      let videoIdEncoded = null;
+
+      if (r.type?.toLowerCase() === "video") {
+        const ytMatch = r.link.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/);
+        if (ytMatch) {
+          videoIdEncoded = encodeId(ytMatch[1]);
+          thumbUrl = await fetchImage(`https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`);
+        }
+      } else if (r.type?.toLowerCase() === "github") {
+        thumbUrl = await fetchImage("https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png");
+      } else if (r.type?.toLowerCase() === "link") {
+        try { thumbUrl = await fetchImage(`https://www.google.com/s2/favicons?sz=64&domain=${new URL(r.link).hostname}`); } catch { }
+      }
+
+      const isLiked = isCommunity && r.likes.includes(currentUserData.uid);
+      const isDisliked = isCommunity && r.dislikes.includes(currentUserData.uid);
+
+      card.innerHTML = `
           <div class="card-info">
-            <span class="type-badge">${r.type}</span>
+            <div style="display:flex; align-items:center;">
+              <span class="type-badge">${r.type}</span>
+              ${r.isOriginal ? '<span class="original-badge">Original Creation</span>' : ''}
+              ${r.isPinned && !isCommunity ? '<span class="original-badge" style="background:rgba(245,158,11,0.1); color:#f59e0b; border-color:rgba(245,158,11,0.2);">Pinned</span>' : ''}
+            </div>
             <h3>${r.title}</h3>
+            <div class="owner-info">
+              <span>Creator Reg: <b>${r.ownerReg || 'Not specified'}</b></span>
+              <span>Uploaded By: <b>${r.uploadedBy || 'Admin'}</b></span>
+            </div>
+            ${isCommunity ? `
+            <div class="interaction-bar">
+                <button class="interaction-btn ${isLiked ? 'active like' : ''}" onclick="event.stopPropagation(); handleReaction('${r.id}', 'like')">
+                    <svg width="16" height="16" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                    ${r.likes.length}
+                </button>
+                <button class="interaction-btn ${isDisliked ? 'active dislike' : ''}" onclick="event.stopPropagation(); handleReaction('${r.id}', 'dislike')">
+                    <svg width="16" height="16" fill="${isDisliked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                    ${r.dislikes.length}
+                </button>
+                <button class="interaction-btn" onclick="event.stopPropagation(); openComments('${r.id}')">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    ${r.commentCount}
+                </button>
+            </div>
+            ` : ''}
           </div>
           <button class="open-btn">Open Resource</button>
           <div class="card-thumb" style="background:url('${thumbUrl}') center/cover no-repeat;"></div>
         `;
 
-        // Animate thumbnail
-        const thumbDiv = card.querySelector('.card-thumb');
-        setTimeout(() => thumbDiv.classList.add('show'), 100);
+      const thumbDiv = card.querySelector('.card-thumb');
+      setTimeout(() => thumbDiv.classList.add('show'), 100);
 
-        // Open button
-        card.querySelector(".open-btn").addEventListener("click", () => {
-          if (!r.link) return;
+      card.querySelector(".open-btn").onclick = () => {
+        if (!r.link) return;
+        const type = r.type.toLowerCase();
+        if (type === "video" && videoIdEncoded) {
+          localStorage.setItem("videoLink", `https://www.youtube.com/watch?v=${decodeId(videoIdEncoded)}`);
+          window.location.href = "player.html";
+        } else if (type === "pdf") {
+          const m = r.link.match(/\/file\/d\/([a-zA-Z0-9_-]+)\/|[?&]id=([a-zA-Z0-9_-]+)/);
+          const fileId = m ? (m[1] || m[2]) : null;
+          if (fileId) window.location.href = `reader.html?id=${fileId}`;
+          else alert("Invalid PDF link!");
+        } else window.open(r.link, "_blank");
+      };
 
-          const type = r.type.toLowerCase();
-          if (type === "video" && videoIdEncoded) {
-            const videoId = decodeId(videoIdEncoded);
-            localStorage.setItem("videoLink", `https://www.youtube.com/watch?v=${videoId}`);
-            window.location.href = "player.html";
-            return;
-          }
-
-          if (type === "pdf") {
-            let fileId = null;
-            const m1 = r.link.match(/\/file\/d\/([a-zA-Z0-9_-]+)\//);
-            const m2 = r.link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (m1) fileId = m1[1];
-            if (m2) fileId = m2[1];
-            if (!fileId) { alert("Invalid PDF link format!"); return; }
-            window.location.href = `reader.html?id=${fileId}`;
-            return;
-          }
-
-          window.open(r.link, "_blank");
-        });
-
-        resourcesContainer.appendChild(card);
-      }
+      return card;
     }
+
+    const uploadModal = document.getElementById("uploadModal");
+    const upIsOriginal = document.getElementById("upIsOriginal");
+    const upOwnerReg = document.getElementById("upOwnerReg");
+
+    document.getElementById("addCommunityBtn").onclick = () => {
+      uploadModal.classList.add("active");
+      upIsOriginal.checked = false;
+      upOwnerReg.disabled = false;
+      upOwnerReg.value = "";
+    };
+
+    upIsOriginal.onchange = () => {
+      if (upIsOriginal.checked) {
+        upOwnerReg.value = currentUserData.registrationNumber;
+        upOwnerReg.disabled = true;
+      } else {
+        upOwnerReg.value = "";
+        upOwnerReg.disabled = false;
+      }
+    };
+
+    window.closeModal = () => uploadModal.classList.remove("active");
+
+    document.getElementById("uploadForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = "Sharing...";
+
+      try {
+        await addDoc(collection(db, "community_resources"), {
+          title: document.getElementById("upTitle").value,
+          type: document.getElementById("upType").value,
+          link: document.getElementById("upLink").value,
+          ownerReg: document.getElementById("upOwnerReg").value,
+          isOriginal: document.getElementById("upIsOriginal").checked,
+          uploadedBy: currentUserData.registrationNumber,
+          uploadedAt: serverTimestamp(),
+          likes: [],
+          dislikes: [],
+          commentCount: 0
+        });
+        e.target.reset(); closeModal(); loadResources();
+      } catch (err) { alert("Upload failed: " + err.message); }
+      finally { btn.disabled = false; btn.textContent = "Post to Community"; }
+    };
+
+    // Interaction Handlers
+    window.handleReaction = async (resId, reaction) => {
+      const ref = doc(db, "community_resources", resId);
+      const snap = await getDoc(ref);
+      const data = snap.data();
+      const uid = currentUserData.uid;
+
+      if (reaction === 'like') {
+        if (data.likes?.includes(uid)) await updateDoc(ref, { likes: arrayRemove(uid) });
+        else await updateDoc(ref, { likes: arrayUnion(uid), dislikes: arrayRemove(uid) });
+      } else {
+        if (data.dislikes?.includes(uid)) await updateDoc(ref, { dislikes: arrayRemove(uid) });
+        else await updateDoc(ref, { dislikes: arrayUnion(uid), likes: arrayRemove(uid) });
+      }
+      loadResources();
+    };
+
+    const commModal = document.getElementById("commentsModal");
+    const commList = document.getElementById("commentsList");
+    let activeCommResId = null;
+
+    window.openComments = async (resId) => {
+      activeCommResId = resId;
+      commModal.classList.add("active");
+      loadComments();
+    };
+
+    async function loadComments() {
+      commList.innerHTML = "<p>Loading...</p>";
+      const q = query(collection(db, "community_resources", activeCommResId, "comments"), orderBy("at", "desc"));
+      const snap = await getDocs(q);
+      commList.innerHTML = "";
+      if (snap.empty) commList.innerHTML = "<p style='color:var(--text-muted);'>No comments yet.</p>";
+      snap.forEach(d => {
+        const data = d.data();
+        const div = document.createElement("div");
+        div.style.cssText = "padding:12px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid var(--glass-border);";
+        div.innerHTML = `<div style="font-size:0.7rem; color:var(--accent-primary); font-weight:700; margin-bottom:4px;">${data.by}</div>
+                             <div style="font-size:0.85rem;">${data.txt}</div>`;
+        commList.appendChild(div);
+      });
+    }
+
+    document.getElementById("commentForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const txt = document.getElementById("commentInput").value;
+      const ref = doc(db, "community_resources", activeCommResId);
+
+      await addDoc(collection(ref, "comments"), {
+        txt, by: currentUserData.registrationNumber, at: serverTimestamp()
+      });
+      const snap = await getDoc(ref);
+      await updateDoc(ref, { commentCount: (snap.data().commentCount || 0) + 1 });
+
+      document.getElementById("commentInput").value = "";
+      loadComments();
+      // Update interaction counts in UI without full reload if possible, but for simplicity:
+      // loadResources(); // Only reload if necessary to show new count on card
+    };
+
+    window.closeComments = () => { commModal.classList.remove("active"); loadResources(); };
 
     // Logout
     document.getElementById("logoutBtn").addEventListener("click", () => {
