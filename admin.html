@@ -508,6 +508,15 @@
       font-weight: 600;
     }
 
+    .btn-edit {
+      color: var(--accent-primary);
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 12px;
+    }
+
     .btn-ban {
       color: #f59e0b;
       border: none;
@@ -1213,6 +1222,28 @@
         </div>
       </div>
     </div>
+    <!-- Edit Course Modal -->
+    <div id="editCourseModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Course Name</h2>
+        </div>
+        <div class="form-group" style="margin-top:20px;">
+          <label style="font-size: 0.875rem; font-weight: 700;">Course ID</label>
+          <input type="text" id="editCourseId" disabled
+            style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.1); color:var(--text-muted);">
+        </div>
+        <div class="form-group" style="margin-top:20px;">
+          <label style="font-size: 0.875rem; font-weight: 700;">Course Name</label>
+          <input type="text" id="editCourseNameInput"
+            style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+        </div>
+        <div class="modal-actions" style="margin-top:25px;">
+          <button class="cancel-btn" onclick="closeCourseEditModal()">Cancel</button>
+          <button class="action-btn" id="saveCourseNameBtn">Save Changes</button>
+        </div>
+      </div>
+    </div>
     </div>
   </main>
 
@@ -1458,11 +1489,50 @@
 
         const row = document.createElement("tr");
         row.className = "clickable-row";
-        row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td>${d.id[2]}</td><td>${d.id[3]}</td><td><button class="btn-delete" onclick="deleteCourse(event, '${d.id}')">Delete</button></td>`;
+        row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td>${d.id[2]}</td><td>${d.id[3]}</td><td><button class="btn-edit" onclick="editCourseName(event, '${d.id}', '${data.name.replace(/'/g, "\\'")}')">Edit</button><button class="btn-delete" onclick="deleteCourse(event, '${d.id}')">Delete</button></td>`;
         row.onclick = () => window.location.href = `course-editor.html?id=${d.id}`;
         body.appendChild(row);
       });
     }
+
+    let activeEditCourseId = null;
+
+    window.editCourseName = (event, id, currentName) => {
+      event.stopPropagation();
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageCourses) {
+        alert("Permission denied."); return;
+      }
+      activeEditCourseId = id;
+      document.getElementById("editCourseId").value = id;
+      document.getElementById("editCourseNameInput").value = currentName;
+      document.getElementById("editCourseModal").classList.add("active");
+    };
+
+    window.closeCourseEditModal = () => {
+      document.getElementById("editCourseModal").classList.remove("active");
+      activeEditCourseId = null;
+    };
+
+    document.getElementById("saveCourseNameBtn").onclick = async () => {
+      if (!activeEditCourseId) return;
+      const newName = document.getElementById("editCourseNameInput").value;
+      if (!newName) return;
+
+      const btn = document.getElementById("saveCourseNameBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        await updateDoc(doc(db, "courses", activeEditCourseId), { name: newName });
+        closeCourseEditModal();
+        loadCourses();
+      } catch (err) {
+        alert("Failed to update course name: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save Changes";
+      }
+    };
 
     document.getElementById("courseForm").onsubmit = async (e) => {
       e.preventDefault();

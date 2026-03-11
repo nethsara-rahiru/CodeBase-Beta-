@@ -162,9 +162,31 @@
         }
 
         .team-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 64px;
+            width: 100%;
+        }
+
+        .role-row {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 32px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .role-title-heading {
+            width: 100%;
+            text-align: left;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            grid-column: 1 / -1;
         }
 
         .team-card {
@@ -177,6 +199,27 @@
             animation: fadeInUp 0.8s backwards;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .team-card.owner-card {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            border-color: rgba(245, 158, 11, 0.5);
+            background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.1), transparent);
+        }
+
+        .team-card.owner-card .admin-photo {
+            width: 180px;
+            height: 180px;
+            border-color: #f59e0b;
+        }
+
+        .team-card.owner-card .admin-name {
+            font-size: 2rem;
         }
 
         .team-card:hover {
@@ -400,40 +443,75 @@
 
                 const staff = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                // Custom sort: owner first, then admin, then editor
-                staff.sort((a, b) => {
-                    const priority = { owner: 1, admin: 2, editor: 3 };
-                    return (priority[a.role] || 9) - (priority[b.role] || 9);
-                });
+                // Categorize
+                const categories = {
+                    owner: staff.filter(m => m.role === "owner"),
+                    manager: staff.filter(m => m.role === "admin"),
+                    coordinator: staff.filter(m => m.role === "editor")
+                };
 
-                staff.forEach((member, index) => {
+                const systemRoleLabels = {
+                    owner: "Owner",
+                    admin: "Manager",
+                    editor: "Coordinator"
+                };
+
+                teamGrid.innerHTML = "";
+
+                // Render Owner(s)
+                if (categories.owner.length > 0) {
+                    const row = createRow("");
+                    categories.owner.forEach(m => row.appendChild(createCard(m, true)));
+                    teamGrid.appendChild(row);
+                }
+
+                // Render Managers
+                if (categories.manager.length > 0) {
+                    const row = createRow("Management Team");
+                    categories.manager.forEach(m => row.appendChild(createCard(m)));
+                    teamGrid.appendChild(row);
+                }
+
+                // Render Coordinators
+                if (categories.coordinator.length > 0) {
+                    const row = createRow("Coordinators");
+                    categories.coordinator.forEach(m => row.appendChild(createCard(m)));
+                    teamGrid.appendChild(row);
+                }
+
+                function createRow(title) {
+                    const row = document.createElement("div");
+                    row.className = "role-row";
+                    if (title) {
+                        const heading = document.createElement("div");
+                        heading.className = "role-title-heading";
+                        heading.textContent = title;
+                        row.appendChild(heading);
+                    }
+                    return row;
+                }
+
+                function createCard(member, isBig = false) {
                     const card = document.createElement("div");
-                    card.className = "team-card";
-                    card.style.animationDelay = `${index * 0.1}s`;
+                    card.className = `team-card ${isBig ? 'owner-card' : ''}`;
 
                     const photoUrl = member.photoURL || member.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=4f46e5&color=fff`;
                     const roleClass = `role-${member.role.toLowerCase()}`;
-
-                    const systemRoleLabels = {
-                        owner: "Owner",
-                        admin: "Manager",
-                        editor: "Coordinator"
-                    };
 
                     const customRoleName = rolesMap[member.customRoleId];
                     const fallbackTitle = systemRoleLabels[member.role] || member.role.charAt(0).toUpperCase() + member.role.slice(1);
                     const roleTitle = customRoleName || member.customRoleId || fallbackTitle;
 
                     card.innerHTML = `
-            <div class="admin-photo">
-              <img src="${photoUrl}" alt="${member.name}">
-            </div>
-            <div class="admin-name">${member.name}</div>
-            <div class="admin-role ${roleClass}">${roleTitle}</div>
-            <div class="admin-bio">${member.bio || "Dedicated to building a better learning experience for all CodeBase students."}</div>
-          `;
-                    teamGrid.appendChild(card);
-                });
+                        <div class="admin-photo">
+                          <img src="${photoUrl}" alt="${member.name}">
+                        </div>
+                        <div class="admin-name">${member.name}</div>
+                        <div class="admin-role ${roleClass}">${roleTitle}</div>
+                        <div class="admin-bio">${member.bio || "Dedicated to building a better learning experience for all CodeBase students."}</div>
+                    `;
+                    return card;
+                }
 
             } catch (err) {
                 console.error("Error loading team:", err);
