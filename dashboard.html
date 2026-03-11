@@ -621,6 +621,74 @@
       padding: 24px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: fadeInUp 0.5s ease backwards;
+    }
+
+    .course-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .stat-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+      animation: scaleIn 0.5s ease backwards;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent-secondary);
+      box-shadow: 0 10px 20px -5px rgba(129, 140, 248, 0.2);
+    }
+
+    .org-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.3s ease;
+      animation: fadeInUp 0.5s ease backwards;
+    }
+
+    .org-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
     /* Tab Controller Animations */
@@ -913,38 +981,115 @@
     let currentUser = null;
     let selectedFile = null;
 
+    // FAST LOAD USING LOCALSTORAGE
+    let cachedUser = localStorage.getItem("userData");
+    if (cachedUser) {
+      try {
+        const data = JSON.parse(cachedUser);
+        const photo = data.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
+        document.getElementById("userPhoto").src = photo;
+        document.getElementById("userName").textContent = data.name;
+        document.getElementById("userRegNo").textContent = data.registrationNumber;
+        document.getElementById("userPoints").textContent = data.points || 0;
+        const hour = new Date().getHours();
+        document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
+      } catch (e) { }
+    }
+
+    let cachedCourses = localStorage.getItem("dashboard_courses");
+    if (cachedCourses) {
+      try {
+        const parsed = JSON.parse(cachedCourses);
+        // Fake snap for renderCourses
+        const fakeSnap = { docs: parsed.map(d => ({ id: d.id, data: () => d.data })) };
+        // We need level/semester from userData if possible, or just wait for auth
+      } catch (e) { }
+    }
+
+    let coursesPromise = getDocs(collection(db, "courses"));
+    let dynamicContentPromise = loadDynamicContent();
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "index.html"; return; }
       currentUser = user;
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists()) return;
 
-      const data = snap.data();
-      const photo = data.photoUrl || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
+      try {
+        // Parallelize User Doc and already started Course List
+        const [userSnap, coursesSnap] = await Promise.all([
+          getDoc(doc(db, "users", user.uid)),
+          coursesPromise
+        ]);
 
-      document.getElementById("userPhoto").src = photo;
-      document.getElementById("formPicPreview").src = photo;
-      document.getElementById("userName").textContent = data.name;
-      document.getElementById("userEmail").textContent = user.email;
-      document.getElementById("userRegNo").textContent = data.registrationNumber;
+        if (!userSnap.exists()) return;
+        const data = userSnap.data();
 
-      if (["owner", "admin", "editor"].includes(data.role)) {
-        document.getElementById("navAdmin").style.display = "flex";
+        const photo = data.photoUrl || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
+
+        document.getElementById("userPhoto").src = photo;
+        document.getElementById("formPicPreview").src = photo;
+        document.getElementById("userName").textContent = data.name;
+        document.getElementById("userEmail").textContent = user.email;
+        document.getElementById("userRegNo").textContent = data.registrationNumber;
+
+        if (["owner", "admin", "editor"].includes(data.role)) {
+          document.getElementById("navAdmin").style.display = "flex";
+        }
+
+        const hour = new Date().getHours();
+        document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
+
+        document.getElementById("userPoints").textContent = data.points || 0;
+        document.getElementById("editName").value = data.name;
+        document.getElementById("editLevel").value = data.level;
+        document.getElementById("editSemester").value = data.semester;
+        document.getElementById("editBio").value = data.bio || "";
+
+        // Cache user info
+        localStorage.setItem("userData", JSON.stringify({
+          name: data.name,
+          registrationNumber: data.registrationNumber,
+          photoURL: photo,
+          points: data.points,
+          level: data.level,
+          semester: data.semester
+        }));
+
+        // Now render based on fresh data
+        renderCourses(coursesSnap, data.level, data.semester);
+
+        // Cache courses
+        const toCache = coursesSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+        localStorage.setItem("dashboard_courses", JSON.stringify(toCache));
+
+        await dynamicContentPromise;
+        initOrgStatus();
+      } catch (err) {
+        console.error("Dashboard initialization failed:", err);
       }
-
-      const hour = new Date().getHours();
-      document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
-
-      document.getElementById("userPoints").textContent = data.points || 0;
-      document.getElementById("editName").value = data.name;
-      document.getElementById("editLevel").value = data.level;
-      document.getElementById("editSemester").value = data.semester;
-      document.getElementById("editBio").value = data.bio || "";
-
-      loadCourses(data.level, data.semester);
-      loadDynamicContent();
-      initOrgStatus();
     });
+
+    async function renderCourses(snap, level, semester) {
+      const container = document.getElementById("courseContainer");
+      container.innerHTML = ""; let count = 0; let cardIdx = 0;
+      for (const d of snap.docs) {
+        if (d.id[2] == level && d.id[3] == semester) {
+          count++;
+
+          const card = document.createElement("div");
+          card.className = "course-card";
+          card.style.animationDelay = `${cardIdx * 0.05}s`;
+          cardIdx++;
+          card.innerHTML = `
+            <h4 style="margin:0;">${d.data().name}</h4>
+            <p style="margin:10px 0 0; font-size:0.8rem; color:var(--text-muted);">${d.id}</p>
+          `;
+          card.onclick = () => { localStorage.setItem("selectedCourseId", d.id); window.location.href = "content.html"; };
+          container.appendChild(card);
+        }
+      }
+      document.getElementById("courseCountDisplay").textContent = `${count} Courses`;
+      document.getElementById("statCourses").textContent = count;
+    }
 
     async function loadDynamicContent() {
       // Fetch Slideshow
@@ -969,10 +1114,11 @@
       const orgSnap = await getDocs(collection(db, "organizations"));
       const orgHost = document.getElementById("orgGrid");
       orgHost.innerHTML = "";
-      orgSnap.forEach(d => {
+      orgSnap.forEach((d, i) => {
         const data = d.data();
         const card = document.createElement("div");
         card.className = "org-card";
+        card.style.animationDelay = `${i * 0.05}s`;
         card.dataset.org = d.id;
         card.style.cursor = "pointer";
         card.onclick = (e) => {
@@ -1098,22 +1244,7 @@
       setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
-    async function loadCourses(level, semester) {
-      const snap = await getDocs(collection(db, "courses"));
-      const container = document.getElementById("courseContainer");
-      container.innerHTML = ""; let count = 0;
-      snap.forEach(d => {
-        if (d.id[2] == level && d.id[3] == semester) {
-          count++;
-          const card = document.createElement("div"); card.className = "course-card";
-          card.innerHTML = `<h4>${d.data().name}</h4><p>${d.id}</p>`;
-          card.onclick = () => { localStorage.setItem("selectedCourseId", d.id); window.location.href = "content.html"; };
-          container.appendChild(card);
-        }
-      });
-      document.getElementById("courseCountDisplay").textContent = `${count} Courses`;
-      document.getElementById("statCourses").textContent = count;
-    }
+
 
     function renderJoinedOrgs() {
       const joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");

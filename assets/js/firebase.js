@@ -34,6 +34,18 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+// Enable offline persistence
+import { enableMultiTabIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+enableMultiTabIndexedDbPersistence(db).catch((err) => {
+  if (err.code == 'failed-precondition') {
+    // Multiple tabs open, persistence can only be enabled in one tab at a a time.
+    console.warn("Persistence failed: multiple tabs open");
+  } else if (err.code == 'unimplemented') {
+    // The current browser does not support all of the features required to enable persistence
+    console.warn("Persistence not supported by browser");
+  }
+});
+
 const ALLOWED_DOMAINS = ["@std.uwu.ac.lk", "@stu.vau.ac.lk"];
 
 // ------------------------------------------------------------------------------------------

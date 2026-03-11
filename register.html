@@ -1,131 +1,211 @@
 <!----register.html-->>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register - CodeBase</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <style>
+    :root {
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at top right, #1e293b, #0f172a);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      color: #fff;
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.06);
-      padding: 30px;
-      border-radius: 16px;
-      width: 340px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      padding: 48px 32px;
+      border-radius: 32px;
+      width: 90%;
+      max-width: 400px;
       text-align: center;
-      backdrop-filter: blur(10px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      font-weight: 500;
     }
 
     .email-card {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
       padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 50px;
-      font-size: 15px;
-      word-break: break-all;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 0.875rem;
+      border: 1px solid var(--glass-border);
+      color: var(--accent-primary);
+      font-weight: 700;
+      animation: fadeInUp 0.5s 0.2s backwards;
     }
 
     .input-group {
       position: relative;
-      margin: 20px 0;
+      margin-bottom: 20px;
       width: 100%;
+      animation: fadeInUp 0.5s backwards;
     }
 
-    .input-group input {
-      width: 316px;
-      padding: 14px 10px;
-      font-size: 16px;
-      border: 2px solid #888;
+    .input-group:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    .input-group:nth-child(5) {
+      animation-delay: 0.35s;
+    }
+
+    .input-group:nth-child(6) {
+      animation-delay: 0.4s;
+    }
+
+    .input-group:nth-child(7) {
+      animation-delay: 0.45s;
+    }
+
+    .input-group input,
+    #level {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 1rem;
+      border: 1px solid var(--glass-border);
       outline: none;
-      border-radius: 10px;
-      transition: 0.3s ease;
-      background: #f8f8f8;
-      color: #000;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: rgba(0, 0, 0, 0.2);
+      color: white;
     }
 
-    .input-group input:focus {
-      border-color: #2979ff;
-      background: #fff;
-      box-shadow: 0 0 8px rgba(41, 121, 255, 0.4);
+    .input-group input:focus,
+    #level:focus {
+      border-color: var(--accent-primary);
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
     }
 
     .label {
       position: absolute;
       top: 14px;
-      left: 12px;
-      color: #666;
+      left: 16px;
+      color: var(--text-muted);
       pointer-events: none;
-      font-size: 15px;
+      font-size: 0.9375rem;
       transition: 0.3s ease;
       background: transparent;
-      padding: 0 6px;
     }
 
-    .input-group input:focus + label,
-    .input-group input:not(:placeholder-shown) + label {
-      top: -15px;
-      font-size: 13px;
-      color: #ffffff;
-    }
-
-    #level {
-      width: 316px;
-      padding: 14px 10px;
-      font-size: 16px;
-      border: 2px solid #888;
-      outline: none;
-      border-radius: 10px;
-      transition: 0.3s ease;
-      background: #f8f8f8;
-      color: #000;
+    .input-group input:focus+label,
+    .input-group input:not(:placeholder-shown)+label {
+      top: -10px;
+      left: 12px;
+      font-size: 0.75rem;
+      color: var(--accent-primary);
+      background: #1e293b;
+      padding: 0 4px;
+      border-radius: 4px;
     }
 
     .sLabel {
-      top: -15px;
-      left: 20px;
-      font-size: 13px;
-      color: #ffffff;
+      top: -10px;
+      left: 12px;
+      font-size: 0.75rem;
+      color: var(--accent-primary);
       position: absolute;
+      background: #1e293b;
+      padding: 0 4px;
+      border-radius: 4px;
+      z-index: 5;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      padding: 16px;
       border: none;
-      border-radius: 50px;
-      background: #fff;
-      color: #222;
-      font-weight: bold;
+      border-radius: 16px;
+      background: var(--accent-primary);
+      color: white;
+      font-weight: 800;
       cursor: pointer;
-      margin-top: 15px;
-      transition: 0.2s;
+      margin-top: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      animation: fadeInUp 0.5s 0.6s backwards;
     }
 
     button:hover {
-      background: #e9e9e9;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+      background: #4f46e5;
     }
 
-    @media (max-width: 600px) {
+    button:active {
+      transform: translateY(0);
     }
   </style>
 </head>
 
 <body>
-
   <div class="card">
-
     <h2>Register</h2>
     <p>Verify your details</p>
 
@@ -146,7 +226,7 @@
 
     <!-- Year -->
     <div class="input-group">
-      <label class="sLabel">Acadamic Year</label>
+      <label class="sLabel">Academic Year</label>
       <select id="level" required>
         <option value="1">1st Year</option>
         <option value="2">2nd Year</option>
@@ -164,11 +244,9 @@
     <button onclick="submitRegistration()">
       Complete Registration
     </button>
-
   </div>
 
   <script type="module" src="assets/js/firebase.js"></script>
-
   <script>
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -181,16 +259,12 @@
     document.getElementById("name").value = user.name;
 
     // Extract registration number from email BEFORE the '@'
-    const emailPrefix = user.email.split("@")[0];  // 2022ict62
+    const emailPrefix = user.email.split("@")[0];
 
     // Convert to formatted REG NO → 2022/ICT/62
     function formatRegNo(raw) {
       raw = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
-
-      // Extract first 4 digits → YEAR
       const year = raw.substring(0, 4);
-
-      // After year, find first number → split dept & number
       let dept = "";
       let num = "";
 
@@ -202,15 +276,11 @@
         }
       }
 
-      // If still no number found, assume all letters are dept
-      if (dept === "") {
-        dept = raw.substring(4);
-      }
+      if (dept === "") dept = raw.substring(4);
 
       let result = year;
-
       if (dept) result += "/" + dept;
-      if (num) result += "/" + num;  // add only if number exists
+      if (num) result += "/" + num;
 
       return result;
     }
@@ -219,29 +289,21 @@
     let autoReg;
 
     if (allowedUserDetails && allowedUserDetails.regNo) {
-      autoReg = allowedUserDetails.regNo; // Use saved regNo
+      autoReg = allowedUserDetails.regNo;
     } else {
-      autoReg = formatRegNo(emailPrefix); // Fallback
+      autoReg = formatRegNo(emailPrefix);
     }
 
     document.getElementById("regno").value = autoReg;
 
-    // Auto-format on input
     document.getElementById("regno").addEventListener("input", function () {
       this.value = formatRegNo(this.value);
     });
 
-    // Phone validation
     function validatePhone(phone) {
       return /^07[0-9]{8}$/.test(phone);
     }
 
-    // Registration Number validation
-    function validateRegNo() {
-      return autoReg === document.getElementById("regno").value;
-    }
-
-    // Final submission
     function submitRegistration() {
       const reg = document.getElementById("regno").value.trim();
       const phone = document.getElementById("phone").value.trim();
@@ -252,14 +314,9 @@
         return;
       }
 
-      //if (!validateRegNo()) {
-      //  alert("Registration Number does not belogs to the Email");
-      //  return;
-      //}
-
       registerUser(reg, phone, level);
     }
   </script>
-
 </body>
+
 </html>

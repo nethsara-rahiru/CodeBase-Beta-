@@ -178,11 +178,25 @@
       gap: 12px;
       font-weight: 600;
       transition: all 0.2s;
+      animation: slideIn 0.4s ease backwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     .nav-item:hover {
       background: rgba(255, 255, 255, 0.05);
       color: var(--text-main);
+      transform: translateX(4px);
     }
 
     .nav-item.active {
@@ -294,15 +308,27 @@
       display: flex;
     }
 
-    @keyframes fadeIn {
+    @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
       }
 
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
       }
     }
 
@@ -318,6 +344,14 @@
       border-radius: 20px;
       padding: 32px;
       text-align: center;
+      transition: all 0.3s ease;
+      animation: scaleIn 0.5s ease backwards;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .stat-val {
@@ -342,6 +376,13 @@
       border: 1px solid var(--glass-border);
       border-radius: 24px;
       padding: 32px;
+      transition: all 0.3s ease;
+      animation: fadeInUp 0.5s ease backwards;
+    }
+
+    .admin-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--glass-border);
     }
 
     .section-header {
@@ -1911,7 +1952,8 @@
 
     if (mobileOverlay) mobileOverlay.onclick = closeSidebar;
 
-    document.querySelectorAll('.nav-item').forEach(item => {
+    document.querySelectorAll('.nav-item').forEach((item, i) => {
+      item.style.animationDelay = `${i * 0.05}s`;
       item.addEventListener('click', () => {
         if (window.innerWidth <= 1024) closeSidebar();
       });

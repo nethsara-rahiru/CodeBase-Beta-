@@ -122,7 +122,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       overflow-y: auto;
     }
 
@@ -132,6 +132,7 @@
       border: 1px solid var(--glass-border);
       border-radius: 24px;
       padding: 24px 32px;
+      margin-bottom: 1%;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -139,6 +140,49 @@
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: default;
+      animation: fadeInUp 0.5s ease backwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+      }
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
 
     .resource-card:hover {
@@ -321,6 +365,20 @@
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
     }
 
+    .tab-count {
+      font-size: 0.7rem;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 8px;
+      margin-left: 8px;
+    }
+
+    .tab-btn:not(.active) .tab-count {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
     /* Category Filters */
     .category-bar {
       display: flex;
@@ -374,6 +432,7 @@
 
     .section-title svg {
       color: #f59e0b;
+      animation: pulse 2s infinite ease-in-out;
     }
 
     /* Interaction Bar */
@@ -515,8 +574,12 @@
 
   <main class="main-container">
     <div class="tab-header">
-      <button class="tab-btn active" id="tabCourse">Course Content</button>
-      <button class="tab-btn" id="tabCommunity">Community Hub</button>
+      <button class="tab-btn active" id="tabCourse">
+        Course Content
+      </button>
+      <button class="tab-btn" id="tabCommunity">
+        Community Hub <span id="commCount" class="tab-count">...</span>
+      </button>
     </div>
 
     <div id="pinnedSection" class="pinned-section" style="display:none;">
@@ -617,6 +680,7 @@
     let currentTab = "course";
     let currentCategory = "all";
     let currentUserData = null;
+    let cardCount = 0;
 
     const selectedCourseId = localStorage.getItem("selectedCourseId");
     const selectedContentId = localStorage.getItem("selectedContentId");
@@ -632,54 +696,103 @@
     const encodeId = id => btoa(id);
     const decodeId = encoded => atob(encoded);
 
-    // Helper: Fetch image safely
-    async function fetchImage(url) {
+    // FAST LOAD USING LOCALSTORAGE
+    let cachedUser = localStorage.getItem("userData");
+    if (cachedUser) {
       try {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        return URL.createObjectURL(blob);
-      } catch (e) {
-        console.error("Image fetch failed:", e);
-        return "assets/img/default-thumbnail.png";
-      }
+        const data = JSON.parse(cachedUser);
+        document.getElementById("userName").textContent = `${data.name} (${data.registrationNumber})`;
+        if (userPhoto) userPhoto.src = data.photoURL || "assets/img/default.png";
+      } catch (e) { }
     }
 
-    // Redirect if no selection
+    // Attempt to load from cache
+    let cacheKey = `resources_${selectedCourseId}_${selectedContentId}`;
+    let cachedResources = localStorage.getItem(cacheKey);
+    if (cachedResources) {
+      try {
+        const parsed = JSON.parse(cachedResources);
+        // Fake snap architecture for renderResources
+        const fakeResults = {
+          courseSnap: { docs: parsed.course.map(d => ({ id: d.id, data: () => d.data })) },
+          commSnap: { docs: parsed.comm.map(d => ({ id: d.id, data: () => d.data })), size: parsed.comm.length }
+        };
+        renderResources(fakeResults);
+      } catch (e) { console.warn("Cache load failed", e); }
+    }
+
+    // Initial State Check
     if (!selectedCourseId || !selectedContentId) {
-      resourcesContainer.innerHTML = "<p style='opacity:0.7;'>No content selected!</p>";
-    }
-
-    // Auth check
-    onAuthStateChanged(auth, async user => {
-      if (!user) {
-        if (localStorage.getItem("appCode") == "App") {
-          // Assign user object from localStorage
+      resourcesContainer.innerHTML = `
+        <div style="text-align:center; padding:40px; color:var(--text-muted);">
+          <p>No content selected. Please go back to the dashboard.</p>
+          <a href="dashboard.html" class="tab-btn active" style="margin-top:20px; text-decoration:none; display:inline-block;">Go to Dashboard</a>
+        </div>`;
+      console.error("Missing selection IDs:", { selectedCourseId, selectedContentId });
+    } else {
+      // Auth check
+      onAuthStateChanged(auth, async user => {
+        // Logic for mobile app fallback
+        if (!user && localStorage.getItem("appCode") === "App") {
           user = {
             uid: localStorage.getItem("uid"),
             displayName: localStorage.getItem("displayName"),
             email: localStorage.getItem("email"),
             photoURL: localStorage.getItem("photoUrl")
           };
-        } else {
-          // No Firebase user and no appCode -> redirect to login
+        }
+
+        if (!user) {
           window.location.href = "index.html";
           return;
         }
-      }
 
-      // Load user data
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
-      if (!snap.exists()) { window.location.href = "register.html"; return; }
+        try {
+          if (!localStorage.getItem(cacheKey)) {
+            resourcesContainer.innerHTML = "<p style='opacity:0.7;'>Checking permissions...</p>";
+          }
 
-      const data = snap.data();
-      currentUserData = { uid: user.uid, ...data };
-      document.getElementById("userName").textContent = `${data.name} (${data.registrationNumber})`;
-      userPhoto.src = user.photoURL || "assets/img/default.png";
+          // Parallelize User Doc and Content Fetch
+          const [userSnap, dataResults] = await Promise.all([
+            getDoc(doc(db, "users", user.uid)),
+            loadResourcesData()
+          ]);
 
-      // Load resources
-      loadResources();
-    });
+          if (!userSnap.exists()) {
+            window.location.href = "register.html";
+            return;
+          }
+
+          const data = userSnap.data();
+          currentUserData = { uid: user.uid, ...data };
+          const nameDisplay = document.getElementById("userName");
+          if (nameDisplay) nameDisplay.textContent = `${data.name} (${data.registrationNumber})`;
+          if (userPhoto) userPhoto.src = user.photoURL || "assets/img/default.png";
+
+          // Cache user info
+          localStorage.setItem("userData", JSON.stringify({
+            name: data.name,
+            registrationNumber: data.registrationNumber,
+            photoURL: user.photoURL
+          }));
+
+          // Render fresh content
+          renderResources(dataResults);
+
+          // Update Cache
+          const toCache = {
+            course: dataResults.courseSnap.docs.map(d => ({ id: d.id, data: d.data() })),
+            comm: dataResults.commSnap.docs.map(d => ({ id: d.id, data: d.data() }))
+          };
+          localStorage.setItem(cacheKey, JSON.stringify(toCache));
+        } catch (err) {
+          console.error("Initialization failed:", err);
+          if (!localStorage.getItem(cacheKey)) {
+            resourcesContainer.innerHTML = "<p style='color:var(--danger);'>Connection error. Please refresh.</p>";
+          }
+        }
+      });
+    }
 
     // Tab Events
     document.getElementById("tabCourse").onclick = () => switchTab("course");
@@ -704,17 +817,54 @@
       };
     });
 
+    async function loadResourcesData() {
+      try {
+        const resourcesRef = collection(db, "courses", selectedCourseId, "content", selectedContentId, "resources");
+        const commRef = collection(db, "community_resources");
+        const qComm = query(commRef, where("courseId", "==", selectedCourseId), where("moduleId", "==", selectedContentId));
+
+        const [courseSnap, commSnap] = await Promise.all([
+          getDocs(resourcesRef),
+          getDocs(qComm)
+        ]);
+
+        return { courseSnap, commSnap };
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        return {
+          courseSnap: { docs: [], size: 0, empty: true },
+          commSnap: { docs: [], size: 0, empty: true }
+        };
+      }
+    }
+
     async function loadResources() {
+      // For tab switches, just refetch everything (or could cache, but this is simpler for now)
       resourcesContainer.innerHTML = "<p style='opacity:0.7;'>Loading...</p>";
+      try {
+        const data = await loadResourcesData();
+        renderResources(data);
+      } catch (err) {
+        console.error("Load resources failed:", err);
+        resourcesContainer.innerHTML = "<p style='color:var(--danger);'>Error loading data.</p>";
+      }
+    }
+
+    async function renderResources(dataResults) {
+      cardCount = 0; // Reset for staggered animation
+      const { courseSnap, commSnap } = dataResults;
+
+      // Clear containers immediately
+      resourcesContainer.innerHTML = "";
       document.getElementById("pinnedSection").style.display = "none";
       const pinnedContainer = document.getElementById("pinnedContainer");
-      pinnedContainer.innerHTML = "";
+      if (pinnedContainer) pinnedContainer.innerHTML = "";
+
+      // Always update community count badge
+      document.getElementById("commCount").textContent = commSnap?.size || 0;
 
       if (currentTab === "course") {
-        const resourcesRef = collection(db, "courses", selectedCourseId, "content", selectedContentId, "resources");
-        const snap = await getDocs(resourcesRef);
-
-        const allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const allItems = courseSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const pinnedItems = allItems.filter(i => i.isPinned);
         const regularItems = allItems.filter(i => !i.isPinned);
 
@@ -738,15 +888,7 @@
         }
       } else {
         // Community Hub
-        const commRef = collection(db, "community_resources");
-        const qComm = query(
-          commRef,
-          where("courseId", "==", selectedCourseId),
-          where("moduleId", "==", selectedContentId)
-        );
-        const snap = await getDocs(qComm);
-
-        const items = snap.docs.map(d => ({
+        const items = commSnap.docs.map(d => ({
           id: d.id,
           ...d.data(),
           likes: d.data().likes || [],
@@ -778,6 +920,8 @@
     async function renderCard(r, isCommunity = false) {
       const card = document.createElement("div");
       card.className = "resource-card";
+      card.style.animationDelay = `${(cardCount % 10) * 0.05}s`;
+      cardCount++;
 
       let thumbUrl = "assets/img/default-thumbnail.png";
       let videoIdEncoded = null;
@@ -786,12 +930,12 @@
         const ytMatch = r.link.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/);
         if (ytMatch) {
           videoIdEncoded = encodeId(ytMatch[1]);
-          thumbUrl = await fetchImage(`https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`);
+          thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
         }
       } else if (r.type?.toLowerCase() === "github") {
-        thumbUrl = await fetchImage("https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png");
+        thumbUrl = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png";
       } else if (r.type?.toLowerCase() === "link") {
-        try { thumbUrl = await fetchImage(`https://www.google.com/s2/favicons?sz=64&domain=${new URL(r.link).hostname}`); } catch { }
+        try { thumbUrl = `https://www.google.com/s2/favicons?sz=128&domain=${new URL(r.link).hostname}`; } catch { }
       }
 
       const isLiked = isCommunity && r.likes.includes(currentUserData.uid);

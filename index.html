@@ -29,12 +29,24 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            background-size: 200% 200%;
+            animation: bg-shift 15s ease infinite alternate;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: var(--text-main);
             overflow: hidden;
+        }
+
+        @keyframes bg-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
         }
 
         .card {
@@ -48,7 +60,7 @@
             padding: 48px 32px;
             text-align: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes fadeIn {
@@ -72,38 +84,62 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.04em;
+            animation: scaleIn 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .footer {
+            margin-top: 32px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            opacity: 0.6;
+            animation: fadeIn 1s 1s backwards;
         }
 
         .subtitle {
             color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
             margin-bottom: 40px;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            line-height: 1.5;
+            font-weight: 400;
+            animation: fadeIn 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
         }
 
         .google-btn {
             width: 100%;
-            background: white;
-            color: #1e293b;
-            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
             border-radius: 16px;
-            border: none;
+            padding: 16px 24px;
+            color: var(--text-main);
             font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 0.8s 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
         }
 
         .google-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-            background: #f8fafc;
+            border-color: var(--glass-border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
         .google-btn:active {
@@ -115,20 +151,27 @@
             height: 20px;
         }
 
-        .footer {
-            margin-top: 32px;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            font-weight: 500;
-            opacity: 0.6;
-        }
-
         #loading {
             margin-top: 24px;
             display: none;
             font-size: 0.875rem;
             color: var(--accent-primary);
             font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
         }
 
         @media (max-width: 400px) {
@@ -160,26 +203,40 @@
         <p class="footer">Made with ❤️ by students — for students</p>
     </div>
 
-    <script>
-        async function handleGoogleLogin() {
-            const btn = document.getElementById("googleBtn");
-            const loading = document.getElementById("loading");
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { app } from "./assets/js/firebase.js";
 
+        const auth = getAuth(app);
+        const btn = document.getElementById("googleBtn");
+        const loading = document.getElementById("loading");
+
+        // FAST REDIRECT IF SESSION EXISTS
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loading.style.display = "block";
+                loading.textContent = "Welcome back! Redirecting...";
+                window.location.href = "dashboard.html";
+            }
+        });
+
+        window.handleGoogleLogin = async function () {
             btn.disabled = true;
             btn.style.opacity = "0.7";
             loading.style.display = "block";
+            loading.textContent = "Establishing secure connection...";
 
             try {
+                // calls window.googleLogin defined in firebase.js
                 await window.googleLogin();
             } catch (error) {
                 console.error("Login error:", error);
                 alert("Authentication failed: " + (error.message || "Please check your connection."));
-            } finally {
                 btn.disabled = false;
                 btn.style.opacity = "1";
                 loading.style.display = "none";
             }
-        }
+        };
     </script>
 
     <script type="module" src="assets/js/firebase.js"></script>

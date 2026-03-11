@@ -136,10 +136,10 @@
       animation: fadeIn 0.4s ease-out;
     }
 
-    @keyframes fadeIn {
+    @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
       }
 
       to {
@@ -160,6 +160,7 @@
       gap: 12px;
       position: relative;
       overflow: hidden;
+      animation: fadeInUp 0.5s ease backwards;
     }
 
     .item-card::before {
@@ -330,14 +331,34 @@
         cachedUser = JSON.parse(cachedUser);
         document.getElementById("userName").innerText =
           `${cachedUser.name} (${cachedUser.registrationNumber})`;
-        document.getElementById("userPhoto").src = cachedUser.photoURL;
+        document.getElementById("userPhoto").src = cachedUser.photoURL || "assets/img/default.png";
       } catch { }
     }
 
-    onAuthStateChanged(auth, async (user) => {
+    // Attempt to load from cache first
+    let cachedContent = localStorage.getItem(`content_${selectedCourseId}`);
+    if (cachedContent) {
+      try {
+        const parsed = JSON.parse(cachedContent);
+        // Minimal fake snap object for renderItems
+        const fakeSnap = {
+          docs: parsed.map(item => ({
+            id: item.id,
+            data: () => item.data
+          })),
+          empty: parsed.length === 0
+        };
+        renderItems(fakeSnap);
+      } catch (e) {
+        console.warn("Failed to load cached content", e);
+      }
+    }
+
+    let contentPromise = loadContent();
+
+    onAuthStateChanged(auth, async user => {
       if (!user) {
         if (localStorage.getItem("appCode") == "App") {
-          // Assign user object from localStorage
           user = {
             uid: localStorage.getItem("uid"),
             displayName: localStorage.getItem("displayName"),
@@ -345,41 +366,51 @@
             photoURL: localStorage.getItem("photoUrl")
           };
         } else {
-          // No Firebase user and no appCode -> redirect to login
           window.location.href = "index.html";
           return;
         }
       }
 
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
+      try {
+        // Parallelize User Doc and Content Fetch
+        const [userSnap, contentSnap] = await Promise.all([
+          getDoc(doc(db, "users", user.uid)),
+          contentPromise
+        ]);
 
-      if (!snap.exists()) {
-        window.location.href = "register.html";
-        return;
+        if (!userSnap.exists()) { window.location.href = "register.html"; return; }
+
+        const data = userSnap.data();
+
+        // Update UI
+        document.getElementById("userName").innerText =
+          `${data.name} (${data.registrationNumber})`;
+        document.getElementById("userPhoto").src = user.photoURL || "assets/img/default.png";
+
+        // Cache user for fast load
+        localStorage.setItem("userData", JSON.stringify({
+          name: data.name,
+          registrationNumber: data.registrationNumber,
+          photoURL: user.photoURL
+        }));
+
+        // Render the fresh content
+        renderItems(contentSnap);
+
+        // Cache fresh content
+        const toCache = contentSnap.docs.map(d => ({ id: d.id, data: d.data() }));
+        localStorage.setItem(`content_${selectedCourseId}`, JSON.stringify(toCache));
+      } catch (err) {
+        console.error("Content load failed:", err);
       }
-
-      const data = snap.data();
-
-      // Update UI
-      document.getElementById("userName").innerText =
-        `${data.name} (${data.registrationNumber})`;
-      document.getElementById("userPhoto").src = user.photoURL;
-
-      // Cache for fast load
-      localStorage.setItem("userData", JSON.stringify({
-        name: data.name,
-        registrationNumber: data.registrationNumber,
-        photoURL: user.photoURL
-      }));
-
-      loadContent();
     });
 
     async function loadContent() {
       const contentRef = collection(db, "courses", selectedCourseId, "content");
-      const contentSnap = await getDocs(contentRef);
+      return getDocs(contentRef);
+    }
 
+    function renderItems(contentSnap) {
       contentContainer.innerHTML = "";
       loading.style.display = "none";
       contentContainer.style.display = "grid";
@@ -420,9 +451,10 @@
       });
 
       // RENDER CARDS
-      items.forEach(item => {
+      items.forEach((item, i) => {
         const card = document.createElement("div");
         card.className = "item-card";
+        card.style.animationDelay = `${i * 0.05}s`;
 
         card.innerHTML = `
           <h3>${item.title}</h3>
@@ -436,7 +468,6 @@
 
         contentContainer.appendChild(card);
       });
-
     }
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
