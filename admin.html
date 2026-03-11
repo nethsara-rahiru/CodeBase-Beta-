@@ -728,6 +728,70 @@
       margin: 0;
       font-size: 1.1rem;
     }
+
+    .loader-circle {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--accent-primary);
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stat-card {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: var(--accent-secondary) !important;
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.3);
+    }
+
+    .table-container {
+      animation: fadeInUp 0.8s 0.2s ease backwards;
+    }
+
+    tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02) !important;
+      transform: scale(1.002);
+    }
+
+    .nav-item {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      letter-spacing: 0.02em;
+    }
   </style>
 </head>
 
@@ -1630,24 +1694,45 @@
     };
 
     // USERS
+    let allRolesMap = {};
     async function loadUsers() {
       if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
+
+      // Fetch roles first for mapping
+      const rolesSnap = await getDocs(collection(db, "roles"));
+      allRolesMap = {};
+      rolesSnap.forEach(doc => {
+        allRolesMap[doc.id] = doc.data().name;
+      });
+
       const snap = await getDocs(collection(db, "users"));
       const body = document.getElementById("userTableBody");
       body.innerHTML = "";
+
       snap.forEach(d => {
         const data = d.data();
-        const role = data.role || "student";
+        const systemRole = data.role || "student";
+        const customRoleName = allRolesMap[data.customRoleId];
+
+        // Display custom role name if it exists, otherwise use system role
+        const displayRole = customRoleName || (systemRole === 'admin' ? 'Admin' : systemRole.charAt(0).toUpperCase() + systemRole.slice(1));
+
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${data.name}</td><td>${data.email}</td><td>${data.registrationNumber}</td><td><span class="role-badge role-${role}">${role}</span></td>
-                <td>
-                    <select onchange="updateRole('${d.id}', this.value)" style="padding:4px; font-size:12px;">
-                        <option value="student" ${role == 'student' ? 'selected' : ''}>Student</option>
-                        <option value="editor" ${role == 'editor' ? 'selected' : ''}>Editor</option>
-                        <option value="admin" ${role == 'admin' ? 'selected' : ''}>Admin</option>
-                    </select>
-                    <button class="btn-ban" onclick="banUser('${data.registrationNumber}')">Ban</button>
-                </td>`;
+        row.innerHTML = `
+          <td>${data.name}</td>
+          <td>${data.email}</td>
+          <td>${data.registrationNumber}</td>
+          <td><span class="role-badge role-${systemRole}">${displayRole}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <select onchange="updateRole('${d.id}', this)" style="padding:4px; font-size:12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
+                <option value="student" ${systemRole == 'student' ? 'selected' : ''}>Student</option>
+                <option value="admin" ${systemRole == 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+              <div id="loader-${d.id}" style="display: none;"><div class="loader-circle"></div></div>
+              <button class="btn-ban" onclick="banUser('${data.registrationNumber}')">Ban</button>
+            </div>
+          </td>`;
         body.appendChild(row);
       });
     }
@@ -1683,7 +1768,10 @@
       }
     };
 
-    window.updateRole = async (uid, newRole) => {
+    window.updateRole = async (uid, selectElement) => {
+      const newRole = selectElement.value;
+      const loader = document.getElementById(`loader-${uid}`);
+
       const snap = await getDoc(doc(db, "users", uid));
       const targetData = snap.data();
 
@@ -1693,8 +1781,22 @@
         loadUsers(); return;
       }
 
-      await updateDoc(doc(db, "users", uid), { role: newRole });
-      loadUsers();
+      // Show loader
+      if (loader) loader.style.display = "inline-block";
+      selectElement.disabled = true;
+
+      try {
+        await updateDoc(doc(db, "users", uid), { role: newRole });
+        // Optional: show toast/notification if implemented elsewhere
+      } catch (error) {
+        console.error("Update Role Error:", error);
+        alert("Failed to update role. Please try again.");
+      } finally {
+        // Hide loader and refresh
+        if (loader) loader.style.display = "none";
+        selectElement.disabled = false;
+        loadUsers();
+      }
     };
 
     window.banUser = async (regNo) => {
