@@ -261,9 +261,56 @@
       border-radius: 14px;
       font-weight: 700;
       font-size: 0.875rem;
+
       cursor: pointer;
       transition: all 0.2s;
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Premium Loader */
+    .premium-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      width: 100%;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .premium-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.05);
+      border-top: 3px solid var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      margin-bottom: 20px;
+    }
+
+    .loading-status-text {
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .open-btn:hover {
@@ -839,11 +886,18 @@
     }
 
     async function loadResources() {
-      // For tab switches, just refetch everything (or could cache, but this is simpler for now)
-      resourcesContainer.innerHTML = "<p style='opacity:0.7;'>Loading...</p>";
+      const startTime = Date.now();
+      resourcesContainer.innerHTML = `
+        <div class="premium-loader">
+          <div class="premium-spinner"></div>
+          <div class="loading-status-text">Loading Resources...</div>
+        </div>
+      `;
       try {
         const data = await loadResourcesData();
-        renderResources(data);
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(0, 800 - elapsed);
+        setTimeout(() => renderResources(data), delay);
       } catch (err) {
         console.error("Load resources failed:", err);
         resourcesContainer.innerHTML = "<p style='color:var(--danger);'>Error loading data.</p>";
@@ -864,15 +918,25 @@
       document.getElementById("commCount").textContent = commSnap?.size || 0;
 
       if (currentTab === "course") {
-        const allItems = courseSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const allItems = courseSnap.docs.map(d => {
+          const c = d.data();
+          return {
+            id: d.id,
+            ...c,
+            title: c.title || c.tittle || "Untitled"
+          };
+        });
         const pinnedItems = allItems.filter(i => i.isPinned);
         const regularItems = allItems.filter(i => !i.isPinned);
 
         // Sort regular items
         regularItems.sort((a, b) => {
-          const numA = parseInt(a.title); const numB = parseInt(b.title);
+          const valA = a.title || "";
+          const valB = b.title || "";
+          const numA = parseInt(valA);
+          const numB = parseInt(valB);
           if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-          return (a.title || '').localeCompare(b.title || '');
+          return valA.localeCompare(valB);
         });
 
         if (pinnedItems.length > 0) {

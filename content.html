@@ -198,8 +198,8 @@
       line-height: 1.6;
     }
 
-    /* Loader */
-    .loader-container {
+    /* Premium Loader */
+    .premium-loader {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -207,18 +207,41 @@
       min-height: 60vh;
     }
 
-    .shimmer-loader {
-      width: 48px;
-      height: 48px;
-      border: 3px solid var(--glass-border);
-      border-top-color: var(--accent-primary);
+    .premium-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.05);
+      border-top: 3px solid var(--accent-primary);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      margin-bottom: 24px;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+
+    .loading-status-text {
+      color: #ffffff !important;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+      opacity: 1 !important;
+      display: block !important;
     }
 
     @keyframes spin {
       to {
         transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
       }
     }
 
@@ -287,9 +310,9 @@
   </header>
 
   <main class="main-container">
-    <div id="loading" class="loader-container">
-      <div class="shimmer-loader"></div>
-      <p style="margin-top: 20px; color: var(--text-muted); font-size: 0.875rem;">Loading content...</p>
+    <div id="loading" class="premium-loader">
+      <div class="premium-spinner"></div>
+      <div class="loading-status-text">Loading Resources...</div>
     </div>
     <div class="content-grid" id="contentContainer" style="display:none;"></div>
   </main>
@@ -410,64 +433,59 @@
       return getDocs(contentRef);
     }
 
+    const startTime = Date.now();
+
     function renderItems(contentSnap) {
-      contentContainer.innerHTML = "";
-      loading.style.display = "none";
-      contentContainer.style.display = "grid";
-
-      if (contentSnap.empty) {
-        contentContainer.innerHTML = "<p>No content found.</p>";
-        return;
-      }
-
       const items = [];
 
       contentSnap.forEach(docItem => {
         const c = docItem.data();
         items.push({
           id: docItem.id,
-          title: c.tittle,
+          title: c.title || c.tittle || "Untitled", // Support both title and legacy tittle
           description: c.description || ""
         });
       });
 
       // SORTING LOGIC
       items.sort((a, b) => {
-        // Extract leading numbers: "01 - Something"
-        const numA = parseInt(a.title);
-        const numB = parseInt(b.title);
-
+        const titleA = a.title || "";
+        const titleB = b.title || "";
+        const numA = parseInt(titleA);
+        const numB = parseInt(titleB);
         const isNumA = !isNaN(numA);
         const isNumB = !isNaN(numB);
 
-        if (isNumA && isNumB) {
-          return numA - numB;               // numeric sort
-        }
-
-        if (isNumA && !isNumB) return -1;    // numbers first
+        if (isNumA && isNumB) return numA - numB;
+        if (isNumA && !isNumB) return -1;
         if (!isNumA && isNumB) return 1;
-
-        return a.title.localeCompare(b.title); // normal alphabetical
+        return titleA.localeCompare(titleB);
       });
 
-      // RENDER CARDS
-      items.forEach((item, i) => {
-        const card = document.createElement("div");
-        card.className = "item-card";
-        card.style.animationDelay = `${i * 0.05}s`;
+      // Minimum 800ms display for the premium loader to avoid flickering
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(0, 800 - elapsed);
 
-        card.innerHTML = `
-          <h3>${item.title}</h3>
-          <p>${item.description}</p>
-        `;
+      setTimeout(() => {
+        loading.style.opacity = "0";
+        setTimeout(() => {
+          loading.style.display = "none";
+          contentContainer.innerHTML = "";
+          contentContainer.style.display = "grid";
 
-        card.addEventListener("click", () => {
-          localStorage.setItem("selectedContentId", item.id);
-          window.location.href = "resources.html";
-        });
-
-        contentContainer.appendChild(card);
-      });
+          items.forEach((item, i) => {
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.style.animationDelay = `${i * 0.05}s`;
+            card.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
+            card.addEventListener("click", () => {
+              localStorage.setItem("selectedContentId", item.id);
+              window.location.href = "resources.html";
+            });
+            contentContainer.appendChild(card);
+          });
+        }, 300);
+      }, delay);
     }
 
     document.getElementById("logoutBtn").addEventListener("click", () => {

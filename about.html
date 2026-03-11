@@ -168,6 +168,41 @@
             width: 100%;
         }
 
+        /* Premium Loader */
+        .loader-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 0;
+            width: 100%;
+        }
+
+        .premium-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-status-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .role-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -404,7 +439,10 @@
 
         <section class="team-section">
             <h2>Meet the Leadership</h2>
-            <div id="loadingSpinner">Loading the crew...</div>
+            <div id="loadingSpinner" class="loader-wrapper">
+                <div class="premium-spinner"></div>
+                <div class="loading-status-text">Loading Resources...</div>
+            </div>
             <div class="team-grid" id="teamGrid">
                 <!-- Team cards will be injected here -->
             </div>

@@ -1974,9 +1974,14 @@
       const snap = await getDocs(collection(db, "courses", courseId, "content"));
       const mods = [];
       snap.forEach(d => mods.push({ id: d.id, ...d.data() }));
-      mods.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
+      mods.sort((a, b) => {
+        const valA = a.title || a.tittle || "";
+        const valB = b.title || b.tittle || "";
+        return parseInt(valA) - parseInt(valB);
+      });
       mods.forEach(m => {
-        moduleSelect.innerHTML += `<option value="${m.id}">${m.tittle}</option>`;
+        const displayTitle = m.title || m.tittle || "Untitled Module";
+        moduleSelect.innerHTML += `<option value="${m.id}">${displayTitle}</option>`;
       });
     };
 
@@ -2059,9 +2064,14 @@
       const snap = await getDocs(collection(db, "courses", courseId, "content"));
       const mods = [];
       snap.forEach(d => mods.push({ id: d.id, ...d.data() }));
-      mods.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
+      mods.sort((a, b) => {
+        const valA = a.title || a.tittle || "";
+        const valB = b.title || b.tittle || "";
+        return parseInt(valA) - parseInt(valB);
+      });
       mods.forEach(m => {
-        moduleSelect.innerHTML += `<option value="${m.id}">${m.tittle}</option>`;
+        const displayTitle = m.title || m.tittle || "Untitled Module";
+        moduleSelect.innerHTML += `<option value="${m.id}">${displayTitle}</option>`;
       });
     };
 
