@@ -605,7 +605,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { app } from "./assets/js/firebase.js";
 
     const auth = getAuth(app);
@@ -739,7 +739,12 @@
       } else {
         // Community Hub
         const commRef = collection(db, "community_resources");
-        const snap = await getDocs(commRef);
+        const qComm = query(
+          commRef,
+          where("courseId", "==", selectedCourseId),
+          where("moduleId", "==", selectedContentId)
+        );
+        const snap = await getDocs(qComm);
 
         const items = snap.docs.map(d => ({
           id: d.id,
@@ -884,7 +889,9 @@
           uploadedAt: serverTimestamp(),
           likes: [],
           dislikes: [],
-          commentCount: 0
+          commentCount: 0,
+          courseId: selectedCourseId,
+          moduleId: selectedContentId
         });
         e.target.reset(); closeModal(); loadResources();
       } catch (err) { alert("Upload failed: " + err.message); }

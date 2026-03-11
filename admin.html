@@ -529,6 +529,8 @@
       width: 100%;
       max-width: 500px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal-header {
@@ -948,6 +950,40 @@
       </div>
     </div>
 
+    <!-- Tab 7: Community -->
+    <div class="tab-content" id="communityTab">
+      <div class="admin-card">
+        <div class="section-header">
+          <h2>Community Resources</h2>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Manage resources shared by the community</p>
+        </div>
+        <div class="filter-actions" style="margin-bottom: 20px;">
+          <input type="text" id="searchCommunity" class="search-input" placeholder="Search resources...">
+          <select id="filterCommunityType" class="filter-select">
+            <option value="all">All Types</option>
+            <option value="link">Links</option>
+            <option value="pdf">PDFs</option>
+            <option value="video">Videos</option>
+            <option value="github">GitHub</option>
+          </select>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Owner (Reg)</th>
+                <th>Upvotes (Net)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="communityTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Role Modal -->
     <div id="roleModal" class="modal">
       <div class="modal-content">
@@ -1011,6 +1047,31 @@
       </div>
     </div>
 
+    <!-- Pin Community Resource Modal -->
+    <div id="pinResourceModal" class="modal">
+      <div class="modal-content">
+        <h2 style="margin-bottom:20px;">Pin to Course Module</h2>
+        <div class="form-group" style="margin-bottom:15px;">
+          <label>Select Course</label>
+          <select id="pinCourseSelect" onchange="loadPinModules(this.value)"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+            <option value="">-- Choose Course --</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:25px;">
+          <label>Select Module</label>
+          <select id="pinModuleSelect"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+            <option value="">-- Choose Module --</option>
+          </select>
+        </div>
+        <div class="modal-actions" style="margin-top:25px;">
+          <button class="cancel-btn" onclick="closePinResourceModal()">Cancel</button>
+          <button class="action-btn" id="confirmPinBtn">Pin Resource</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Edit Resource Modal -->
     <div id="commEditModal" class="modal">
       <div class="modal-content">
@@ -1027,6 +1088,20 @@
           <input type="text" id="editCommLink"
             style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
         </div>
+        <div class="form-group" style="margin-top:15px;">
+          <label style="font-size: 0.875rem; font-weight: 700;">Course</label>
+          <select id="editCommCourse" onchange="loadEditCommModules(this.value)"
+            style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+            <option value="">-- No Course --</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+          <label style="font-size: 0.875rem; font-weight: 700;">Module</label>
+          <select id="editCommModule"
+            style="width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+            <option value="">-- No Module --</option>
+          </select>
+        </div>
         <div class="modal-actions" style="margin-top:25px;">
           <button class="cancel-btn" onclick="closeCommEditModal()">Cancel</button>
           <button class="action-btn" id="saveCommEditBtn">Update Resource</button>
@@ -1038,7 +1113,7 @@
 
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { app } from "./assets/js/firebase.js";
 
     const auth = getAuth(app);
@@ -1164,7 +1239,8 @@
         organizations: perms.canManageOrgs,
         courses: perms.canManageCourses,
         users: perms.canManageUsers,
-        staff: perms.canManageStaff || userData.role === "owner"
+        staff: perms.canManageStaff || userData.role === "owner",
+        community: true // Or consider a permission check for community later
       };
 
       document.querySelectorAll('.nav-item').forEach(item => {
@@ -1591,6 +1667,228 @@
     };
 
     document.getElementById("logoutBtn").onclick = () => signOut(auth).then(() => window.location.href = "index.html");
+
+    // COMMUNITY RESOURCES
+    let communityDataStore = [];
+    window.loadCommunityResources = async () => {
+      const snap = await getDocs(collection(db, "community_resources"));
+      communityDataStore = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderCommunityResources();
+    };
+
+    function renderCommunityResources() {
+      const body = document.getElementById("communityTableBody");
+      const search = (document.getElementById("searchCommunity")?.value || "").toLowerCase();
+      const typeFilter = document.getElementById("filterCommunityType")?.value || "all";
+
+      let filtered = communityDataStore.filter(item => {
+        const matchesSearch = (item.title || "").toLowerCase().includes(search) ||
+          (item.ownerReg || "").toLowerCase().includes(search);
+        const matchesType = typeFilter === "all" || item.type === typeFilter;
+        return matchesSearch && matchesType;
+      });
+
+      body.innerHTML = "";
+      filtered.forEach(d => {
+        const row = document.createElement("tr");
+        const upvotes = (d.likes?.length || 0) - (d.dislikes?.length || 0);
+
+        row.innerHTML = `
+          <td>${d.title} ${d.isPinned ? '<span class="type-badge" style="background:#f59e0b; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px;">Pinned</span>' : ''}</td>
+          <td><span class="role-badge" style="background:rgba(99,102,241,0.1); color:#6366f1;">${d.type}</span></td>
+          <td>${d.ownerReg || d.uploadedBy || 'Unknown'}</td>
+          <td>${upvotes}</td>
+          <td>
+            <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(245,158,11,0.1); color:#f59e0b;" onclick="openPinResourceModal('${d.id}')">Pin</button>
+            <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(255,255,255,0.1);" onclick="openCommEditModal('${d.id}')">Edit</button>
+            <button class="btn-delete" onclick="deleteCommunityResource('${d.id}')">Delete</button>
+          </td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    const searchCommInput = document.getElementById("searchCommunity");
+    if (searchCommInput) searchCommInput.addEventListener("input", renderCommunityResources);
+
+    const filterCommType = document.getElementById("filterCommunityType");
+    if (filterCommType) filterCommType.addEventListener("change", renderCommunityResources);
+
+    let activeEditCommId = null;
+    window.openCommEditModal = async (id) => {
+      const item = communityDataStore.find(x => x.id === id);
+      if (!item) return;
+      activeEditCommId = id;
+      document.getElementById("editCommTitle").value = item.title || "";
+      document.getElementById("editCommLink").value = item.link || "";
+
+      const courseSelect = document.getElementById("editCommCourse");
+      const moduleSelect = document.getElementById("editCommModule");
+      courseSelect.innerHTML = '<option value="">-- No Course --</option>';
+      moduleSelect.innerHTML = '<option value="">-- No Module --</option>';
+
+      const snap = await getDocs(collection(db, "courses"));
+      snap.forEach(d => {
+        if (!currentAdminPerms.isOwner) {
+          const courseYear = d.id[2];
+          const yearMatch = (currentAdminPerms.allowedYears || []).includes(courseYear);
+          const courseMatch = (currentAdminPerms.allowedCourses || []).includes(d.id);
+          if (!yearMatch && !courseMatch) return;
+        }
+        courseSelect.innerHTML += `<option value="${d.id}">${d.data().name} (${d.id})</option>`;
+      });
+
+      if (item.courseId) {
+        courseSelect.value = item.courseId;
+        await loadEditCommModules(item.courseId);
+        if (item.moduleId) {
+          moduleSelect.value = item.moduleId;
+        }
+      }
+
+      document.getElementById("commEditModal").classList.add("active");
+    };
+
+    window.closeCommEditModal = () => {
+      document.getElementById("commEditModal").classList.remove("active");
+    };
+
+    window.loadEditCommModules = async (courseId) => {
+      const moduleSelect = document.getElementById("editCommModule");
+      moduleSelect.innerHTML = '<option value="">-- No Module --</option>';
+      if (!courseId) return;
+
+      const snap = await getDocs(collection(db, "courses", courseId, "content"));
+      const mods = [];
+      snap.forEach(d => mods.push({ id: d.id, ...d.data() }));
+      mods.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
+      mods.forEach(m => {
+        moduleSelect.innerHTML += `<option value="${m.id}">${m.tittle}</option>`;
+      });
+    };
+
+    document.getElementById("saveCommEditBtn").onclick = async () => {
+      if (!activeEditCommId) return;
+      const title = document.getElementById("editCommTitle").value;
+      const link = document.getElementById("editCommLink").value;
+      const courseId = document.getElementById("editCommCourse").value;
+      const moduleId = document.getElementById("editCommModule").value;
+
+      const btn = document.getElementById("saveCommEditBtn");
+      btn.disabled = true; btn.textContent = "Updating...";
+
+      try {
+        await updateDoc(doc(db, "community_resources", activeEditCommId), {
+          title, link, courseId, moduleId
+        });
+        closeCommEditModal();
+        loadCommunityResources();
+      } catch (e) {
+        alert("Failed to update: " + e.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "Update Resource";
+      }
+    };
+
+    window.deleteCommunityResource = async (id) => {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageDelete) {
+        alert("You do not have permission to delete resources."); return;
+      }
+      if (confirm("Delete this community resource?")) {
+        await deleteDoc(doc(db, "community_resources", id));
+        loadCommunityResources();
+      }
+    };
+
+    let activePinCommId = null;
+
+    window.openPinResourceModal = async (id) => {
+      activePinCommId = id;
+      const courseSelect = document.getElementById("pinCourseSelect");
+      const moduleSelect = document.getElementById("pinModuleSelect");
+      courseSelect.innerHTML = '<option value="">-- Choose Course --</option>';
+      moduleSelect.innerHTML = '<option value="">-- Choose Module --</option>';
+
+      const item = communityDataStore.find(x => x.id === id);
+
+      const snap = await getDocs(collection(db, "courses"));
+      snap.forEach(d => {
+        if (!currentAdminPerms.isOwner) {
+          const courseYear = d.id[2];
+          const yearMatch = (currentAdminPerms.allowedYears || []).includes(courseYear);
+          const courseMatch = (currentAdminPerms.allowedCourses || []).includes(d.id);
+          if (!yearMatch && !courseMatch) return;
+        }
+        courseSelect.innerHTML += `<option value="${d.id}">${d.data().name} (${d.id})</option>`;
+      });
+
+      if (item && item.courseId) {
+        courseSelect.value = item.courseId;
+        await loadPinModules(item.courseId);
+        if (item.moduleId) {
+          document.getElementById("pinModuleSelect").value = item.moduleId;
+        }
+      }
+
+      document.getElementById("pinResourceModal").classList.add("active");
+    };
+
+    window.closePinResourceModal = () => {
+      document.getElementById("pinResourceModal").classList.remove("active");
+      activePinCommId = null;
+    };
+
+    window.loadPinModules = async (courseId) => {
+      const moduleSelect = document.getElementById("pinModuleSelect");
+      moduleSelect.innerHTML = '<option value="">-- Choose Module --</option>';
+      if (!courseId) return;
+
+      const snap = await getDocs(collection(db, "courses", courseId, "content"));
+      const mods = [];
+      snap.forEach(d => mods.push({ id: d.id, ...d.data() }));
+      mods.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
+      mods.forEach(m => {
+        moduleSelect.innerHTML += `<option value="${m.id}">${m.tittle}</option>`;
+      });
+    };
+
+    document.getElementById("confirmPinBtn").onclick = async () => {
+      if (!activePinCommId) return;
+      const courseId = document.getElementById("pinCourseSelect").value;
+      const moduleId = document.getElementById("pinModuleSelect").value;
+
+      if (!courseId || !moduleId) {
+        alert("Please select both a course and a module.");
+        return;
+      }
+
+      const item = communityDataStore.find(x => x.id === activePinCommId);
+      if (!item) return;
+
+      const btn = document.getElementById("confirmPinBtn");
+      btn.disabled = true; btn.textContent = "Pinning...";
+
+      try {
+        await addDoc(collection(db, "courses", courseId, "content", moduleId, "resources"), {
+          title: item.title,
+          type: item.type || "link",
+          link: item.link || "",
+          ownerReg: item.ownerReg || "",
+          isOriginal: item.isOriginal || false,
+          isPinned: true,
+          uploadedBy: item.uploadedBy || "Admin",
+          uploadedAt: new Date().toISOString()
+        });
+        await updateDoc(doc(db, "community_resources", activePinCommId), { isPinned: true });
+        alert("Resource pinned to course successfully!");
+        closePinResourceModal();
+        loadCommunityResources();
+      } catch (e) {
+        alert("Failed to pin resource: " + e.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "Pin Resource";
+      }
+    };
 
     // Mobile Sidebar Toggle
     const menuToggle = document.getElementById('menuToggle');

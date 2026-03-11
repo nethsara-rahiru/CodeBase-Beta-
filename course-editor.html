@@ -181,6 +181,33 @@
             text-transform: uppercase;
             margin-right: 8px;
         }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 
@@ -213,9 +240,59 @@
         </div>
     </div>
 
+    <!-- Edit Module Modal -->
+    <div id="editModModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom:20px;">Edit Module</h2>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Title</label>
+                <input type="text" id="editModTitle">
+            </div>
+            <div class="form-group" style="margin-bottom:25px;">
+                <label>Description</label>
+                <input type="text" id="editModDesc">
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button class="action-btn secondary" onclick="closeEditModModal()">Cancel</button>
+                <button class="action-btn" id="saveModBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Resource Modal -->
+    <div id="editResModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom:20px;">Edit Resource</h2>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Title</label>
+                <input type="text" id="editResTitle">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>URL</label>
+                <input type="url" id="editResLink">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Course</label>
+                <select id="editResCourse" onchange="loadEditResModules(this.value)"
+                    style="width:100%; padding:8px; border-radius:4px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:25px;">
+                <label>Module</label>
+                <select id="editResModule"
+                    style="width:100%; padding:8px; border-radius:4px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.2); color:white;">
+                </select>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button class="action-btn secondary" onclick="closeEditResModal()">Cancel</button>
+                <button class="action-btn" id="saveResBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, getDocs, collection, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, getDocs, collection, setDoc, deleteDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
         import { app } from "./assets/js/firebase.js";
 
         const db = getFirestore(app);
@@ -267,18 +344,21 @@
             }
         }
 
+        let allModules = [];
+
         async function loadModules() {
             const snap = await getDocs(collection(db, "courses", courseId, "content"));
             const host = document.getElementById("moduleList");
             host.innerHTML = "";
+            allCurrentResources = []; // Reset global resource cache on each full load
 
-            const modules = [];
-            snap.forEach(d => modules.push({ id: d.id, ...d.data() }));
+            allModules = [];
+            snap.forEach(d => allModules.push({ id: d.id, ...d.data() }));
 
             // Sort modules by title numeric prefix
-            modules.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
+            allModules.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
 
-            modules.forEach(m => {
+            for (const m of allModules) {
                 const div = document.createElement("div");
                 div.className = "module-item";
                 div.innerHTML = `
@@ -287,7 +367,10 @@
               <h3>${m.tittle}</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">${m.description || ''}</p>
             </div>
-            <button class="btn-danger" onclick="deleteModule('${m.id}')">Delete Module</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="action-btn secondary" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModule('${m.id}')">Edit Module</button>
+                <button class="btn-danger" onclick="deleteModule('${m.id}')">Delete Module</button>
+            </div>
           </div>
           
           <div class="resource-list" id="res-${m.id}">
@@ -317,9 +400,11 @@
           </form>
         `;
                 host.appendChild(div);
-                loadResources(m.id);
-            });
+                await loadResources(m.id);
+            }
         }
+
+        let allCurrentResources = []; // Store currently loaded resources to populate the modal
 
         async function loadResources(moduleId) {
             const snap = await getDocs(collection(db, "courses", courseId, "content", moduleId, "resources"));
@@ -327,7 +412,13 @@
             host.innerHTML = "";
 
             const resources = [];
-            snap.forEach(d => resources.push({ id: d.id, ...d.data() }));
+            snap.forEach(d => {
+                const resData = { id: d.id, ...d.data() };
+                resources.push(resData);
+                const existIdx = allCurrentResources.findIndex(x => x.id === d.id);
+                if (existIdx >= 0) allCurrentResources[existIdx] = resData;
+                else allCurrentResources.push(resData);
+            });
             resources.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
 
             if (resources.length === 0) {
@@ -346,6 +437,7 @@
             <a href="${r.link}" target="_blank" style="color:var(--accent-primary); margin-left:10px; font-size:0.8rem;">View</a>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
+            <button class="action-btn secondary" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditResource('${moduleId}', '${r.id}')">Edit</button>
             <button class="action-btn secondary" style="padding:6px 12px; font-size:0.75rem;" onclick="togglePin('${moduleId}', '${r.id}', ${r.isPinned || false})">
                 ${r.isPinned ? 'Unpin' : 'Pin'}
             </button>
@@ -435,6 +527,150 @@
                 isPinned: !currentStatus
             });
             loadResources(moduleId);
+        };
+
+        let activeEditResModuleId = null;
+        let activeEditResId = null;
+
+        window.openEditResource = async (moduleId, resId) => {
+            const r = allCurrentResources.find(x => x.id === resId);
+            if (!r) return;
+            activeEditResModuleId = moduleId;
+            activeEditResId = resId;
+            document.getElementById("editResTitle").value = r.title || "";
+            document.getElementById("editResLink").value = r.link || "";
+
+            const courseSelect = document.getElementById("editResCourse");
+            const modSelect = document.getElementById("editResModule");
+            courseSelect.innerHTML = "";
+            modSelect.innerHTML = "";
+
+            const snap = await getDocs(collection(db, "courses"));
+            snap.forEach(d => {
+                if (!currentPerms.isOwner) {
+                    const courseYear = d.id[2];
+                    const yearMatch = (currentPerms.allowedYears || []).includes(courseYear);
+                    const courseMatch = (currentPerms.allowedCourses || []).includes(d.id);
+                    if (!yearMatch && !courseMatch) return;
+                }
+                courseSelect.innerHTML += `<option value="${d.id}">${d.data().name} (${d.id})</option>`;
+            });
+            courseSelect.value = courseId; // default to current course
+
+            await window.loadEditResModules(courseId);
+            modSelect.value = moduleId;
+
+            document.getElementById("editResModal").classList.add("active");
+        };
+
+        window.loadEditResModules = async (selectedCourseId) => {
+            const moduleSelect = document.getElementById("editResModule");
+            moduleSelect.innerHTML = '<option value="">-- Choose Module --</option>';
+            if (!selectedCourseId) return;
+
+            const snap = await getDocs(collection(db, "courses", selectedCourseId, "content"));
+            const mods = [];
+            snap.forEach(d => mods.push({ id: d.id, ...d.data() }));
+            mods.sort((a, b) => parseInt(a.tittle) - parseInt(b.tittle));
+            mods.forEach(m => {
+                moduleSelect.innerHTML += `<option value="${m.id}">${m.tittle}</option>`;
+            });
+        };
+
+        window.closeEditResModal = () => {
+            document.getElementById("editResModal").classList.remove("active");
+            activeEditResModuleId = null;
+            activeEditResId = null;
+        };
+
+        document.getElementById("saveResBtn").onclick = async () => {
+            if (!activeEditResId || !activeEditResModuleId) return;
+            if (!currentPerms.isOwner && !currentPerms.canManageCourses) {
+                alert("Permission denied."); return;
+            }
+
+            const newTitle = document.getElementById("editResTitle").value;
+            const newLink = document.getElementById("editResLink").value;
+            const newCourseId = document.getElementById("editResCourse").value;
+            const newModId = document.getElementById("editResModule").value;
+
+            const btn = document.getElementById("saveResBtn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+                if (newCourseId !== courseId || newModId !== activeEditResModuleId) {
+                    // Move to new course/module
+                    const oldRef = doc(db, "courses", courseId, "content", activeEditResModuleId, "resources", activeEditResId);
+                    const newRef = doc(db, "courses", newCourseId, "content", newModId, "resources", activeEditResId);
+
+                    const snap = await getDoc(oldRef);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        data.title = newTitle;
+                        data.link = newLink;
+                        await setDoc(newRef, data);
+                        await deleteDoc(oldRef);
+                    }
+                } else {
+                    // Just update
+                    await updateDoc(doc(db, "courses", courseId, "content", activeEditResModuleId, "resources", activeEditResId), {
+                        title: newTitle,
+                        link: newLink
+                    });
+                }
+                closeEditResModal();
+                await loadModules();
+            } catch (err) {
+                alert("Failed to update: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Save Changes";
+            }
+        };
+
+        let activeEditModId = null;
+
+        window.openEditModule = (id) => {
+            const m = allModules.find(x => x.id === id);
+            if (!m) return;
+            activeEditModId = id;
+            document.getElementById("editModTitle").value = m.tittle || "";
+            document.getElementById("editModDesc").value = m.description || "";
+            document.getElementById("editModModal").classList.add("active");
+        };
+
+        window.closeEditModModal = () => {
+            document.getElementById("editModModal").classList.remove("active");
+            activeEditModId = null;
+        };
+
+        document.getElementById("saveModBtn").onclick = async () => {
+            if (!activeEditModId) return;
+            if (!currentPerms.isOwner && !currentPerms.canManageCourses) {
+                alert("Permission denied."); return;
+            }
+
+            const newTitle = document.getElementById("editModTitle").value;
+            const newDesc = document.getElementById("editModDesc").value;
+
+            const btn = document.getElementById("saveModBtn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+                await updateDoc(doc(db, "courses", courseId, "content", activeEditModId), {
+                    tittle: newTitle, // uses 'tittle' for backward compatibility
+                    description: newDesc
+                });
+                closeEditModModal();
+                loadModules();
+            } catch (err) {
+                alert("Failed to update: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Save Changes";
+            }
         };
 
     </script>
