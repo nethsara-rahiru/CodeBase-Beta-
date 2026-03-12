@@ -16,6 +16,7 @@
       --glass-border: rgba(255, 255, 255, 0.08);
       --accent-primary: #6366f1;
       --accent-secondary: #ec4899;
+      --accent-warning: #f59e0b;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -142,6 +143,89 @@
       cursor: default;
       animation: fadeInUp 0.5s ease backwards;
     }
+
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 12px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 20px auto 0;
+      padding: 0 40px;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    .breadcrumbs a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumbs a:hover {
+      color: var(--accent-primary);
+    }
+
+    /* Search Bar */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px 14px 48px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      color: white;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 40px;
+      background: var(--glass-bg);
+      border: 1px dashed var(--glass-border);
+      border-radius: 24px;
+      color: var(--text-muted);
+    }
+
 
     @keyframes fadeInUp {
       from {
@@ -598,6 +682,12 @@
 </head>
 
 <body>
+  <div class="breadcrumbs" id="breadcrumbArea">
+    <a href="dashboard.html">Home</a>
+    <a id="breadcrumbCourse" href="content.html">Course</a>
+    <span id="breadcrumbModule"></span>
+  </div>
+
   <header id="navbar">
     <div class="brand-area">
       <button class="back-btn" onclick="history.back()">
@@ -640,7 +730,16 @@
     </div>
 
     <div id="resourcesContainer">
-      <div id="categoryBar" class="category-bar" style="display:none;">
+      <div class="search-wrap">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="resourceSearch" class="search-input" placeholder="Search by title or creator...">
+      </div>
+
+      <div id="categoryBar" class="category-bar">
         <button class="cat-pill active" data-type="all">All</button>
         <button class="cat-pill" data-type="video">Videos</button>
         <button class="cat-pill" data-type="pdf">PDFs</button>
@@ -648,7 +747,7 @@
         <button class="cat-pill" data-type="link">Links</button>
       </div>
       <div id="itemsGrid">
-        <p style="color: var(--text-muted); font-size: 0.875rem;">Loading resources...</p>
+        <!-- Skeletons will show here initially -->
       </div>
     </div>
   </main>
@@ -904,82 +1003,92 @@
       }
     }
 
-    async function renderResources(dataResults) {
-      cardCount = 0; // Reset for staggered animation
-      const { courseSnap, commSnap } = dataResults;
 
-      // Clear containers immediately
+    async function renderResources(dataResults) {
+      if (!selectedCourseId || !selectedContentId) return;
+
+      // Update Breadcrumbs
+      const moduleTitle = localStorage.getItem("selectedContentTitle") || "Module";
+      document.getElementById("breadcrumbCourse").textContent = ` > ${selectedCourseId}`;
+      document.getElementById("breadcrumbModule").textContent = ` > ${moduleTitle}`;
+
+      cardCount = 0;
+      const { courseSnap, commSnap } = dataResults;
+      const searchVal = document.getElementById("resourceSearch").value.toLowerCase();
+
       resourcesContainer.innerHTML = "";
       document.getElementById("pinnedSection").style.display = "none";
       const pinnedContainer = document.getElementById("pinnedContainer");
       if (pinnedContainer) pinnedContainer.innerHTML = "";
 
-      // Always update community count badge
       document.getElementById("commCount").textContent = commSnap?.size || 0;
 
+      let allItems = [];
       if (currentTab === "course") {
-        const allItems = courseSnap.docs.map(d => {
-          const c = d.data();
-          return {
-            id: d.id,
-            ...c,
-            title: c.title || c.tittle || "Untitled"
-          };
-        });
-        const pinnedItems = allItems.filter(i => i.isPinned);
-        const regularItems = allItems.filter(i => !i.isPinned);
-
-        // Sort regular items
-        regularItems.sort((a, b) => {
-          const valA = a.title || "";
-          const valB = b.title || "";
-          const numA = parseInt(valA);
-          const numB = parseInt(valB);
-          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-          return valA.localeCompare(valB);
-        });
-
-        if (pinnedItems.length > 0) {
-          document.getElementById("pinnedSection").style.display = "block";
-          for (const item of pinnedItems) pinnedContainer.appendChild(await renderCard(item));
-        }
-
-        resourcesContainer.innerHTML = "";
-        if (regularItems.length === 0 && pinnedItems.length === 0) {
-          resourcesContainer.innerHTML = "<p style='opacity:0.7;'>No resources found.</p>";
-        } else {
-          for (const item of regularItems) resourcesContainer.appendChild(await renderCard(item));
-        }
-      } else {
-        // Community Hub
-        const items = commSnap.docs.map(d => ({
+        allItems = courseSnap.docs.map(d => ({
           id: d.id,
           ...d.data(),
+          title: d.data().title || d.data().tittle || "Untitled"
+        }));
+      } else {
+        allItems = commSnap.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+          title: d.data().title || "Untitled",
           likes: d.data().likes || [],
           dislikes: d.data().dislikes || [],
           commentCount: d.data().commentCount || 0
         }));
-
-        // Ranking Logic: (Likes - Dislikes) + (Comments * 2)
-        items.sort((a, b) => {
+        // Community Ranking Logic
+        allItems.sort((a, b) => {
           const scoreA = (a.likes.length - a.dislikes.length) + (a.commentCount * 2);
           const scoreB = (b.likes.length - b.dislikes.length) + (b.commentCount * 2);
           return scoreB - scoreA;
         });
+      }
 
-        // Filter by Category
-        const filteredItems = currentCategory === "all"
-          ? items
-          : items.filter(i => i.type?.toLowerCase() === currentCategory);
+      // Filter by Search & Category
+      let filteredItems = allItems.filter(item => {
+        const matchesSearch = item.title.toLowerCase().includes(searchVal) ||
+          (item.ownerReg && item.ownerReg.toLowerCase().includes(searchVal));
+        const matchesCat = currentCategory === "all" || item.type?.toLowerCase() === currentCategory;
+        return matchesSearch && matchesCat;
+      });
 
-        resourcesContainer.innerHTML = "";
+      if (currentTab === "course") {
+        const pinnedItems = filteredItems.filter(i => i.isPinned);
+        const regularItems = filteredItems.filter(i => !i.isPinned);
+
+        if (pinnedItems.length > 0 && searchVal === "") {
+          document.getElementById("pinnedSection").style.display = "block";
+          for (const item of pinnedItems) pinnedContainer.appendChild(await renderCard(item));
+        }
+
         if (filteredItems.length === 0) {
-          resourcesContainer.innerHTML = `<p style='opacity:0.7;'>No ${currentCategory === 'all' ? '' : currentCategory} resources found.</p>`;
+          resourcesContainer.innerHTML = `
+            <div class="empty-state">
+              <p>No resources found matching your search.</p>
+            </div>`;
+        } else {
+          for (const item of regularItems) resourcesContainer.appendChild(await renderCard(item));
+        }
+      } else {
+        if (filteredItems.length === 0) {
+          resourcesContainer.innerHTML = `
+            <div class="empty-state">
+              <p>No community resources found.</p>
+            </div>`;
         } else {
           for (const item of filteredItems) resourcesContainer.appendChild(await renderCard(item, true));
         }
       }
     }
+
+    // Search input listener
+    document.getElementById("resourceSearch").oninput = async () => {
+      const data = await loadResourcesData();
+      renderResources(data);
+    };
 
     async function renderCard(r, isCommunity = false) {
       const card = document.createElement("div");

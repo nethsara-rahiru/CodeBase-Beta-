@@ -201,6 +201,40 @@
     button:active {
       transform: translateY(0);
     }
+
+    .val-message {
+      font-size: 0.7rem;
+      text-align: left;
+      margin-top: -15px;
+      margin-bottom: 15px;
+      padding-left: 12px;
+      transition: all 0.3s;
+    }
+
+    .val-message.error {
+      color: #ef4444;
+    }
+
+    .val-message.success {
+      color: #10b981;
+    }
+
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -235,14 +269,15 @@
       </select>
     </div>
 
-    <!-- PHONE -->
     <div class="input-group">
       <input type="text" id="phone" placeholder=" ">
       <label for="phone" class="label">Phone Number</label>
     </div>
+    <div id="phoneVal" class="val-message"></div>
 
-    <button onclick="submitRegistration()">
-      Complete Registration
+    <button id="submitBtn" onclick="submitRegistration()">
+      <span id="btnText">Complete Registration</span>
+      <div id="btnSpinner" class="loading-spinner"></div>
     </button>
   </div>
 
@@ -300,9 +335,30 @@
       this.value = formatRegNo(this.value);
     });
 
+    const phoneInput = document.getElementById("phone");
+    const phoneVal = document.getElementById("phoneVal");
+    const submitBtn = document.getElementById("submitBtn");
+    const btnText = document.getElementById("btnText");
+    const btnSpinner = document.getElementById("btnSpinner");
+
     function validatePhone(phone) {
       return /^07[0-9]{8}$/.test(phone);
     }
+
+    phoneInput.addEventListener("input", function () {
+      const val = this.value.trim();
+      if (val === "") {
+        phoneVal.textContent = "";
+      } else if (validatePhone(val)) {
+        phoneVal.textContent = "✓ Valid phone number";
+        phoneVal.className = "val-message success";
+        this.style.borderColor = "#10b981";
+      } else {
+        phoneVal.textContent = "✗ Must be 07XXXXXXXX format";
+        phoneVal.className = "val-message error";
+        this.style.borderColor = "#ef4444";
+      }
+    });
 
     function submitRegistration() {
       const reg = document.getElementById("regno").value.trim();
@@ -310,9 +366,15 @@
       const level = document.getElementById("level").value.trim();
 
       if (!validatePhone(phone)) {
-        alert("Invalid phone number. Use Sri Lankan format: 07XXXXXXXX");
+        phoneVal.textContent = "Please enter a valid phone number";
+        phoneVal.className = "val-message error";
+        phoneInput.focus();
         return;
       }
+
+      btnText.style.display = "none";
+      btnSpinner.style.display = "block";
+      submitBtn.disabled = true;
 
       registerUser(reg, phone, level);
     }

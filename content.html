@@ -136,6 +136,57 @@
       animation: fadeIn 0.4s ease-out;
     }
 
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 12px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      padding: 0 40px;
+      max-width: 1200px;
+      margin: 20px auto 0;
+    }
+
+    .breadcrumbs a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumbs a:hover {
+      color: var(--accent-primary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 40px;
+      background: var(--glass-bg);
+      border: 1px dashed var(--glass-border);
+      border-radius: 24px;
+      color: var(--text-muted);
+      grid-column: 1 / -1;
+    }
+
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -309,6 +360,11 @@
     </div>
   </header>
 
+  <div class="breadcrumbs" id="breadcrumbArea">
+    <a href="dashboard.html">Home</a>
+    <span id="breadcrumbCourse"></span>
+  </div>
+
   <main class="main-container">
     <div id="loading" class="premium-loader">
       <div class="premium-spinner"></div>
@@ -436,13 +492,17 @@
     const startTime = Date.now();
 
     function renderItems(contentSnap) {
-      const items = [];
+      if (!selectedCourseId) return;
 
+      // Update breadcrumb with course ID
+      document.getElementById("breadcrumbCourse").textContent = ` > ${selectedCourseId}`;
+
+      const items = [];
       contentSnap.forEach(docItem => {
         const c = docItem.data();
         items.push({
           id: docItem.id,
-          title: c.title || c.tittle || "Untitled", // Support both title and legacy tittle
+          title: c.title || c.tittle || "Untitled",
           description: c.description || ""
         });
       });
@@ -455,14 +515,10 @@
         const numB = parseInt(titleB);
         const isNumA = !isNaN(numA);
         const isNumB = !isNaN(numB);
-
         if (isNumA && isNumB) return numA - numB;
-        if (isNumA && !isNumB) return -1;
-        if (!isNumA && isNumB) return 1;
         return titleA.localeCompare(titleB);
       });
 
-      // Minimum 800ms display for the premium loader to avoid flickering
       const elapsed = Date.now() - startTime;
       const delay = Math.max(0, 800 - elapsed);
 
@@ -473,6 +529,14 @@
           contentContainer.innerHTML = "";
           contentContainer.style.display = "grid";
 
+          if (items.length === 0) {
+            contentContainer.innerHTML = `
+              <div class="empty-state">
+                <p>No modules found for this course.</p>
+              </div>`;
+            return;
+          }
+
           items.forEach((item, i) => {
             const card = document.createElement("div");
             card.className = "item-card";
@@ -480,6 +544,7 @@
             card.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
             card.addEventListener("click", () => {
               localStorage.setItem("selectedContentId", item.id);
+              localStorage.setItem("selectedContentTitle", item.title);
               window.location.href = "resources.html";
             });
             contentContainer.appendChild(card);
