@@ -1,4 +1,4 @@
-<!----register.html-->>
+<!-- register.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -323,8 +323,48 @@
       margin: 0 auto;
     }
 
+    /* Loading Bar Styles */
+    .loading-bar-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .loading-bar {
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), var(--accent-secondary), transparent);
+      animation: loading-shimmer 1.5s infinite linear;
+      position: absolute;
+    }
+
+    @keyframes loading-shimmer {
+      from { left: -40%; }
+      to { left: 100%; }
+    }
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeInForm {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-ready {
+      display: block !important;
+      animation: fadeInForm 0.5s ease-out forwards;
+    }
+
+    .input-error {
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.05) !important;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important;
     }
 
     @media (max-width: 440px) {
@@ -345,54 +385,67 @@
   </div>
 
   <div class="card">
-    <h2>Register</h2>
-    <p class="subtitle">Complete your student profile to access all features. Verify your details below.</p>
-
-    <!-- USER EMAIL DISPLAY -->
-    <div id="emailCard" class="email-card"></div>
-
-    <!-- FULL NAME -->
-    <div class="input-group">
-      <input type="text" id="name" placeholder=" " readonly>
-      <label for="name" class="label">Full Name</label>
-    </div>
-
-    <!-- REGISTRATION NUMBER -->
-    <div class="input-group">
-      <input type="text" id="regno" maxlength="15" placeholder=" " required>
-      <label for="regno" class="label">Registration Number</label>
-    </div>
-
-    <!-- Academic Info (Year + Semester) -->
-    <div class="input-group-grid">
-      <div class="input-group" style="margin-bottom: 0;">
-        <label class="sLabel">Academic Year</label>
-        <select id="level" required>
-          <option value="1">1st Year</option>
-          <option value="2">2nd Year</option>
-          <option value="3">3rd Year</option>
-          <option value="4">4th Year</option>
-        </select>
+    <!-- LOADING STATE -->
+    <div id="loadingState">
+      <div class="loading-bar-container">
+        <div class="loading-bar"></div>
       </div>
-      <div class="input-group" style="margin-bottom: 0;">
-        <label class="sLabel">Semester</label>
-        <select id="semester" required>
-          <option value="1">Semester 1</option>
-          <option value="2">Semester 2</option>
-        </select>
+      <p style="color: var(--text-muted); font-size: 0.875rem;">Initializing profile setup...</p>
+    </div>
+
+    <!-- REGISTER FORM (Hidden initially) -->
+    <div id="registerForm" style="display: none;">
+      <h2>Register</h2>
+      <p class="subtitle">Complete your student profile to access all features. Verify your details below.</p>
+
+      <!-- USER EMAIL DISPLAY -->
+      <div id="emailCard" class="email-card"></div>
+
+      <!-- FULL NAME -->
+      <div class="input-group">
+        <input type="text" id="name" placeholder=" " readonly>
+        <label for="name" class="label">Full Name</label>
       </div>
-    </div>
 
-    <div class="input-group">
-      <input type="text" id="phone" placeholder=" ">
-      <label for="phone" class="label">Phone Number</label>
-    </div>
-    <div id="phoneVal" class="val-message"></div>
+      <!-- REGISTRATION NUMBER -->
+      <div class="input-group">
+        <input type="text" id="regno" maxlength="15" placeholder=" " required>
+        <label for="regno" class="label">Registration Number</label>
+      </div>
 
-    <button id="submitBtn" onclick="submitRegistration()">
-      <span id="btnText">Complete Registration</span>
-      <div id="btnSpinner" class="loading-spinner"></div>
-    </button>
+      <!-- Academic Info (Year + Semester) -->
+      <div class="input-group-grid">
+        <div class="input-group" style="margin-bottom: 0;">
+          <label class="sLabel">Academic Year</label>
+          <select id="level" required>
+            <option value="" disabled selected>Select Year</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-bottom: 0;">
+          <label class="sLabel">Semester</label>
+          <select id="semester" required>
+            <option value="" disabled selected>Select Semester</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="phone" placeholder=" ">
+        <label for="phone" class="label">Phone Number</label>
+      </div>
+      <div id="phoneVal" class="val-message"></div>
+
+      <button id="submitBtn" onclick="submitRegistration()">
+        <span id="btnText">Complete Registration</span>
+        <div id="btnSpinner" class="loading-spinner"></div>
+      </button>
+    </div>
   </div>
 
   <script type="module">
@@ -441,6 +494,10 @@
         autoReg = formatRegNo(emailPrefix);
       }
       regnoInput.value = autoReg;
+
+      // HIDE LOADING, SHOW FORM WITH TRANSITION
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("registerForm").classList.add("form-ready");
     });
 
     function formatRegNo(raw) {
@@ -479,6 +536,7 @@
 
     phoneInput.addEventListener("input", function () {
       const val = this.value.trim();
+      this.classList.remove("input-error"); // Clear error on interaction
       if (val === "") {
         phoneVal.textContent = "";
       } else if (validatePhone(val)) {
@@ -492,26 +550,64 @@
       }
     });
 
-    window.submitRegistration = function() {
-      const reg = regnoInput.value.trim();
-      const phone = phoneInput.value.trim();
-      const level = document.getElementById("level").value.trim();
-      const semester = document.getElementById("semester").value.trim();
+    // Clear error highlights for select inputs
+    document.getElementById("level").addEventListener("change", function() {
+        this.classList.remove("input-error");
+    });
+    document.getElementById("semester").addEventListener("change", function() {
+        this.classList.remove("input-error");
+    });
+    regnoInput.addEventListener("input", () => regnoInput.classList.remove("input-error"));
 
+    window.submitRegistration = function() {
+      const regnoVal = regnoInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const levelSelect = document.getElementById("level");
+      const semesterSelect = document.getElementById("semester");
+      const level = levelSelect.value.trim();
+      const semester = semesterSelect.value.trim();
+
+      // Reset previous error highlights
+      regnoInput.classList.remove("input-error");
+      phoneInput.classList.remove("input-error");
+      levelSelect.classList.remove("input-error");
+      semesterSelect.classList.remove("input-error");
+
+      let hasError = false;
+
+      // Validate Registration Number
+      if (!regnoVal) {
+          regnoInput.classList.add("input-error");
+          hasError = true;
+      }
+
+      // Validate Academic Selection
+      if (!level) {
+          levelSelect.classList.add("input-error");
+          hasError = true;
+      }
+      if (!semester) {
+          semesterSelect.classList.add("input-error");
+          hasError = true;
+      }
+
+      // Validate Phone Format
       if (!validatePhone(phone)) {
+        phoneInput.classList.add("input-error");
         phoneVal.textContent = "Please enter a valid phone number";
         phoneVal.className = "val-message error";
-        phoneInput.focus();
-        return;
+        hasError = true;
       }
+
+      if (hasError) return;
 
       btnText.style.display = "none";
       btnSpinner.style.display = "block";
       submitBtn.disabled = true;
 
-      formatRegNo(reg.replace(/\//g, "")); 
+      formatRegNo(regnoVal.replace(/\//g, "")); 
 
-      window.registerUser(reg, phone, level, semester, currentStream);
+      window.registerUser(regnoVal, phone, level, semester, currentStream);
     };
   </script>
 </body>

@@ -256,6 +256,36 @@
             font-size: 2rem;
         }
 
+        .team-card.small-card {
+            padding: 24px 16px;
+            border-radius: 20px;
+            gap: 12px;
+        }
+
+        .team-card.small-card .admin-photo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 12px;
+        }
+
+        .team-card.small-card .admin-name {
+            font-size: 1.1rem;
+        }
+
+        .team-card.small-card .admin-role {
+            font-size: 0.65rem;
+            margin-bottom: 8px;
+        }
+
+        .team-card.small-card .admin-bio {
+            font-size: 0.8rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         .team-card:hover {
             transform: translateY(-12px);
             background: rgba(255, 255, 255, 0.05);
@@ -478,17 +508,42 @@
                     return;
                 }
 
+                // Staff list
                 const staff = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                 // Categorize
                 const categories = {
                     owner: staff.filter(m => m.role === "owner"),
-                    manager: staff.filter(m => m.role === "admin"),
-                    coordinator: staff.filter(m => m.role === "editor")
+                    developer: [],
+                    manager: [],
+                    coordinator: [],
+                    standard: staff.filter(m => m.role !== "owner" && !m.customRoleId && (!m.customRoleIds || m.customRoleIds.length === 0))
                 };
 
+                staff.forEach(m => {
+                    if (m.role === "owner") return;
+                    
+                    const roleIds = m.customRoleIds || (m.customRoleId ? [m.customRoleId] : []);
+                    if (roleIds.length === 0) return;
+
+                    // Determine category placement
+                    let isDev = false;
+                    roleIds.forEach(rid => {
+                        const name = (rolesMap[rid] || rid || "").toLowerCase();
+                        if (name.endsWith("tester") || name.endsWith("developer") || name.endsWith("engineer")) isDev = true;
+                    });
+
+                    if (isDev) {
+                        categories.developer.push(m);
+                    } else if (m.role === "admin") {
+                        categories.manager.push(m);
+                    } else if (m.role === "editor") {
+                        categories.coordinator.push(m);
+                    }
+                });
+
                 const systemRoleLabels = {
-                    owner: "Owner",
+                    owner: "Founder",
                     admin: "Manager",
                     editor: "Coordinator"
                 };
@@ -509,10 +564,28 @@
                     teamGrid.appendChild(row);
                 }
 
+                // Render Developers
+                if (categories.developer.length > 0) {
+                    const row = createRow("Dev Team");
+                    categories.developer.forEach(m => row.appendChild(createCard(m)));
+                    teamGrid.appendChild(row);
+                }
+
                 // Render Coordinators
                 if (categories.coordinator.length > 0) {
                     const row = createRow("Coordinators");
                     categories.coordinator.forEach(m => row.appendChild(createCard(m)));
+                    teamGrid.appendChild(row);
+                }
+
+                // Render Standard Admins (Small size)
+                if (categories.standard.length > 0) {
+                    const row = createRow("Admins");
+                    categories.standard.forEach(m => {
+                        // Override role display for these standard admins
+                        const card = createCard(m, false, true);
+                        row.appendChild(card);
+                    });
                     teamGrid.appendChild(row);
                 }
 
@@ -528,22 +601,25 @@
                     return row;
                 }
 
-                function createCard(member, isBig = false) {
+                function createCard(member, isBig = false, isSmall = false) {
                     const card = document.createElement("div");
-                    card.className = `team-card ${isBig ? 'owner-card' : ''}`;
+                    card.className = `team-card ${isBig ? 'owner-card' : ''} ${isSmall ? 'small-card' : ''}`;
 
                     const photoUrl = member.photoURL || member.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=4f46e5&color=fff`;
                     const roleClass = `role-${member.role.toLowerCase()}`;
 
-                    const customRoleName = rolesMap[member.customRoleId];
-                    const fallbackTitle = systemRoleLabels[member.role] || member.role.charAt(0).toUpperCase() + member.role.slice(1);
-                    const roleTitle = customRoleName || member.customRoleId || fallbackTitle;
+                    const roleIds = member.customRoleIds || (member.customRoleId ? [member.customRoleId] : []);
+                    const roleTitles = roleIds.map(rid => rolesMap[rid] || rid).filter(s => s);
+                    
+                    const fallbackTitle = isSmall ? "Admin" : (systemRoleLabels[member.role] || member.role.charAt(0).toUpperCase() + member.role.slice(1));
+                    const roleTitle = roleTitles.length > 0 ? roleTitles.join(" | ") : fallbackTitle;
 
                     card.innerHTML = `
                         <div class="admin-photo">
                           <img src="${photoUrl}" alt="${member.name}">
                         </div>
                         <div class="admin-name">${member.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">${member.role === 'owner' ? '' : (member.registrationNumber || "")}</div>
                         <div class="admin-role ${roleClass}">${roleTitle}</div>
                         <div class="admin-bio">${member.bio || "Dedicated to building a better learning experience for all CodeBase students."}</div>
                     `;

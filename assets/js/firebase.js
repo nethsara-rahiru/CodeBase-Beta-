@@ -47,37 +47,33 @@ const ALLOWED_DOMAINS = ["@std.uwu.ac.lk", "@stu.vau.ac.lk"];
 // ------------------------------------------------------------------------------------------
 // GOOGLE LOGIN
 // ------------------------------------------------------------------------------------------
+
+let isAuthProcessing = false;
+
 window.googleLogin = async function () {
   try {
     const result = await signInWithPopup(auth, provider);
     await window.handleUserAuth(result.user);
   } catch (err) {
     console.error("Login failed:", err);
-    throw err; // Re-throw to be caught in UI
+    throw err; 
   }
 };
 
 window.handleUserAuth = async function (user) {
-  if (!user) return;
-
-  // 1. Quick Local Check for session persistence
-  const cachedUser = JSON.parse(localStorage.getItem("user"));
-  if (cachedUser && cachedUser.uid === user.uid && window.location.pathname.includes("index.html")) {
-     // If we are on index and already have a user, we can potentially skip some checks 
-     // but for security, we usually want to re-verify. 
-     // For now, let's just proceed with optimized queries.
-  }
-
-  // Save basic user info locally
-  const userData = {
-    uid: user.uid,
-    name: user.displayName,
-    email: user.email,
-    photo: user.photoURL
-  };
-  localStorage.setItem("user", JSON.stringify(userData));
+  if (!user || isAuthProcessing) return;
+  isAuthProcessing = true;
 
   try {
+    // 1. Quick Local Check for session persistence
+    const userData = {
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      photo: user.photoURL
+    };
+    localStorage.setItem("user", JSON.stringify(userData));
+
     // ---------------------------
     // FIRESTORE CHECK → targeted queries (Fast & Efficient)
     // ---------------------------
@@ -111,10 +107,13 @@ window.handleUserAuth = async function (user) {
     const emailAllowed = !!allowedUser;
 
     if (!domainAllowed && !emailAllowed) {
-      alert("Access denied. Only approved emails allowed.");
+      alert("Access denied. Only approved university emails or whitelisted accounts allowed.");
       await signOut(auth);
       localStorage.clear();
-      window.location.href = "index.html"; 
+      if (!window.location.pathname.includes("index.html") && !window.location.pathname.includes("login.html")) {
+          window.location.href = "index.html"; 
+      }
+      isAuthProcessing = false;
       return;
     }
 
@@ -130,6 +129,7 @@ window.handleUserAuth = async function (user) {
         await signOut(auth);
         localStorage.clear();
         window.location.href = "index.html";
+        isAuthProcessing = false;
         return;
       }
 
@@ -139,19 +139,29 @@ window.handleUserAuth = async function (user) {
         await signOut(auth);
         localStorage.clear();
         window.location.href = "index.html";
+        isAuthProcessing = false;
         return;
       }
 
-      // Final redirect
-      redirectByRole(userDocData.role || "student");
+      // Final redirect if we are on a login/landing page
+      const isOnAuthPage = window.location.pathname.includes("index.html") || 
+                           window.location.pathname.includes("login.html") || 
+                           window.location.pathname === "/" || 
+                           window.location.pathname.endsWith("/");
+      
+      if (isOnAuthPage) {
+          redirectByRole(userDocData.role || "student");
+      }
     } else {
-      // First login → go to register page
-      window.location.href = "register.html";
+      // First login → go to register page if not already there
+      if (!window.location.pathname.includes("register.html")) {
+          window.location.href = "register.html";
+      }
     }
   } catch (error) {
     console.error("Auth process error:", error);
-    // On error, try to stay safe and redirect to login
-    // window.location.href = "index.html";
+  } finally {
+    isAuthProcessing = false;
   }
 };
 
@@ -159,7 +169,11 @@ window.handleUserAuth = async function (user) {
 // ROLE REDIRECTION
 // ------------------------------------------------------------------------------------------
 function redirectByRole(role) {
-  window.location.href = "dashboard.html";
+  if (role === "admin" || role === "owner") {
+     window.location.href = "dashboard.html"; // Admins also use dashboard but have extra links
+  } else {
+     window.location.href = "dashboard.html";
+  }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -214,4 +228,4 @@ window.registerUser = async function (regNumber, phone, level, semester, stream)
   window.location.href = "dashboard.html";
 };
 
-export { app };
+export { app, auth, db };

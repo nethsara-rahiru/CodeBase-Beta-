@@ -29,3 +29,13 @@ if (btn) {
     }
   });
 }
+
+// Check for existing session
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+    if (user && window.handleUserAuth) {
+        if (msg) msg.textContent = "Verifying session...";
+        window.handleUserAuth(user);
+    }
+});

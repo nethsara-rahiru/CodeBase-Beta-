@@ -756,6 +756,64 @@
       }
     }
 
+    /* Role Picker */
+    .role-selector-wrap {
+      position: relative;
+    }
+
+    .role-picker-btn {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: white;
+      font-size: 0.8rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+
+    .role-picker-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 100;
+      width: 200px;
+      background: #1e293b;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-top: 8px;
+    }
+
+    .role-picker-dropdown.active {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .role-checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .role-checkbox-item:hover {
+      color: white;
+    }
+
+    .role-checkbox-item input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -1028,6 +1086,7 @@
       <div class="admin-card">
         <div class="section-header">
           <h2>User Directory</h2>
+          <input type="text" id="searchUsers" class="search-input" placeholder="Search by name, email, or reg no..." style="max-width: 300px;">
         </div>
         <div class="table-container">
           <table>
@@ -1685,15 +1744,34 @@
           row.innerHTML = `
             <td>${data.name}<br><small>${data.email}</small></td>
             <td>
-              <select onchange="assignStaffRole('${d.id}', this.value)" style="padding:6px; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--glass-border); border-radius:8px;">
-                <option value="">No Role</option>
-                ${cachedRoles.map(r => `<option value="${r.id}" ${roleId === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
-              </select>
+              <div class="role-selector-wrap">
+                <button class="role-picker-btn" onclick="toggleRolePicker(this); event.stopPropagation();">
+                  ${(data.customRoleIds || (data.customRoleId ? [data.customRoleId] : [])).length || 0} Roles Selection
+                </button>
+                <div class="role-picker-dropdown">
+                  ${cachedRoles.map(r => {
+                      const roles = data.customRoleIds || (data.customRoleId ? [data.customRoleId] : []);
+                      const isChecked = roles.includes(r.id);
+                      return `
+                        <label class="role-checkbox-item">
+                          <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleStaffRole('${d.id}', '${r.id}')">
+                          <span>${r.name}</span>
+                        </label>
+                      `;
+                  }).join('')}
+                </div>
+              </div>
             </td>
             <td>
-              <span class="role-badge" style="background:${assignedRole ? 'var(--success)' : 'var(--text-muted)'}">
-                ${assignedRole ? assignedRole.name : 'No Role'}
-              </span>
+              <div style="display:flex; flex-wrap:wrap; gap:4px; max-width:200px;">
+                ${(data.customRoleIds || (data.customRoleId ? [data.customRoleId] : [])).length > 0 
+                  ? (data.customRoleIds || [data.customRoleId]).map(rid => {
+                      const role = cachedRoles.find(r => r.id === rid);
+                      return role ? `<span class="role-badge" style="background:var(--success); font-size:10px; padding:2px 6px;">${role.name}</span>` : '';
+                    }).join('')
+                  : '<span class="role-badge" style="background:var(--text-muted); font-size:10px; padding:2px 6px;">No Role</span>'
+                }
+              </div>
             </td>
             <td>
               <button class="btn-ban" style="padding:6px 12px; font-size:0.75rem;" onclick="denyStaffAccess('${data.registrationNumber}')">Deny Access</button>
@@ -1782,12 +1860,38 @@
       }
     };
 
-    window.assignStaffRole = async (uid, roleId) => {
+    window.toggleRolePicker = (btn) => {
+      const dropdown = btn.nextElementSibling;
+      const isActive = dropdown.classList.contains('active');
+      document.querySelectorAll('.role-picker-dropdown').forEach(d => d.classList.remove('active'));
+      if (!isActive) dropdown.classList.add('active');
+    };
+
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('.role-selector-wrap')) {
+        document.querySelectorAll('.role-picker-dropdown').forEach(d => d.classList.remove('active'));
+      }
+    });
+
+    window.toggleStaffRole = async (uid, roleId) => {
       if (!currentAdminPerms.isOwner) {
         alert("Only the owner can assign roles to staff members.");
         loadStaff(); return;
       }
-      await updateDoc(doc(db, "users", uid), { customRoleId: roleId });
+      const snap = await getDoc(doc(db, "users", uid));
+      const data = snap.data();
+      let roles = data.customRoleIds || (data.customRoleId ? [data.customRoleId] : []);
+      
+      if (roles.includes(roleId)) {
+        roles = roles.filter(r => r !== roleId);
+      } else {
+        roles.push(roleId);
+      }
+      
+      await updateDoc(doc(db, "users", uid), { 
+        customRoleIds: roles, 
+        customRoleId: roles[0] || "" // Compatibility
+      });
       loadStaff();
     };
 
@@ -1801,6 +1905,7 @@
 
     // USERS
     let allRolesMap = {};
+    let userDataStore = [];
     async function loadUsers() {
       if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
 
@@ -1812,16 +1917,27 @@
       });
 
       const snap = await getDocs(collection(db, "users"));
+      userDataStore = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderUsers();
+    }
+
+    function renderUsers() {
       const body = document.getElementById("userTableBody");
+      const search = (document.getElementById("searchUsers")?.value || "").toLowerCase();
+
+      let filtered = userDataStore.filter(data => {
+        const name = (data.name || "").toLowerCase();
+        const email = (data.email || "").toLowerCase();
+        const reg = (data.registrationNumber || "").toLowerCase();
+        return name.includes(search) || email.includes(search) || reg.includes(search);
+      });
+
       body.innerHTML = "";
-
-      snap.forEach(d => {
-        const data = d.data();
+      filtered.forEach(data => {
         const systemRole = data.role || "student";
-        const customRoleName = allRolesMap[data.customRoleId];
-
-        // Display custom role name if it exists, otherwise use system role
-        const displayRole = customRoleName || (systemRole === 'admin' ? 'Admin' : systemRole.charAt(0).toUpperCase() + systemRole.slice(1));
+        const roleIds = data.customRoleIds || (data.customRoleId ? [data.customRoleId] : []);
+        const roleTitles = roleIds.map(rid => allRolesMap[rid] || rid).filter(s => s);
+        const displayRole = roleTitles.length > 0 ? roleTitles.join(" | ") : (systemRole === 'admin' ? 'Admin' : systemRole.charAt(0).toUpperCase() + systemRole.slice(1));
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -1831,17 +1947,20 @@
           <td><span class="role-badge role-${systemRole}">${displayRole}</span></td>
           <td>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <select onchange="updateRole('${d.id}', this)" style="padding:4px; font-size:12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
+              <select onchange="updateRole('${data.id}', this)" style="padding:4px; font-size:12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
                 <option value="student" ${systemRole == 'student' ? 'selected' : ''}>Student</option>
                 <option value="admin" ${systemRole == 'admin' ? 'selected' : ''}>Admin</option>
               </select>
-              <div id="loader-${d.id}" style="display: none;"><div class="loader-circle"></div></div>
+              <div id="loader-${data.id}" style="display: none;"><div class="loader-circle"></div></div>
               <button class="btn-ban" onclick="banUser('${data.registrationNumber}')">Ban</button>
             </div>
           </td>`;
         body.appendChild(row);
       });
     }
+
+    // Search event listener
+    document.getElementById("searchUsers").oninput = renderUsers;
 
     async function loadBannedUsers() {
       if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
