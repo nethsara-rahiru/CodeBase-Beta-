@@ -422,15 +422,118 @@
 
     /* Profile Specific Layout */
     .profile-tab-layout {
-      display: grid;
-      grid-template-columns: 1fr 350px;
+      display: flex;
+      flex-direction: column;
       gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
     }
 
-    @media (max-width: 1100px) {
-      .profile-tab-layout {
-        grid-template-columns: 1fr;
-      }
+    /* Results Table Styles */
+    .results-table-wrap {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .results-table th, .results-table td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .results-table th {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+    }
+
+    .grade-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 10px;
+      outline: none;
+      width: 100%;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .grade-select:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .res-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 10px;
+      width: 100%;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .res-input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .gpa-display-card {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 30px;
+      padding: 60px 40px;
+      text-align: center;
+      margin-bottom: 32px;
+      box-shadow: 0 20px 50px rgba(79, 70, 229, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gpa-display-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .gpa-val {
+      font-size: 5rem;
+      font-weight: 900;
+      margin: 15px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .add-res-btn {
+      background: var(--glass-bg);
+      border: 1px dashed var(--glass-border);
+      color: var(--text-muted);
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .add-res-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: white;
     }
 
     /* Organization Section */
@@ -799,13 +902,6 @@
     }
 
     /* Skeleton Loading */
-    .skeleton {
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 12px;
-    }
-
     @keyframes shimmer {
       0% {
         background-position: -200% 0;
@@ -814,6 +910,31 @@
       100% {
         background-position: 200% 0;
       }
+    }
+
+    /* Loading Bar Styles */
+    .loading-bar-container {
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 15px 0;
+      display: none;
+      position: relative;
+    }
+
+    .loading-bar {
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), var(--accent-secondary), transparent);
+      animation: loading-shimmer 1.5s infinite linear;
+      position: absolute;
+    }
+
+    @keyframes loading-shimmer {
+      from { left: -40%; }
+      to { left: 100%; }
     }
 
     /* Empty States */
@@ -979,40 +1100,52 @@
     <!-- TAB 2: PROFILE -->
     <div id="profileSection" style="display:none;">
       <div class="profile-tab-layout">
-        <div class="left-col">
-          <section class="org-section">
-            <h3 style="font-size: 1.25rem; font-weight: 700;">Performance Overview</h3>
-            <div class="stats-grid">
-              <div class="stat-card"><span class="val" id="userPoints">0</span><span class="label">XP Points</span>
-              </div>
-              <div class="stat-card"><span class="val" id="statCourses">0</span><span class="label">Enrolled
-                  Courses</span></div>
-              <div class="stat-card"><span class="val" id="statOrgs">0</span><span class="label">Organizations</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="org-section" style="margin-top: 20px;">
-            <h3 style="font-size: 1.25rem; font-weight: 700;">Joined Organizations & Roles</h3>
-            <div id="joinedOrgsList" class="org-grid">
-              <p style="color: var(--text-muted); font-size: 0.9rem;">No organizations joined yet.</p>
-            </div>
-          </section>
+        <!-- GPA Box (Top) -->
+        <div class="gpa-display-card">
+          <span class="label" style="text-transform: uppercase; font-size: 1rem; font-weight: 600; opacity: 0.9; letter-spacing: 0.1em;">Academic Standing — GPA</span>
+          <div class="gpa-val" id="gpaScore">0.00</div>
+          <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500;" id="gpaStatus">Start adding your results!</p>
         </div>
 
-        <div class="right-col">
-          <section class="org-section">
-            <h3 style="font-size: 1.25rem; font-weight: 700;">Recent Activity</h3>
-            <div class="timeline" id="activityTimeline">
-              <div class="timeline-item">
-                <span class="timeline-date">Today at 2:30 PM</span>
-                <div class="timeline-title">Participated in CodeBase Refactoring</div>
-                <p class="timeline-desc">Contributed significantly to the architectural redesign of the dashboard
-                  module.</p>
-              </div>
-            </div>
-          </section>
-        </div>
+        <!-- Stats (Points) -->
+        <section class="org-section">
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Performance Overview</h3>
+          <div class="stats-grid">
+            <div class="stat-card"><span class="val" id="userPoints">0</span><span class="label">XP Points</span></div>
+            <div class="stat-card"><span class="val" id="statCourses">0</span><span class="label">Enrolled Courses</span></div>
+            <div class="stat-card"><span class="val" id="statOrgs">0</span><span class="label">Organizations</span></div>
+          </div>
+        </section>
+
+        <!-- Results Table -->
+        <section class="org-section">
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Academic Results</h3>
+          <div class="results-table-wrap">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">Code</th>
+                  <th>Subject Name</th>
+                  <th style="width: 110px;">Grade</th>
+                  <th style="width: 40px;"></th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+            <button class="add-res-btn" onclick="promptAddResult()">+ Add New Result</button>
+            <button class="save-btn" style="margin-top: 20px;" onclick="saveResults()">Save All Results</button>
+          </div>
+        </section>
+
+        <!-- Organizations -->
+        <section class="org-section">
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Joined Organizations & Roles</h3>
+          <div id="joinedOrgsList" class="org-grid" style="margin-top: 20px;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">No organizations joined yet.</p>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -1022,6 +1155,9 @@
         <div class="section-title-wrap">
           <h3 style="font-size: 1.25rem; font-weight: 700;">My Enrolled Courses</h3><span id="courseCountDisplay"
             style="font-size: 0.9rem; color: var(--accent-secondary);">0 Courses</span>
+        </div>
+        <div id="courseLoadingBar" class="loading-bar-container">
+          <div class="loading-bar"></div>
         </div>
         <div class="course-grid" id="courseContainer"></div>
       </section>
@@ -1085,154 +1221,381 @@
 
     let currentUser = null;
     let selectedFile = null;
+    let allCoursesSnap = null; // Global storage for snap
 
     // FAST LOAD USING LOCALSTORAGE
-    let cachedUser = localStorage.getItem("userData");
-    if (cachedUser) {
-      try {
-        const data = JSON.parse(cachedUser);
-        const photo = data.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
-        document.getElementById("userPhoto").src = photo;
-        document.getElementById("userName").textContent = data.name;
-        document.getElementById("userRegNo").textContent = data.registrationNumber;
-        document.getElementById("userPoints").textContent = data.points || 0;
-        const hour = new Date().getHours();
-        document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
-      } catch (e) { }
+    function applyCachedData() {
+      const cachedUser = localStorage.getItem("userData");
+      if (cachedUser) {
+        try {
+          const data = JSON.parse(cachedUser);
+          updateUserUI(data, auth.currentUser || { email: data.email });
+          if (data.gpa) {
+            document.getElementById("gpaScore").textContent = data.gpa;
+          }
+        } catch (e) { }
+      }
+
+      const cachedOrgs = localStorage.getItem("dashboard_orgs");
+      if (cachedOrgs) renderOrganizations(JSON.parse(cachedOrgs));
+
+      const cachedSlides = localStorage.getItem("dashboard_slides");
+      if (cachedSlides) renderSlideshow(JSON.parse(cachedSlides));
     }
 
-    let cachedCourses = localStorage.getItem("dashboard_courses");
-    if (cachedCourses) {
+    window.GRADE_POINTS = {
+      "A+": 4.0, "A": 4.0, "A-": 3.7,
+      "B+": 3.3, "B": 3.0, "B-": 2.7,
+      "C+": 2.3, "C": 2.0, "C-": 1.7,
+      "D+": 1.3, "D": 1.0, "E": 0.0, "F": 0.0
+    };
+
+    window.addResultRow = (code = "", grade = "", name = "") => {
+      const tbody = document.getElementById("resultsTableBody");
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-code", code);
+      tr.setAttribute("data-name", name);
+      tr.innerHTML = `
+        <td style="font-weight: 600; font-size: 0.9rem; color: var(--accent-primary);">${code}</td>
+        <td style="font-size: 0.9rem; font-weight: 500;">${name}</td>
+        <td>
+          <select class="grade-select" onchange="window.calculateGPA()">
+            <option value="">Select</option>
+            ${Object.keys(window.GRADE_POINTS).map(g => `<option value="${g}" ${g === grade ? 'selected' : ''}>${g}</option>`).join('')}
+          </select>
+        </td>
+        <td><button style="background:none; border:none; color:#ef4444; cursor:pointer; font-size: 1.2rem; opacity: 0.6;" onclick="this.closest('tr').remove(); window.calculateGPA()">×</button></td>
+      `;
+      tbody.appendChild(tr);
+    };
+
+    window.promptAddResult = () => {
+      const code = prompt("Enter Course Code (e.g., IT1234):");
+      if (!code) return;
+      const name = prompt("Enter Subject Name:");
+      if (!name) return;
+      addResultRow(code.toUpperCase().trim(), "", name.trim());
+    };
+
+    window.calculateGPA = () => {
+      const rows = document.querySelectorAll("#resultsTableBody tr");
+      let totalWeightedPoints = 0;
+      let totalCredits = 0;
+
+      rows.forEach(row => {
+        // Get code from data attribute or dataset
+        const code = row.getAttribute("data-code") || row.dataset.code || "";
+        const gradeSelect = row.querySelector(".grade-select");
+        if (!gradeSelect) return;
+
+        const grade = gradeSelect.value;
+        // Skip subjects with no grade selected (Pseudocode: results available subjects only)
+        if (!grade) return; 
+
+        const gradePoint = window.GRADE_POINTS[grade];
+        if (gradePoint === undefined) return;
+
+        // Credit Extraction Logic (Ex: IT1234 -> last digit 4 is credit)
+        const digits = code.match(/\d/g);
+        const credit = digits ? parseInt(digits[digits.length - 1]) : 0;
+        
+        if (credit > 0) {
+          totalWeightedPoints += (credit * gradePoint);
+          totalCredits += credit;
+        }
+      });
+
+      // GPA Calculation (Pseudocode: IF totalCredits ≠ 0 THEN totalWeightedPoints / totalCredits)
+      const gpaValue = totalCredits !== 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : "0.00";
+      
+      const gpaDisplay = document.getElementById("gpaScore");
+      if (gpaDisplay) gpaDisplay.textContent = gpaValue;
+      
+      const status = document.getElementById("gpaStatus");
+      if (status) {
+        if (totalCredits === 0) status.textContent = "Select your grades to calculate!";
+        else if (gpaValue >= 3.7) status.textContent = "Dean's List potential! 🌟";
+        else if (gpaValue >= 3.0) status.textContent = "Great job! Keep it up! 👏";
+        else status.textContent = "Keep working hard! 💪";
+      }
+      
+      return gpaValue;
+    };
+
+    window.saveResults = async () => {
+      if (!currentUser) return;
+      
+      const rows = document.querySelectorAll("#resultsTableBody tr");
+      const results = [];
+      rows.forEach(row => {
+        const code = row.dataset.code || "";
+        const name = row.dataset.name || "";
+        const gradeSelect = row.querySelector(".grade-select");
+        if (!gradeSelect) return;
+
+        const grade = gradeSelect.value;
+        if (code && grade) results.push({ code, grade, name });
+      });
       try {
-        const parsed = JSON.parse(cachedCourses);
-        // Fake snap for renderCourses
-        const fakeSnap = { docs: parsed.map(d => ({ id: d.id, data: () => d.data })) };
-        // We need level/semester from userData if possible, or just wait for auth
-      } catch (e) { }
+        const gpa = calculateGPA();
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          results: results,
+          gpa: gpa
+        });
+        showToast("Results and GPA saved successfully!");
+        
+        // Update local cache
+        const cached = JSON.parse(localStorage.getItem("userData") || "{}");
+        const updatedData = { ...cached, results, gpa };
+        localStorage.setItem("userData", JSON.stringify(updatedData));
+        
+        // Refresh UI to show newly unlocked semesters if any
+        if (allCoursesSnap) loadUserResults(updatedData, allCoursesSnap);
+
+      } catch (err) {
+        console.error("Error saving results:", err);
+        showToast("Failed to save results.", true);
+      }
+    };
+
+    // Load existing results into the UI
+    window.loadUserResults = (userDoc, coursesSnap) => {
+      const tbody = document.getElementById("resultsTableBody");
+      tbody.innerHTML = "";
+      const results = userDoc.results || [];
+      const seenBaseCodes = new Set();
+      
+      const getBaseCode = (fullCode) => {
+        const match = fullCode.match(/^([A-Z]+\d+)/i);
+        return match ? match[1].toUpperCase() : fullCode.toUpperCase();
+      };
+
+      // Helper to check if a subject should be ignored based on the "XXAX" rule (A > 6)
+      const isIgnoredSubject = (code) => {
+        const base = getBaseCode(code);
+        // Find the digits part. For IT1134, digits start at index 2.
+        const digitsMatch = base.match(/\d+/);
+        if (digitsMatch) {
+          const digits = digitsMatch[0];
+          if (digits.length >= 3) {
+            const thirdDigit = parseInt(digits[2]);
+            return thirdDigit > 6;
+          }
+        }
+        return false;
+      };
+
+      // 1. Determine which semester we should be showing subjects for
+      const semesters = ["11", "12", "21", "22", "31", "32", "41", "42"];
+      let currentSemesterToPopulate = "11";
+
+      for (const semTag of semesters) {
+        // Find all unique, non-ignored subjects for this semester in our database
+        const semCoursesInDB = coursesSnap.docs.filter(d => {
+          const semMatch = d.id.substring(2, 4) === semTag;
+          return semMatch && !isIgnoredSubject(d.id);
+        });
+        
+        const uniqueSemCodesInDB = new Set();
+        semCoursesInDB.forEach(d => uniqueSemCodesInDB.add(getBaseCode(d.id)));
+
+        if (uniqueSemCodesInDB.size === 0) continue; 
+        
+        const completedInSem = results.filter(r => {
+          const base = getBaseCode(r.code);
+          return base.substring(2, 4) === semTag && r.grade !== "";
+        });
+
+        // Loop checks if user has filled everything for this sem
+        if (completedInSem.length < uniqueSemCodesInDB.size) {
+          currentSemesterToPopulate = semTag;
+          break;
+        }
+        
+        // If this semester is full, move the marker to the next one
+        const currentIdx = semesters.indexOf(semTag);
+        if (currentIdx < semesters.length - 1) {
+          currentSemesterToPopulate = semesters[currentIdx + 1];
+        } else {
+          currentSemesterToPopulate = semTag;
+        }
+      }
+
+      // 2. Render all uniquely graded results
+      results.forEach(res => {
+        const base = getBaseCode(res.code);
+        if (!seenBaseCodes.has(base)) {
+          addResultRow(base, res.grade, res.name || "");
+          seenBaseCodes.add(base);
+        }
+      });
+
+      // 3. Auto-add MISSING subjects for the ACTIVE incomplete semester
+      const activeSemCourses = coursesSnap.docs.filter(d => {
+        const semMatch = d.id.substring(2, 4) === currentSemesterToPopulate;
+        return semMatch && !isIgnoredSubject(d.id);
+      });
+
+      activeSemCourses.forEach(course => {
+        const base = getBaseCode(course.id);
+        if (!seenBaseCodes.has(base)) {
+          addResultRow(base, "", course.data().name);
+          seenBaseCodes.add(base);
+        }
+      });
+
+      if (seenBaseCodes.size === 0) addResultRow(); 
+
+      calculateGPA();
+    };
+
+    function updateUserUI(data, userAuth) {
+      const photo = data.photoUrl || userAuth.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
+      document.getElementById("userPhoto").src = photo;
+      document.getElementById("formPicPreview").src = photo;
+      document.getElementById("userName").textContent = data.name;
+      document.getElementById("userEmail").textContent = userAuth.email;
+      document.getElementById("userRegNo").textContent = data.registrationNumber;
+      document.getElementById("userPoints").textContent = data.points || 0;
+      
+      const hour = new Date().getHours();
+      document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
+
+      if (["owner", "admin", "editor"].includes(data.role)) {
+        document.getElementById("navAdmin").style.display = "flex";
+      }
+
+      document.getElementById("editName").value = data.name;
+      document.getElementById("editLevel").value = data.level;
+      document.getElementById("editSemester").value = data.semester;
+      document.getElementById("editBio").value = data.bio || "";
     }
 
-    let coursesPromise = getDocs(collection(db, "courses"));
-    let dynamicContentPromise = loadDynamicContent();
+    // Initialize with cache
+    applyCachedData();
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "index.html"; return; }
       currentUser = user;
 
       try {
-        // Parallelize User Doc and already started Course List
-        const [userSnap, coursesSnap] = await Promise.all([
+        // Show loading bar
+        document.getElementById("courseLoadingBar").style.display = "block";
+
+        // Parallel fetch all essential data
+        const [userSnap, coursesSnap, slideSnap, orgSnap, sysSnap] = await Promise.all([
           getDoc(doc(db, "users", user.uid)),
-          coursesPromise
+          getDocs(collection(db, "courses")),
+          getDocs(collection(db, "slideshow")),
+          getDocs(collection(db, "organizations")),
+          getDoc(doc(db, "system", "settings"))
         ]);
 
-        if (!userSnap.exists()) return;
-        const data = userSnap.data();
-
-        const photo = data.photoUrl || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
-
-        document.getElementById("userPhoto").src = photo;
-        document.getElementById("formPicPreview").src = photo;
-        document.getElementById("userName").textContent = data.name;
-        document.getElementById("userEmail").textContent = user.email;
-        document.getElementById("userRegNo").textContent = data.registrationNumber;
-
-        if (["owner", "admin", "editor"].includes(data.role)) {
-          document.getElementById("navAdmin").style.display = "flex";
+        if (!userSnap.exists()) {
+           window.location.href = "register.html";
+           return;
         }
 
-        const hour = new Date().getHours();
-        document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
+        const data = userSnap.data();
+        allCoursesSnap = coursesSnap; // Save to global for UI refreshes
+        loadUserResults(data, coursesSnap); // Load GPA results with auto-progression
+        const sysData = sysSnap.exists() ? sysSnap.data() : { maintenance: false };
 
-        document.getElementById("userPoints").textContent = data.points || 0;
-        document.getElementById("editName").value = data.name;
-        document.getElementById("editLevel").value = data.level;
-        document.getElementById("editSemester").value = data.semester;
-        document.getElementById("editBio").value = data.bio || "";
+        // SECURITY VETTNG
+        if (sysData.maintenance && (data.role || "student") === "student") {
+           alert("Site is under maintenance.");
+           signOut(auth);
+           localStorage.clear();
+           window.location.href = "index.html";
+           return;
+        }
 
-        // Cache user info
-        localStorage.setItem("userData", JSON.stringify({
-          name: data.name,
-          registrationNumber: data.registrationNumber,
-          photoURL: photo,
-          points: data.points,
-          level: data.level,
-          semester: data.semester
-        }));
+        // Update UI & Cache
+        updateUserUI(data, user);
+        localStorage.setItem("userData", JSON.stringify({ ...data, email: user.email, photoUrl: data.photoUrl || user.photoURL }));
 
-        // Now render based on fresh data
         renderCourses(coursesSnap, data.level, data.semester);
+        
+        const slides = slideSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderSlideshow(slides);
+        localStorage.setItem("dashboard_slides", JSON.stringify(slides));
 
-        // Cache courses
-        const toCache = coursesSnap.docs.map(d => ({ id: d.id, data: d.data() }));
-        localStorage.setItem("dashboard_courses", JSON.stringify(toCache));
+        const orgs = orgSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderOrganizations(orgs);
+        localStorage.setItem("dashboard_orgs", JSON.stringify(orgs));
 
-        await dynamicContentPromise;
         initOrgStatus();
+        renderJoinedOrgs();
       } catch (err) {
-        console.error("Dashboard initialization failed:", err);
+        console.error("Dashboard optimization failed:", err);
       }
     });
 
-    async function renderCourses(snap, level, semester) {
+    function renderCourses(snap, level, semester) {
       const container = document.getElementById("courseContainer");
-      container.innerHTML = ""; let count = 0; let cardIdx = 0;
-      for (const d of snap.docs) {
-        if (d.id[2] == level && d.id[3] == semester) {
+      container.innerHTML = ""; 
+      let count = 0; 
+      let cardIdx = 0;
+      
+      const docs = snap.docs || snap; // Handle both Snap and Raw Array
+      
+      docs.forEach(d => {
+        const id = d.id;
+        const data = typeof d.data === 'function' ? d.data() : d.data;
+        if (id[2] == level && id[3] == semester) {
           count++;
-
           const card = document.createElement("div");
           card.className = "course-card";
           card.style.animationDelay = `${cardIdx * 0.05}s`;
           cardIdx++;
           card.innerHTML = `
-            <h4 style="margin:0;">${d.data().name}</h4>
-            <p style="margin:10px 0 0; font-size:0.8rem; color:var(--text-muted);">${d.id}</p>
+            <h4 style="margin:0;">${data.name}</h4>
+            <p style="margin:10px 0 0; font-size:0.8rem; color:var(--text-muted);">${id}</p>
           `;
-          card.onclick = () => { localStorage.setItem("selectedCourseId", d.id); window.location.href = "content.html"; };
+          card.onclick = () => { localStorage.setItem("selectedCourseId", id); window.location.href = "content.html"; };
           container.appendChild(card);
         }
-      }
+      });
       document.getElementById("courseCountDisplay").textContent = `${count} Courses`;
       document.getElementById("statCourses").textContent = count;
+      
+      // Hide loading bar
+      document.getElementById("courseLoadingBar").style.display = "none";
     }
 
-    async function loadDynamicContent() {
-      // Fetch Slideshow
-      const slideSnap = await getDocs(collection(db, "slideshow"));
-      const slideHost = document.getElementById("slideshowContainer");
-      slideHost.innerHTML = "";
-      let slideIndex = 0;
-      slideSnap.forEach((d) => {
+    function renderSlideshow(slides) {
+      const host = document.getElementById("slideshowContainer");
+      if (!slides.length) return;
+      host.innerHTML = "";
+      slides.forEach((s, i) => {
         const slide = document.createElement("div");
-        slide.className = `slide ${slideIndex === 0 ? "active" : ""}`;
-        slide.innerHTML = `<img src="${d.data().image}" alt="Slide">
+        slide.className = `slide ${i === 0 ? "active" : ""}`;
+        slide.innerHTML = `<img src="${s.image}" alt="Slide">
           <div class="slide-overlay">
-            <h2>${d.data().title}</h2>
-            <p>${d.data().description}</p>
+            <h2>${s.title}</h2>
+            <p>${s.description}</p>
           </div>`;
-        slideHost.appendChild(slide);
-        slideIndex++;
+        host.appendChild(slide);
       });
-      if (slideSnap.size > 1) startSlideshow();
+      if (slides.length > 1) startSlideshow();
+    }
 
-      // Fetch Organizations
-      const orgSnap = await getDocs(collection(db, "organizations"));
-      const orgHost = document.getElementById("orgGrid");
-      orgHost.innerHTML = "";
-      orgSnap.forEach((d, i) => {
-        const data = d.data();
+    function renderOrganizations(orgs) {
+      const host = document.getElementById("orgGrid");
+      host.innerHTML = "";
+      orgs.forEach((data, i) => {
         const card = document.createElement("div");
         card.className = "org-card";
         card.style.animationDelay = `${i * 0.05}s`;
-        card.dataset.org = d.id;
+        card.dataset.org = data.id;
         card.style.cursor = "pointer";
         card.onclick = (e) => {
           if (e.target.classList.contains('join-btn')) return;
-          window.location.href = `org.html?id=${d.id}`;
+          window.location.href = `org.html?id=${data.id}`;
         };
         const iconContent = data.icon && data.icon.startsWith("http")
           ? `<img src="${data.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`
-          : (data.icon || d.id[0]);
+          : (data.icon || data.id[0]);
 
         card.innerHTML = `
           <div class="org-header">
@@ -1245,18 +1608,18 @@
           <p class="org-desc">${data.description}</p>
           <div class="org-action">
             <span style="font-size: 0.8rem; color: var(--text-muted);">Join to see members</span>
-            <button class="join-btn" onclick="toggleOrg(this, '${d.id}', '${data.joinLink || ''}')">Join</button>
+            <button class="join-btn" onclick="toggleOrg(this, '${data.id}', '${data.joinLink || ''}')">Join</button>
           </div>` ;
-        orgHost.appendChild(card);
+        host.appendChild(card);
       });
-      renderJoinedOrgs();
-      initOrgStatus();
     }
 
     function startSlideshow() {
+      if (window.slideTimer) clearInterval(window.slideTimer);
       let current = 0;
       const slides = document.querySelectorAll(".slide");
-      setInterval(() => {
+      window.slideTimer = setInterval(() => {
+        if (!slides[current]) return;
         slides[current].classList.remove("active");
         current = (current + 1) % slides.length;
         slides[current].classList.add("active");
@@ -1291,11 +1654,7 @@
 
       const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Cloudinary error details:", data);
-        throw new Error(data.error?.message || "Cloudinary upload failed");
-      }
+      if (!res.ok) throw new Error(data.error?.message || "Cloudinary upload failed");
       return data.secure_url;
     }
 
@@ -1311,7 +1670,6 @@
 
       try {
         let photoUrl = currentUser.photoURL;
-
         if (selectedFile) {
           btnText.textContent = "Uploading Image...";
           photoUrl = await uploadToCloudinary(selectedFile);
@@ -1330,6 +1688,11 @@
         if (photoUrl) await updateProfile(auth.currentUser, { photoURL: photoUrl });
 
         showToast("Profile updated successfully!");
+        
+        // Update Local Cache immediately
+        const cached = JSON.parse(localStorage.getItem("userData") || "{}");
+        localStorage.setItem("userData", JSON.stringify({ ...cached, ...updates, photoUrl }));
+        
         setTimeout(() => location.reload(), 1500);
 
       } catch (err) {
@@ -1349,8 +1712,6 @@
       setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
-
-
     function renderJoinedOrgs() {
       const joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");
       const list = document.getElementById("joinedOrgsList");
@@ -1366,7 +1727,9 @@
     function initOrgStatus() {
       const joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");
       document.querySelectorAll(".join-btn").forEach(btn => {
-        const orgId = btn.closest(".org-card").dataset.org;
+        const orgCard = btn.closest(".org-card");
+        if (!orgCard) return;
+        const orgId = orgCard.dataset.org;
         btn.textContent = joined.includes(orgId) ? "Leave" : "Join";
         btn.classList.toggle("joined", joined.includes(orgId));
       });

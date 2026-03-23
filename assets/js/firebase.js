@@ -50,28 +50,56 @@ const ALLOWED_DOMAINS = ["@std.uwu.ac.lk", "@stu.vau.ac.lk"];
 window.googleLogin = async function () {
   try {
     const result = await signInWithPopup(auth, provider);
-    const user = result.user;
+    await window.handleUserAuth(result.user);
+  } catch (err) {
+    console.error("Login failed:", err);
+    throw err; // Re-throw to be caught in UI
+  }
+};
 
-    // Save basic user info locally
-    const userData = {
-      uid: user.uid,
-      name: user.displayName,
-      email: user.email,
-      photo: user.photoURL
-    };
-    localStorage.setItem("user", JSON.stringify(userData));
+window.handleUserAuth = async function (user) {
+  if (!user) return;
 
+  // 1. Quick Local Check for session persistence
+  const cachedUser = JSON.parse(localStorage.getItem("user"));
+  if (cachedUser && cachedUser.uid === user.uid && window.location.pathname.includes("index.html")) {
+     // If we are on index and already have a user, we can potentially skip some checks 
+     // but for security, we usually want to re-verify. 
+     // For now, let's just proceed with optimized queries.
+  }
+
+  // Save basic user info locally
+  const userData = {
+    uid: user.uid,
+    name: user.displayName,
+    email: user.email,
+    photo: user.photoURL
+  };
+  localStorage.setItem("user", JSON.stringify(userData));
+
+  try {
     // ---------------------------
-    // FIRESTORE CHECK → allowedEmails
+    // FIRESTORE CHECK → targeted queries (Fast & Efficient)
     // ---------------------------
     const allowedRef = collection(db, "login_control", "access", "allowedEmails");
-    const allowedSnap = await getDocs(allowedRef);
-    const allowedDocs = allowedSnap.docs.map(d => d.data());
+    const allowedQuery = query(allowedRef, where("email", "==", user.email));
+    
+    const bannedRef = collection(db, "login_control", "access", "bannedReg");
+    const sysRef = doc(db, "system", "settings");
+    const userRef = doc(db, "users", user.uid);
 
-    // Find the record corresponding to the logged-in user
-    const allowedUser = allowedDocs.find(d => d.email === user.email);
+    // Run independent checks in parallel to save time
+    const [allowedSnap, userSnap, sysSnap] = await Promise.all([
+      getDocs(allowedQuery),
+      getDoc(userRef),
+      getDoc(sysRef)
+    ]);
 
-    // Save current allowed user details locally
+    const allowedUser = !allowedSnap.empty ? allowedSnap.docs[0].data() : null;
+    const userDocData = userSnap.exists() ? userSnap.data() : null;
+    const sysData = sysSnap.exists() ? sysSnap.data() : { maintenance: false };
+
+    // Update local allowed info
     if (allowedUser) {
       localStorage.setItem("allowedUserDetails", JSON.stringify({
         email: allowedUser.email,
@@ -80,53 +108,50 @@ window.googleLogin = async function () {
     }
 
     const domainAllowed = ALLOWED_DOMAINS.some(d => user.email.endsWith(d));
-    const emailAllowed = !!allowedUser; // true if user is in allowedEmails
+    const emailAllowed = !!allowedUser;
 
     if (!domainAllowed && !emailAllowed) {
       alert("Access denied. Only approved emails allowed.");
       await signOut(auth);
-      localStorage.removeItem("user");
+      localStorage.clear();
+      window.location.href = "index.html"; 
       return;
     }
 
-    // ---------------------------
-    // FIRESTORE CHECK → bannedReg
-    // ---------------------------
-    const bannedRef = collection(db, "login_control", "access", "bannedReg");
-    const bannedSnap = await getDocs(bannedRef);
-    const bannedList = bannedSnap.docs.map(d => d.data().regNo);
+    if (userDocData) {
+      const regNo = userDocData.registrationNumber;
+      
+      // Targeted check for ban
+      const bannedQuery = query(bannedRef, where("regNo", "==", regNo));
+      const bannedSnap = await getDocs(bannedQuery);
 
-    const userRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userRef);
-
-    if (userDoc.exists()) {
-      const reg = userDoc.data().registrationNumber;
-
-      if (bannedList.includes(reg)) {
+      if (!bannedSnap.empty) {
         alert("Your account is banned.");
         await signOut(auth);
-        localStorage.removeItem("user");
+        localStorage.clear();
+        window.location.href = "index.html";
         return;
       }
 
       // Check maintenance mode
-      const sysSnap = await getDoc(doc(db, "system", "settings"));
-      if (sysSnap.exists() && sysSnap.data().maintenance && (userDoc.data().role || "student") === "student") {
+      if (sysData.maintenance && (userDocData.role || "student") === "student") {
         alert("Site is under maintenance. Only staff allowed.");
         await signOut(auth);
-        localStorage.removeItem("user");
+        localStorage.clear();
+        window.location.href = "index.html";
         return;
       }
 
-      // Redirect based on role
-      redirectByRole(userDoc.data().role || "student");
+      // Final redirect
+      redirectByRole(userDocData.role || "student");
     } else {
       // First login → go to register page
       window.location.href = "register.html";
     }
-
-  } catch (err) {
-    console.error("Login failed:", err);
+  } catch (error) {
+    console.error("Auth process error:", error);
+    // On error, try to stay safe and redirect to login
+    // window.location.href = "index.html";
   }
 };
 
@@ -140,7 +165,7 @@ function redirectByRole(role) {
 // ------------------------------------------------------------------------------------------
 // REGISTER USER
 // ------------------------------------------------------------------------------------------
-window.registerUser = async function (regNumber, phone, level) {
+window.registerUser = async function (regNumber, phone, level, semester, stream) {
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) {
     alert("Please login first");
@@ -179,6 +204,8 @@ window.registerUser = async function (regNumber, phone, level) {
     registrationNumber: regNumber,
     phone: phone,
     level: level,
+    semester: semester,
+    stream: stream,
     createdAt: new Date(),
     role: "student"
   });

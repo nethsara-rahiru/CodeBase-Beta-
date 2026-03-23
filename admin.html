@@ -828,6 +828,7 @@
       <div class="nav-item" data-tab="organizations">Organizations</div>
       <div class="nav-item" data-tab="staff">Staff Management</div>
       <div class="nav-item" data-tab="users">Users</div>
+      <div class="nav-item" data-tab="allowed-emails">Allowed Emails</div>
       <div class="nav-item" data-tab="community">Community Resources</div>
     </nav>
     <a href="dashboard.html" class="btn-dashboard">
@@ -1064,7 +1065,40 @@
       </div>
     </div>
 
-    <!-- Tab 7: Community -->
+    <!-- Tab 8: Allowed Emails -->
+    <div class="tab-content" id="allowed-emailsTab">
+      <div class="admin-card">
+        <div class="section-header">
+          <h2>Allowed Private Emails</h2>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Whitelist users to use their private Gmail instead of university mail</p>
+        </div>
+        <form id="allowedEmailForm" class="grid-form">
+          <div class="form-group">
+            <label>Gmail Address</label>
+            <input type="email" id="newAllowedEmail" placeholder="user@gmail.com" required>
+          </div>
+          <div class="form-group">
+            <label>Registration Number (Optional)</label>
+            <input type="text" id="newAllowedReg" placeholder="2021/ICT/XX">
+          </div>
+          <div class="form-group" style="justify-content: flex-end;">
+            <button type="submit" class="action-btn">Add Email</button>
+          </div>
+        </form>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Linked Reg No</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="allowedEmailsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     <div class="tab-content" id="communityTab">
       <div class="admin-card">
         <div class="section-header">
@@ -1324,6 +1358,7 @@
       if (tab === "organizations") loadOrgs();
       if (tab === "staff") loadStaff();
       if (tab === "users") { loadUsers(); loadBannedUsers(); }
+      if (tab === "allowed-emails") loadAllowedEmails();
       if (tab === "community") loadCommunityResources();
     }
 
@@ -1375,6 +1410,7 @@
         organizations: perms.canManageOrgs,
         courses: perms.canManageCourses,
         users: perms.canManageUsers,
+        "allowed-emails": perms.canManageUsers, // Same permission as users
         staff: perms.canManageStaff || userData.role === "owner",
         community: true // Or consider a permission check for community later
       };
@@ -1873,9 +1909,54 @@
       if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageDelete) {
         alert("You do not have permission to ban users."); return;
       }
-      if (confirm(`Ban user with Reg No: ${regNo}?`)) {
-        await setDoc(doc(collection(db, "login_control", "access", "bannedReg")), { regNo });
+      const reason = prompt("Enter reason for banning:");
+      if (reason !== null) {
+        await setDoc(doc(collection(db, "login_control", "access", "bannedReg")), { 
+          regNo, 
+          message: reason || "No reason provided",
+          bannedAt: new Date().toISOString()
+        });
         alert("User banned.");
+      }
+    };
+
+    // ALLOWED EMAILS
+    async function loadAllowedEmails() {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
+      const snap = await getDocs(collection(db, "login_control", "access", "allowedEmails"));
+      const body = document.getElementById("allowedEmailsTableBody");
+      body.innerHTML = "";
+      snap.forEach(d => {
+        const data = d.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.email}</td>
+          <td>${data.regNo || 'N/A'}</td>
+          <td><button class="btn-delete" onclick="deleteAllowedEmail('${d.id}')">Remove</button></td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    document.getElementById("allowedEmailForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("newAllowedEmail").value.trim();
+      const regNo = document.getElementById("newAllowedReg").value.trim();
+      if (!email) return;
+
+      try {
+        await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email, regNo });
+        e.target.reset();
+        loadAllowedEmails();
+      } catch (err) {
+        alert("Failed to add email: " + err.message);
+      }
+    };
+
+    window.deleteAllowedEmail = async (id) => {
+      if (confirm("Remove this email from allowed list?")) {
+        await deleteDoc(doc(db, "login_control", "access", "allowedEmails", id));
+        loadAllowedEmails();
       }
     };
 
