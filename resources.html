@@ -397,72 +397,108 @@
       }
     }
 
-    .open-btn:hover {
-      transform: scale(1.05);
-      background: #4f46e5;
+    /* Floating Action Button (FAB) */
+    .fab-container {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 16px;
+      z-index: 1000;
+      transition: all 0.3s ease;
     }
 
-    .card-thumb {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 45%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 1));
-      -webkit-mask-image: linear-gradient(to right, transparent, rgba(0, 0, 0, 1));
+    .fab-main {
+      width: auto;
+      height: 56px;
+      padding: 0 24px;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 28px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .fab-main:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+    }
+
+    .fab-main.active {
+      background: var(--bg-dark);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+    }
+
+    .fab-main i {
+      transition: transform 0.3s ease;
+    }
+
+    .fab-main.active i {
+      transform: rotate(45deg);
+    }
+
+    .fab-options {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
       opacity: 0;
-      transform: translateX(40px);
-      z-index: 1;
-      transition: opacity 0.8s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      visibility: hidden;
+      transform: translateY(20px) scale(0.8);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
     }
 
-    .card-thumb.show {
-      opacity: 0.4;
-      transform: translateX(0);
+    .fab-options.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
     }
 
-    .resource-card:hover .card-thumb.show {
-      opacity: 0.6;
-      transform: scale(1.05);
+    .share-btn {
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 12px 20px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      width: max-content;
+      transition: all 0.2s ease;
+    }
+
+    .share-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-primary);
+      transform: translateX(-4px);
+    }
+
+    .share-btn.blog {
+      border-color: var(--accent-secondary);
+      color: var(--accent-secondary);
     }
 
     @media (max-width: 640px) {
-      header {
-        padding: 12px 16px;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .main-container {
-        padding: 16px;
-      }
-
-      .resource-card {
-        padding: 16px;
-        min-height: auto;
-      }
-
-      .card-thumb {
-        width: 100%;
-        height: 120px;
-        position: relative;
-        transform: none !important;
-        mask-image: none !important;
-        -webkit-mask-image: none !important;
-        border-radius: 12px;
-        margin-top: 12px;
-        opacity: 0.6 !important;
-      }
-
-      .card-info h3 {
-        max-width: 100%;
-        font-size: 1rem;
-      }
-
-      .user-info {
-        display: none;
+      .fab-container {
+        bottom: 24px;
+        right: 24px;
       }
     }
 
@@ -476,7 +512,13 @@
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       width: fit-content;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+    .tab-header::-webkit-scrollbar { display: none; }
+    .tab-btn { flex: 0 0 auto; }
 
     .tab-btn {
       padding: 10px 24px;
@@ -515,8 +557,14 @@
       display: flex;
       gap: 10px;
       margin-bottom: 24px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+    .category-bar::-webkit-scrollbar { display: none; }
+    .cat-pill { flex: 0 0 auto; }
 
     .cat-pill {
       padding: 8px 18px;
@@ -656,28 +704,6 @@
       color: white;
     }
 
-    .share-btn {
-      position: fixed;
-      bottom: 40px;
-      right: 40px;
-      padding: 16px 24px;
-      background: var(--accent-primary);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
-      z-index: 90;
-      transition: all 0.3s;
-    }
-
-    .share-btn:hover {
-      transform: translateY(-4px) scale(1.05);
-    }
   </style>
 </head>
 
@@ -753,22 +779,30 @@
     </div>
   </main>
 
-  <div style="position: fixed; bottom: 40px; right: 40px; display: flex; flex-direction: column; gap: 12px; z-index: 90;">
-    <button id="createBlogBtn" class="share-btn" style="display:none; position: static; background: var(--accent-secondary);">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 20h9"></path>
-        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-      </svg>
-      Write a Blog
-    </button>
-    <button id="addCommunityBtn" class="share-btn" style="display:none; position: static;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-      Share Link/PDF
+  <div class="fab-container" id="communityFab" style="display:none;">
+    <div class="fab-options" id="fabOptions">
+      <button id="createBlogBtn" class="share-btn blog">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        Write a Blog
+      </button>
+      <button class="share-btn" onclick="openUploadWithType('pdf')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Share PDF (Drive)
+      </button>
+      <button class="share-btn" onclick="openUploadWithType('video')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><polygon points="10 8 14 10 10 12 10 8"></polygon><line x1="7" y1="21" x2="17" y2="21"></line></svg>
+        Share YouTube Video
+      </button>
+      <button id="addCommunityBtn" class="share-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+        Share Link/Other
+      </button>
+    </div>
+    <button class="fab-main" id="fabMain">
+      <i id="fabIcon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </i>
+      <span>Upload Content</span>
     </button>
   </div>
 
@@ -955,15 +989,44 @@
     document.getElementById("tabCourse").onclick = () => switchTab("course");
     document.getElementById("tabCommunity").onclick = () => switchTab("community");
 
+    // FAB Interaction
+    const fabMain = document.getElementById("fabMain");
+    const fabOptions = document.getElementById("fabOptions");
+    if (fabMain) {
+      fabMain.onclick = (e) => {
+        e.stopPropagation();
+        fabMain.classList.toggle("active");
+        fabOptions.classList.toggle("open");
+      };
+      // Close when clicking outside
+      window.addEventListener("click", () => {
+        fabMain.classList.remove("active");
+        fabOptions.classList.remove("open");
+      });
+    }
+
     function switchTab(tab) {
       currentTab = tab;
       document.getElementById("tabCourse").classList.toggle("active", tab === "course");
       document.getElementById("tabCommunity").classList.toggle("active", tab === "community");
-      document.getElementById("addCommunityBtn").style.display = tab === "community" ? "flex" : "none";
-      document.getElementById("createBlogBtn").style.display = tab === "community" ? "flex" : "none";
+      
+      const communityFab = document.getElementById("communityFab");
+      if (communityFab) {
+        communityFab.style.display = tab === "community" ? "flex" : "none";
+      }
+
       categoryBar.style.display = tab === "community" ? "flex" : "none";
       loadResources();
     }
+
+    window.openUploadWithType = (type) => {
+      uploadModal.classList.add("active");
+      const typeSelect = document.getElementById("upType");
+      if (typeSelect) typeSelect.value = type;
+      upIsOriginal.checked = false;
+      upOwnerReg.disabled = false;
+      upOwnerReg.value = "";
+    };
 
     // Category Events
     document.querySelectorAll(".cat-pill").forEach(btn => {
@@ -1167,7 +1230,7 @@
       card.querySelector(".open-btn").onclick = () => {
         const type = r.type.toLowerCase();
         if (type === "blog") {
-          window.location.href = `blog-editor.html?id=${r.id}`;
+          window.location.href = `blog.html?id=${r.id}`;
           return;
         }
         if (!r.link) return;

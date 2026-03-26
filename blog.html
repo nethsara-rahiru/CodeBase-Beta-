@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Blog | CodeBase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #6366f1;
+            --accent-secondary: #ec4899;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-area {
+            display: flex; align-items: center; gap: 16px;
+        }
+
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-weight: 600; font-size: 0.875rem;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-2px);
+        }
+
+        .actions-area {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .main-container {
+            max-width: 900px; margin: 40px auto; padding: 20px;
+        }
+
+        .blog-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .blog-header {
+            margin-bottom: 32px; border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 24px;
+        }
+
+        .blog-title {
+            font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;
+            letter-spacing: -0.01em; line-height: 1.2;
+        }
+
+        .author-meta {
+            display: flex; align-items: center; gap: 12px;
+            color: var(--text-muted); font-size: 0.95rem;
+        }
+
+        .author-avatar {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: var(--accent-primary);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: white;
+        }
+
+        .blog-content {
+            font-size: 1.1rem; color: #e2e8f0; word-break: break-word;
+        }
+
+        .blog-content img {
+            max-width: 100%; border-radius: 16px; margin: 24px 0;
+            display: block; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Tool Buttons */
+        .secondary-btn, .edit-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 12px;
+            font-weight: 700; font-size: 0.875rem;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .secondary-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main); position: relative; overflow: hidden;
+        }
+
+        .secondary-btn:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-1px); }
+
+        .edit-btn {
+            background: var(--accent-primary);
+            color: white; border: none;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .edit-btn:hover { background: #4f46e5; transform: translateY(-1px); }
+
+        /* Language Switcher */
+        .lang-switcher { display: flex; gap: 8px; margin-bottom: 24px; padding: 4px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; width: fit-content; }
+        .lang-btn { padding: 6px 16px; border: none; background: none; color: var(--text-muted); font-weight: 700; font-size: 0.8rem; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .lang-btn.active { background: var(--accent-primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+        .lang-btn:not(.active):hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+
+        /* Loading Bar Logic */
+        .loading-bar {
+            position: absolute; bottom: 0; left: 0;
+            width: 0%; height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.3s; z-index: 5;
+        }
+
+        .processing .loading-bar {
+            width: 100%; animation: loading-progress 2s linear infinite;
+        }
+
+        @keyframes loading-progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 640px) {
+            header { padding: 16px 20px; }
+            .main-container { padding: 10px; margin-top: 20px; }
+            .blog-card { padding: 20px; border-radius: 16px; }
+            .blog-title { font-size: 1.75rem; margin-bottom: 12px; }
+            .blog-content { font-size: 1rem; }
+            .actions-area { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .secondary-btn span { display: none; } /* Hide text on small screens */
+            .secondary-btn { padding: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand-area">
+            <a href="resources.html" class="back-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Resources
+            </a>
+            <h1 id="pageTitle">CodeBase Blog</h1>
+        </div>
+        <div class="actions-area">
+            <button class="secondary-btn" id="ttsBtn" style="display:none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                <span>Read Aloud</span>
+                <div class="loading-bar"></div>
+            </button>
+            <a href="#" class="edit-btn" id="editBtn" style="display:none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                Edit Blog
+            </a>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="blog-card" id="blogCard">
+            <!-- Shimmer/Loading state could go here -->
+            <div id="loaderArea" style="text-align: center; padding: 40px;">
+                <p style="color:var(--text-muted);">Loading your blog...</p>
+            </div>
+            
+            <div id="displayArea" style="display:none;">
+                <div class="lang-switcher">
+                    <button class="lang-btn active" id="lang_en" onclick="window.translateContent('en')">English</button>
+                    <button class="lang-btn" id="lang_si" onclick="window.translateContent('si')">සිංහල</button>
+                    <button class="lang-btn" id="lang_ta" onclick="window.translateContent('ta')">தமிழ்</button>
+                </div>
+                <article class="blog-header">
+                    <h1 class="blog-title" id="blogTitle"></h1>
+                    <div class="author-meta">
+                        <div class="author-avatar" id="authorInitials">CB</div>
+                        <div>
+                            <p style="font-weight: 700; color: var(--text-main);" id="authorName"></p>
+                            <p style="font-size: 0.8rem;" id="publishDate"></p>
+                        </div>
+                    </div>
+                </article>
+
+                <div class="blog-content" id="blogContent">
+                    <!-- Content will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden iframe for unblockable TTS hack -->
+    <iframe id="ttsFrame" style="display: none;" referrerpolicy="no-referrer"></iframe>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { app, auth, db } from "./assets/js/firebase.js";
+
+        const editBtn = document.getElementById("editBtn");
+        const ttsBtn = document.getElementById("ttsBtn");
+        const displayArea = document.getElementById("displayArea");
+        const loaderArea = document.getElementById("loaderArea");
+
+        let currentUser = null;
+        let userData = null;
+        let blogData = null;
+        let originalBlogHtml = ""; // To cache English content
+        const currentBlogId = new URLSearchParams(window.location.search).get("id");
+
+        if (!currentBlogId) {
+            window.location.href = "resources.html";
+        }
+
+        window.translateContent = async (targetLang) => {
+            document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+            document.getElementById("lang_" + targetLang).classList.add("active");
+
+            const contentDiv = document.getElementById("blogContent");
+            if (targetLang === 'en') {
+                contentDiv.innerHTML = originalBlogHtml;
+                return;
+            }
+
+            const ttsBtnSpan = document.querySelector("#ttsBtn span");
+            const originalTtsText = ttsBtnSpan.textContent;
+            ttsBtnSpan.textContent = "Translating...";
+            contentDiv.style.opacity = '0.5';
+
+            try {
+                // To avoid breaking images/complex structures if API is aggressive,
+                // we'll extract HTML tags as placeholders, translate, and restore.
+                let tempHtml = originalBlogHtml;
+                const tagsMap = {};
+                let tagIndex = 0;
+
+                tempHtml = tempHtml.replace(/<[^>]+>/g, (match) => {
+                    const key = `[#${tagIndex}#]`;
+                    tagsMap[key] = match;
+                    tagIndex++;
+                    return key;
+                });
+
+                const formData = new URLSearchParams();
+                formData.append('q', tempHtml);
+
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                
+                const json = await res.json();
+                let translatedHtml = json[0].map(item => item[0]).join('');
+                
+                // Restore tags (handling cases where Google adds spaces, e.g. [# 0 #])
+                translatedHtml = translatedHtml.replace(/\[\s*#\s*(\d+)\s*#\s*\]/g, (match, p1) => {
+                    return tagsMap[`[#${p1}#]`] || match;
+                });
+                
+                contentDiv.innerHTML = translatedHtml;
+            } catch (e) {
+                console.error("Translation fail", e);
+                alert("Translation failed down to network error. Try again later.");
+                document.getElementById("lang_en").click(); // revert to English
+            } finally {
+                contentDiv.style.opacity = '1';
+                ttsBtnSpan.textContent = originalTtsText;
+            }
+        };
+
+        onAuthStateChanged(auth, async user => {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+            currentUser = user;
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if (userSnap.exists()) {
+                userData = userSnap.data();
+            }
+            loadBlog();
+        });
+
+        async function loadBlog() {
+            try {
+                const blogSnap = await getDoc(doc(db, "community_resources", currentBlogId));
+                if (blogSnap.exists()) {
+                    blogData = blogSnap.data();
+                    
+                    // Render Data
+                    originalBlogHtml = blogData.content;
+                    document.getElementById("blogTitle").textContent = blogData.title;
+                    document.getElementById("blogContent").innerHTML = originalBlogHtml;
+                    document.getElementById("authorName").textContent = blogData.uploadedBy;
+                    document.getElementById("publishDate").textContent = `Published on ${blogData.uploadedAt?.toDate().toLocaleDateString() || 'N/A'}`;
+                    document.getElementById("authorInitials").textContent = blogData.uploadedBy.substring(0, 2).toUpperCase();
+
+                    // Permission Check for Edit Button
+                    const isAdmin = userData?.role === 'admin' || userData?.role === 'owner';
+                    const isOwner = blogData.uploadedByUid === currentUser.uid;
+                    
+                    if (isAdmin || isOwner) {
+                        editBtn.href = `blog-editor.html?id=${currentBlogId}`;
+                        editBtn.style.display = "flex";
+                    }
+
+                    // Show TTS
+                    ttsBtn.style.display = "flex";
+                    
+                    loaderArea.style.display = "none";
+                    displayArea.style.display = "block";
+                } else {
+                    loaderArea.innerHTML = "<p>Blog not found.</p>";
+                }
+            } catch (err) {
+                console.error("Error loading blog:", err);
+                loaderArea.innerHTML = "<p>Error loading blog content.</p>";
+            }
+        }
+
+        // --- TTS Engine Re-implemented from Editor ---
+        let ttsAudio = new Audio();
+        let ttsQueue = [];
+        let ttsIndex = 0;
+        let availableVoices = [];
+        const ttsFrame = document.getElementById('ttsFrame');
+
+        const loadVoices = () => { availableVoices = window.speechSynthesis.getVoices(); };
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        setInterval(loadVoices, 500);
+
+        ttsBtn.onclick = () => {
+            const text = document.getElementById("blogContent").innerText.replace(/[\n\r]+/g, ' ').trim();
+            if (!text) return;
+
+            window.speechSynthesis.cancel();
+            ttsAudio.pause();
+            ttsQueue = []; ttsIndex = 0;
+
+            let currentLang = 'en';
+            let currentText = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                let charLang = 'en';
+                if (code >= 0x0D80 && code <= 0x0DFF) charLang = 'si';
+                else if (code >= 0x0B80 && code <= 0x0BFF) charLang = 'ta';
+                else if (/[\s\d\W]/.test(char)) charLang = currentLang;
+
+                if (charLang !== currentLang && currentText.trim()) {
+                    ttsQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
+                    currentText = ''; currentLang = charLang;
+                } else if (charLang !== currentLang && !currentText.trim()) {
+                    currentLang = charLang;
+                }
+                currentText += char;
+            }
+            if (currentText.trim()) ttsQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
+
+            const final = [];
+            ttsQueue.forEach(item => {
+                const chunks = item.text.match(/.{1,150}(\s|$)/g) || [item.text];
+                chunks.forEach(c => final.push({ text: c.trim(), lang: item.lang }));
+            });
+            ttsQueue = final.filter(q => q.text.length > 0);
+
+            if (ttsQueue.length > 0) {
+                ttsBtn.classList.add("processing");
+                ttsBtn.querySelector("span").textContent = "Preparing...";
+                speakNextChunk();
+            }
+        };
+
+        function speakNextChunk() {
+            if (ttsIndex >= ttsQueue.length) {
+                ttsBtn.classList.remove("processing");
+                ttsBtn.querySelector("span").textContent = "Read Aloud";
+                return;
+            }
+
+            const item = ttsQueue[ttsIndex];
+            const langPrefix = item.lang.split('-')[0];
+            ttsBtn.querySelector("span").textContent = `Reading (${langPrefix})...`;
+
+            const voice = availableVoices.find(v => v.lang.startsWith(langPrefix) && (v.name.includes("Online") || v.name.includes("Natural") || v.localService === false)) ||
+                          availableVoices.find(v => v.lang.startsWith(langPrefix)) ||
+                          availableVoices.find(v => v.name.toLowerCase().includes(langPrefix === 'si' ? 'sinhala' : 'tamil'));
+
+            if (voice) {
+                const utterance = new SpeechSynthesisUtterance(item.text);
+                utterance.voice = voice;
+                utterance.lang = item.lang;
+                utterance.rate = 1.0;
+                utterance.onend = () => { ttsIndex++; speakNextChunk(); };
+                utterance.onerror = () => playGoogleFallback(item);
+                window.speechSynthesis.speak(utterance);
+            } else {
+                playGoogleFallback(item);
+            }
+        }
+
+        function playGoogleFallback(item) {
+            const tl = item.lang.split('-')[0];
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(item.text)}&tl=${tl}&client=tw-ob`;
+            ttsFrame.src = url;
+            const charDelay = 85; 
+            setTimeout(() => { ttsIndex++; speakNextChunk(); }, item.text.length * charDelay + 1000);
+        }
+    </script>
+</body>
+
+</html>

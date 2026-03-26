@@ -39,15 +39,16 @@
         radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.1) 0%, transparent 50%);
       color: var(--text-main);
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
-      overflow: hidden;
     }
 
     /* Sidebar Styling */
     .sidebar {
       width: 300px;
-      height: 100%;
+      height: 100vh;
+      position: sticky;
+      top: 0;
       background: var(--glass-bg);
       backdrop-filter: blur(20px);
       border-right: 1px solid var(--glass-border);
@@ -56,6 +57,16 @@
       padding: 40px 24px;
       z-index: 100;
       transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .sidebar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
 
     .profile-info p {
@@ -445,7 +456,8 @@
       margin-top: 15px;
     }
 
-    .results-table th, .results-table td {
+    .results-table th,
+    .results-table td {
       text-align: left;
       padding: 12px;
       border-bottom: 1px solid var(--glass-border);
@@ -508,7 +520,7 @@
       left: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -532,7 +544,7 @@
     }
 
     .add-res-btn:hover {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.08);
       color: white;
     }
 
@@ -933,8 +945,13 @@
     }
 
     @keyframes loading-shimmer {
-      from { left: -40%; }
-      to { left: 100%; }
+      from {
+        left: -40%;
+      }
+
+      to {
+        left: 100%;
+      }
     }
 
     /* Empty States */
@@ -981,9 +998,12 @@
     }
 
     @media (max-width: 1024px) {
-      .bottom-tab-bar {
+      /*
+      .bottom-tab-bar {  
+        Don't use it now
         display: flex;
       }
+      */
 
       .main-content {
         padding-bottom: 100px !important;
@@ -1102,7 +1122,9 @@
       <div class="profile-tab-layout">
         <!-- GPA Box (Top) -->
         <div class="gpa-display-card">
-          <span class="label" style="text-transform: uppercase; font-size: 1rem; font-weight: 600; opacity: 0.9; letter-spacing: 0.1em;">Academic Standing — GPA</span>
+          <span class="label"
+            style="text-transform: uppercase; font-size: 1rem; font-weight: 600; opacity: 0.9; letter-spacing: 0.1em;">Academic
+            Standing — GPA</span>
           <div class="gpa-val" id="gpaScore">0.00</div>
           <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500;" id="gpaStatus">Start adding your results!</p>
         </div>
@@ -1112,8 +1134,10 @@
           <h3 style="font-size: 1.25rem; font-weight: 700;">Performance Overview</h3>
           <div class="stats-grid">
             <div class="stat-card"><span class="val" id="userPoints">0</span><span class="label">XP Points</span></div>
-            <div class="stat-card"><span class="val" id="statCourses">0</span><span class="label">Enrolled Courses</span></div>
-            <div class="stat-card"><span class="val" id="statOrgs">0</span><span class="label">Organizations</span></div>
+            <div class="stat-card"><span class="val" id="statCourses">0</span><span class="label">Enrolled
+                Courses</span></div>
+            <div class="stat-card"><span class="val" id="statOrgs">0</span><span class="label">Organizations</span>
+            </div>
           </div>
         </section>
 
@@ -1290,7 +1314,7 @@
 
         const grade = gradeSelect.value;
         // Skip subjects with no grade selected (Pseudocode: results available subjects only)
-        if (!grade) return; 
+        if (!grade) return;
 
         const gradePoint = window.GRADE_POINTS[grade];
         if (gradePoint === undefined) return;
@@ -1298,7 +1322,7 @@
         // Credit Extraction Logic (Ex: IT1234 -> last digit 4 is credit)
         const digits = code.match(/\d/g);
         const credit = digits ? parseInt(digits[digits.length - 1]) : 0;
-        
+
         if (credit > 0) {
           totalWeightedPoints += (credit * gradePoint);
           totalCredits += credit;
@@ -1307,10 +1331,10 @@
 
       // GPA Calculation (Pseudocode: IF totalCredits ≠ 0 THEN totalWeightedPoints / totalCredits)
       const gpaValue = totalCredits !== 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : "0.00";
-      
+
       const gpaDisplay = document.getElementById("gpaScore");
       if (gpaDisplay) gpaDisplay.textContent = gpaValue;
-      
+
       const status = document.getElementById("gpaStatus");
       if (status) {
         if (totalCredits === 0) status.textContent = "Select your grades to calculate!";
@@ -1318,13 +1342,13 @@
         else if (gpaValue >= 3.0) status.textContent = "Great job! Keep it up! 👏";
         else status.textContent = "Keep working hard! 💪";
       }
-      
+
       return gpaValue;
     };
 
     window.saveResults = async () => {
       if (!currentUser) return;
-      
+
       const rows = document.querySelectorAll("#resultsTableBody tr");
       const results = [];
       rows.forEach(row => {
@@ -1343,12 +1367,12 @@
           gpa: gpa
         });
         showToast("Results and GPA saved successfully!");
-        
+
         // Update local cache
         const cached = JSON.parse(localStorage.getItem("userData") || "{}");
         const updatedData = { ...cached, results, gpa };
         localStorage.setItem("userData", JSON.stringify(updatedData));
-        
+
         // Refresh UI to show newly unlocked semesters if any
         if (allCoursesSnap) loadUserResults(updatedData, allCoursesSnap);
 
@@ -1364,7 +1388,7 @@
       tbody.innerHTML = "";
       const results = userDoc.results || [];
       const seenBaseCodes = new Set();
-      
+
       const getBaseCode = (fullCode) => {
         const match = fullCode.match(/^([A-Z]+\d+)/i);
         return match ? match[1].toUpperCase() : fullCode.toUpperCase();
@@ -1395,12 +1419,12 @@
           const semMatch = d.id.substring(2, 4) === semTag;
           return semMatch && !isIgnoredSubject(d.id);
         });
-        
+
         const uniqueSemCodesInDB = new Set();
         semCoursesInDB.forEach(d => uniqueSemCodesInDB.add(getBaseCode(d.id)));
 
-        if (uniqueSemCodesInDB.size === 0) continue; 
-        
+        if (uniqueSemCodesInDB.size === 0) continue;
+
         const completedInSem = results.filter(r => {
           const base = getBaseCode(r.code);
           return base.substring(2, 4) === semTag && r.grade !== "";
@@ -1411,7 +1435,7 @@
           currentSemesterToPopulate = semTag;
           break;
         }
-        
+
         // If this semester is full, move the marker to the next one
         const currentIdx = semesters.indexOf(semTag);
         if (currentIdx < semesters.length - 1) {
@@ -1444,7 +1468,7 @@
         }
       });
 
-      if (seenBaseCodes.size === 0) addResultRow(); 
+      if (seenBaseCodes.size === 0) addResultRow();
 
       calculateGPA();
     };
@@ -1457,7 +1481,7 @@
       document.getElementById("userEmail").textContent = userAuth.email;
       document.getElementById("userRegNo").textContent = data.registrationNumber;
       document.getElementById("userPoints").textContent = data.points || 0;
-      
+
       const hour = new Date().getHours();
       document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
 
@@ -1492,8 +1516,8 @@
         ]);
 
         if (!userSnap.exists()) {
-           window.location.href = "register.html";
-           return;
+          window.location.href = "register.html";
+          return;
         }
 
         const data = userSnap.data();
@@ -1503,11 +1527,11 @@
 
         // SECURITY VETTNG
         if (sysData.maintenance && (data.role || "student") === "student") {
-           alert("Site is under maintenance.");
-           signOut(auth);
-           localStorage.clear();
-           window.location.href = "index.html";
-           return;
+          alert("Site is under maintenance.");
+          signOut(auth);
+          localStorage.clear();
+          window.location.href = "index.html";
+          return;
         }
 
         // Update UI & Cache
@@ -1515,7 +1539,7 @@
         localStorage.setItem("userData", JSON.stringify({ ...data, email: user.email, photoUrl: data.photoUrl || user.photoURL }));
 
         renderCourses(coursesSnap, data.level, data.semester);
-        
+
         const slides = slideSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderSlideshow(slides);
         localStorage.setItem("dashboard_slides", JSON.stringify(slides));
@@ -1533,12 +1557,12 @@
 
     function renderCourses(snap, level, semester) {
       const container = document.getElementById("courseContainer");
-      container.innerHTML = ""; 
-      let count = 0; 
+      container.innerHTML = "";
+      let count = 0;
       let cardIdx = 0;
-      
+
       const docs = snap.docs || snap; // Handle both Snap and Raw Array
-      
+
       docs.forEach(d => {
         const id = d.id;
         const data = typeof d.data === 'function' ? d.data() : d.data;
@@ -1558,7 +1582,7 @@
       });
       document.getElementById("courseCountDisplay").textContent = `${count} Courses`;
       document.getElementById("statCourses").textContent = count;
-      
+
       // Hide loading bar
       document.getElementById("courseLoadingBar").style.display = "none";
     }
@@ -1688,11 +1712,11 @@
         if (photoUrl) await updateProfile(auth.currentUser, { photoURL: photoUrl });
 
         showToast("Profile updated successfully!");
-        
+
         // Update Local Cache immediately
         const cached = JSON.parse(localStorage.getItem("userData") || "{}");
         localStorage.setItem("userData", JSON.stringify({ ...cached, ...updates, photoUrl }));
-        
+
         setTimeout(() => location.reload(), 1500);
 
       } catch (err) {
