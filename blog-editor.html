@@ -511,6 +511,10 @@
             };
         });
 
+        // Cloudinary Configuration
+        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dbnvewztc/image/upload";
+        const UPLOAD_PRESET = "CodeBase";
+
         // Image Insertion
         const imageModal = document.getElementById("imageModal");
         const imageInput = document.getElementById("imageInput");
@@ -521,27 +525,67 @@
 
         dropZone.onclick = () => imageInput.click();
 
-        imageInput.onchange = async (e) => {
+        imageInput.onchange = (e) => {
             const file = e.target.files[0];
-            if (!file) return;
-            uploadImage(file);
+            if (file) uploadImage(file);
         };
+
+        // Drag & Drop for Editor
+        editorContent.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            editorContent.style.borderColor = "var(--accent-primary)";
+            editorContent.style.background = "rgba(255, 255, 255, 0.05)";
+        });
+
+        editorContent.addEventListener("dragleave", () => {
+            editorContent.style.borderColor = "var(--glass-border)";
+            editorContent.style.background = "none";
+        });
+
+        editorContent.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            editorContent.style.borderColor = "var(--glass-border)";
+            editorContent.style.background = "none";
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith("image/")) {
+                // Set cursor position at drop point
+                if (document.caretRangeFromPoint) {
+                    const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+                
+                uploadImage(file);
+            }
+        });
 
         async function uploadImage(file) {
             const originalBtnText = dropZone.innerHTML;
             dropZone.innerHTML = "<p>Uploading...</p>";
             
             try {
-                const storageRef = ref(storage, `blogs/${Date.now()}_${file.name}`);
-                const snapshot = await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(snapshot.ref);
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("upload_preset", UPLOAD_PRESET);
+
+                const response = await fetch(CLOUDINARY_URL, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Cloudinary upload failed");
                 
-                // Insert into editor
+                const data = await response.json();
+                const url = data.secure_url;
+                
+                // Insert into editor at current selection (or drop point)
                 editorContent.focus();
-                const img = `<img src="${url}" alt="Blog Image">`;
+                const img = `<img src="${url}" alt="Blog Image" style="max-width:100%; border-radius:12px; margin: 12px 0;">`;
                 document.execCommand("insertHTML", false, img);
                 
-                closeImageModal();
+                imageModal.classList.remove("active");
             } catch (err) {
                 alert("Upload failed: " + err.message);
             } finally {
