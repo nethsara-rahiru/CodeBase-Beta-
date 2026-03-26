@@ -741,6 +741,7 @@
 
       <div id="categoryBar" class="category-bar">
         <button class="cat-pill active" data-type="all">All</button>
+        <button class="cat-pill" data-type="blog">Blogs</button>
         <button class="cat-pill" data-type="video">Videos</button>
         <button class="cat-pill" data-type="pdf">PDFs</button>
         <button class="cat-pill" data-type="github">GitHub</button>
@@ -752,14 +753,24 @@
     </div>
   </main>
 
-  <button id="addCommunityBtn" class="share-btn" style="display:none;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-      stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"></line>
-      <line x1="5" y1="12" x2="19" y2="12"></line>
-    </svg>
-    Share with Community
-  </button>
+  <div style="position: fixed; bottom: 40px; right: 40px; display: flex; flex-direction: column; gap: 12px; z-index: 90;">
+    <button id="createBlogBtn" class="share-btn" style="display:none; position: static; background: var(--accent-secondary);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"></path>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+      </svg>
+      Write a Blog
+    </button>
+    <button id="addCommunityBtn" class="share-btn" style="display:none; position: static;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Share Link/PDF
+    </button>
+  </div>
 
   <!-- Upload Modal -->
   <div id="uploadModal" class="modal">
@@ -949,6 +960,7 @@
       document.getElementById("tabCourse").classList.toggle("active", tab === "course");
       document.getElementById("tabCommunity").classList.toggle("active", tab === "community");
       document.getElementById("addCommunityBtn").style.display = tab === "community" ? "flex" : "none";
+      document.getElementById("createBlogBtn").style.display = tab === "community" ? "flex" : "none";
       categoryBar.style.display = tab === "community" ? "flex" : "none";
       loadResources();
     }
@@ -1107,6 +1119,8 @@
         }
       } else if (r.type?.toLowerCase() === "github") {
         thumbUrl = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png";
+      } else if (r.type?.toLowerCase() === "blog") {
+        thumbUrl = "https://cdn-icons-png.flaticon.com/512/3959/3959425.png";
       } else if (r.type?.toLowerCase() === "link") {
         try { thumbUrl = `https://www.google.com/s2/favicons?sz=128&domain=${new URL(r.link).hostname}`; } catch { }
       }
@@ -1151,8 +1165,12 @@
       setTimeout(() => thumbDiv.classList.add('show'), 100);
 
       card.querySelector(".open-btn").onclick = () => {
-        if (!r.link) return;
         const type = r.type.toLowerCase();
+        if (type === "blog") {
+          window.location.href = `blog-editor.html?id=${r.id}`;
+          return;
+        }
+        if (!r.link) return;
         if (type === "video" && videoIdEncoded) {
           localStorage.setItem("videoLink", `https://www.youtube.com/watch?v=${decodeId(videoIdEncoded)}`);
           window.location.href = "player.html";
@@ -1170,6 +1188,10 @@
     const uploadModal = document.getElementById("uploadModal");
     const upIsOriginal = document.getElementById("upIsOriginal");
     const upOwnerReg = document.getElementById("upOwnerReg");
+
+    document.getElementById("createBlogBtn").onclick = () => {
+      window.location.href = "blog-editor.html";
+    };
 
     document.getElementById("addCommunityBtn").onclick = () => {
       uploadModal.classList.add("active");

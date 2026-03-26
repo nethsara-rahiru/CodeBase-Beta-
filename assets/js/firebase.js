@@ -228,4 +228,7 @@ window.registerUser = async function (regNumber, phone, level, semester, stream)
   window.location.href = "dashboard.html";
 };
 
-export { app, auth, db };
+import { getStorage } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+const storage = getStorage(app);
+
+export { app, auth, db, storage };
