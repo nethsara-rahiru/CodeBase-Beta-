@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Blog | CodeBase</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -18,7 +19,9 @@
         }
 
         * {
-            margin: 0; padding: 0; box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -30,7 +33,9 @@
         }
 
         header {
-            position: sticky; top: 0; z-index: 100;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -42,18 +47,24 @@
         }
 
         .brand-area {
-            display: flex; align-items: center; gap: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
         .back-btn {
-            display: flex; align-items: center; gap: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             padding: 8px 16px;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
             color: var(--text-main);
-            font-weight: 600; font-size: 0.875rem;
-            cursor: pointer; text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
             transition: all 0.2s;
         }
 
@@ -63,11 +74,15 @@
         }
 
         .actions-area {
-            display: flex; align-items: center; gap: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .main-container {
-            max-width: 900px; margin: 40px auto; padding: 20px;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
         }
 
         .blog-card {
@@ -79,95 +94,215 @@
         }
 
         .blog-header {
-            margin-bottom: 32px; border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--glass-border);
             padding-bottom: 24px;
         }
 
         .blog-title {
-            font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;
-            letter-spacing: -0.01em; line-height: 1.2;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
         }
 
         .author-meta {
-            display: flex; align-items: center; gap: 12px;
-            color: var(--text-muted); font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
         }
 
         .author-avatar {
-            width: 44px; height: 44px; border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             background: var(--accent-primary);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
         }
 
         .blog-content {
-            font-size: 1.1rem; color: #e2e8f0; word-break: break-word;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            word-break: break-word;
         }
 
         .blog-content img {
-            max-width: 100%; border-radius: 16px; margin: 24px 0;
-            display: block; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 100%;
+            border-radius: 16px;
+            margin: 24px 0;
+            display: block;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         /* Tool Buttons */
-        .secondary-btn, .edit-btn {
-            display: flex; align-items: center; gap: 8px;
-            padding: 10px 20px; border-radius: 12px;
-            font-weight: 700; font-size: 0.875rem;
-            cursor: pointer; text-decoration: none;
+        .secondary-btn,
+        .edit-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
             transition: all 0.2s;
         }
 
         .secondary-btn {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            color: var(--text-main); position: relative; overflow: hidden;
+            color: var(--text-main);
+            position: relative;
+            overflow: hidden;
         }
 
-        .secondary-btn:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-1px); }
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
 
         .edit-btn {
             background: var(--accent-primary);
-            color: white; border: none;
+            color: white;
+            border: none;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
 
-        .edit-btn:hover { background: #4f46e5; transform: translateY(-1px); }
+        .edit-btn:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
 
         /* Language Switcher */
-        .lang-switcher { display: flex; gap: 8px; margin-bottom: 24px; padding: 4px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; width: fit-content; }
-        .lang-btn { padding: 6px 16px; border: none; background: none; color: var(--text-muted); font-weight: 700; font-size: 0.8rem; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
-        .lang-btn.active { background: var(--accent-primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-        .lang-btn:not(.active):hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+        .lang-switcher {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .lang-btn {
+            padding: 6px 16px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .lang-btn:not(.active):hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
 
         /* Loading Bar Logic */
         .loading-bar {
-            position: absolute; bottom: 0; left: 0;
-            width: 0%; height: 3px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
             background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            transition: width 0.3s; z-index: 5;
+            transition: width 0.3s;
+            z-index: 5;
         }
 
         .processing .loading-bar {
-            width: 100%; animation: loading-progress 2s linear infinite;
+            width: 100%;
+            animation: loading-progress 2s linear infinite;
         }
 
         @keyframes loading-progress {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         @media (max-width: 640px) {
-            header { padding: 16px 20px; }
-            .main-container { padding: 10px; margin-top: 20px; }
-            .blog-card { padding: 20px; border-radius: 16px; }
-            .blog-title { font-size: 1.75rem; margin-bottom: 12px; }
-            .blog-content { font-size: 1rem; }
-            .actions-area { width: 100%; justify-content: space-between; margin-top: 10px; }
-            .secondary-btn span { display: none; } /* Hide text on small screens */
-            .secondary-btn { padding: 10px; }
+            header {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .main-container {
+                padding: 16px;
+                margin: 10px auto;
+            }
+
+            .blog-card {
+                padding: 24px 20px;
+                border-radius: 16px;
+            }
+
+            .blog-title {
+                font-size: 1.5rem;
+                margin-bottom: 12px;
+            }
+
+            .blog-content {
+                font-size: 1rem;
+            }
+
+            .actions-area {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .brand-area h1 {
+                font-size: 1.25rem;
+            }
+
+            .secondary-btn span {
+                display: none;
+            }
+
+            /* Hide text on small screens */
+            .secondary-btn {
+                padding: 10px;
+            }
+
+            .lang-switcher {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -175,20 +310,33 @@
 <body>
     <header>
         <div class="brand-area">
-            <a href="resources.html" class="back-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <a onclick="history.back()" class="back-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
                 Resources
             </a>
             <h1 id="pageTitle">CodeBase Blog</h1>
         </div>
         <div class="actions-area">
             <button class="secondary-btn" id="ttsBtn" style="display:none;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
                 <span>Read Aloud</span>
                 <div class="loading-bar"></div>
             </button>
             <a href="#" class="edit-btn" id="editBtn" style="display:none;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+                </svg>
                 Edit Blog
             </a>
         </div>
@@ -200,10 +348,11 @@
             <div id="loaderArea" style="text-align: center; padding: 40px;">
                 <p style="color:var(--text-muted);">Loading your blog...</p>
             </div>
-            
+
             <div id="displayArea" style="display:none;">
                 <div class="lang-switcher">
-                    <button class="lang-btn active" id="lang_en" onclick="window.translateContent('en')">English</button>
+                    <button class="lang-btn active" id="lang_en"
+                        onclick="window.translateContent('en')">English</button>
                     <button class="lang-btn" id="lang_si" onclick="window.translateContent('si')">සිංහල</button>
                     <button class="lang-btn" id="lang_ta" onclick="window.translateContent('ta')">தமிழ்</button>
                 </div>
@@ -285,15 +434,15 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: formData
                 });
-                
+
                 const json = await res.json();
                 let translatedHtml = json[0].map(item => item[0]).join('');
-                
-                // Restore tags (handling cases where Google adds spaces, e.g. [# 0 #])
-                translatedHtml = translatedHtml.replace(/\[\s*#\s*(\d+)\s*#\s*\]/g, (match, p1) => {
+
+                // Restore tags (handling cases where Google adds spaces, e.g. [# 0 #] or missing # like [12#])
+                translatedHtml = translatedHtml.replace(/\[\s*#?\s*(\d+)\s*#?\s*\]/g, (match, p1) => {
                     return tagsMap[`[#${p1}#]`] || match;
                 });
-                
+
                 contentDiv.innerHTML = translatedHtml;
             } catch (e) {
                 console.error("Translation fail", e);
@@ -323,7 +472,7 @@
                 const blogSnap = await getDoc(doc(db, "community_resources", currentBlogId));
                 if (blogSnap.exists()) {
                     blogData = blogSnap.data();
-                    
+
                     // Render Data
                     originalBlogHtml = blogData.content;
                     document.getElementById("blogTitle").textContent = blogData.title;
@@ -335,7 +484,7 @@
                     // Permission Check for Edit Button
                     const isAdmin = userData?.role === 'admin' || userData?.role === 'owner';
                     const isOwner = blogData.uploadedByUid === currentUser.uid;
-                    
+
                     if (isAdmin || isOwner) {
                         editBtn.href = `blog-editor.html?id=${currentBlogId}`;
                         editBtn.style.display = "flex";
@@ -343,7 +492,7 @@
 
                     // Show TTS
                     ttsBtn.style.display = "flex";
-                    
+
                     loaderArea.style.display = "none";
                     displayArea.style.display = "block";
                 } else {
@@ -419,8 +568,8 @@
             ttsBtn.querySelector("span").textContent = `Reading (${langPrefix})...`;
 
             const voice = availableVoices.find(v => v.lang.startsWith(langPrefix) && (v.name.includes("Online") || v.name.includes("Natural") || v.localService === false)) ||
-                          availableVoices.find(v => v.lang.startsWith(langPrefix)) ||
-                          availableVoices.find(v => v.name.toLowerCase().includes(langPrefix === 'si' ? 'sinhala' : 'tamil'));
+                availableVoices.find(v => v.lang.startsWith(langPrefix)) ||
+                availableVoices.find(v => v.name.toLowerCase().includes(langPrefix === 'si' ? 'sinhala' : 'tamil'));
 
             if (voice) {
                 const utterance = new SpeechSynthesisUtterance(item.text);
@@ -439,7 +588,7 @@
             const tl = item.lang.split('-')[0];
             const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(item.text)}&tl=${tl}&client=tw-ob`;
             ttsFrame.src = url;
-            const charDelay = 85; 
+            const charDelay = 85;
             setTimeout(() => { ttsIndex++; speakNextChunk(); }, item.text.length * charDelay + 1000);
         }
     </script>

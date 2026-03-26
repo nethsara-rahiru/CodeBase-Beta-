@@ -8,6 +8,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <style>
         :root {
@@ -244,6 +246,87 @@
             display: block;
         }
 
+        /* --- Image Figure Wrapper --- */
+        .editor-img-wrap {
+            display: block;
+            position: relative;
+            cursor: default;
+            margin: 16px 0;
+            user-select: none;
+        }
+        .editor-img-wrap img {
+            display: block;
+            max-width: 100%;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+        .editor-img-wrap.drag-over {
+            opacity: 0.4;
+        }
+        /* Drag handle bar at top of image */
+        .editor-img-wrap .img-drag-handle {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(99, 102, 241, 0.85);
+            border-radius: 20px;
+            padding: 4px 14px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            cursor: grab;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            pointer-events: all;
+        }
+        .editor-img-wrap:hover .img-drag-handle {
+            opacity: 1;
+        }
+        .editor-img-wrap .img-drag-handle:active {
+            cursor: grabbing;
+        }
+        /* Resize handle at bottom-right */
+        .editor-img-wrap .img-resize-handle {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            width: 18px;
+            height: 18px;
+            background: rgba(99, 102, 241, 0.85);
+            border-radius: 4px;
+            cursor: se-resize;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+            pointer-events: all;
+        }
+        .editor-img-wrap:hover .img-resize-handle {
+            opacity: 1;
+        }
+        /* Drop caret indicator line */
+        .drop-caret {
+            display: inline-block;
+            width: 3px;
+            height: 1.2em;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            margin: 0 1px;
+            vertical-align: middle;
+            pointer-events: none;
+            animation: caretPulse 0.8s ease infinite;
+        }
+        @keyframes caretPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         .actions {
             display: flex;
             justify-content: flex-end;
@@ -299,9 +382,20 @@
         }
 
         @keyframes loadingProgress {
-            0% { width: 0%; left: 0; }
-            50% { width: 100%; left: 0; }
-            100% { width: 0%; left: 100%; }
+            0% {
+                width: 0%;
+                left: 0;
+            }
+
+            50% {
+                width: 100%;
+                left: 0;
+            }
+
+            100% {
+                width: 0%;
+                left: 100%;
+            }
         }
 
         .secondary-btn {
@@ -376,14 +470,30 @@
         }
 
         /* Language specific fonts if needed */
-        .lang-sinhala { font-family: 'Iskoola Pota', 'Plus Jakarta Sans', sans-serif; }
-        .lang-tamil { font-family: 'Latha', 'Plus Jakarta Sans', sans-serif; }
+        .lang-sinhala {
+            font-family: 'Iskoola Pota', 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .lang-tamil {
+            font-family: 'Latha', 'Plus Jakarta Sans', sans-serif;
+        }
 
         @media (max-width: 640px) {
-            header { padding: 12px 20px; }
-            .main-container { padding: 20px; }
-            .editor-card { padding: 20px; }
-            .toolbar { top: 60px; }
+            header {
+                padding: 12px 20px;
+            }
+
+            .main-container {
+                padding: 20px;
+            }
+
+            .editor-card {
+                padding: 20px;
+            }
+
+            .toolbar {
+                top: 60px;
+            }
         }
     </style>
 </head>
@@ -391,19 +501,24 @@
 <body>
     <header>
         <div class="brand-area">
-            <a href="resources.html" class="back-btn">
+            <a onclick="history.back()" class="back-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                Back to Resources
+                Back
             </a>
             <h1 id="pageTitle">Create Blog</h1>
         </div>
         <div id="readAloudArea" style="display:none;">
             <button class="secondary-btn tts-btn" id="ttsBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
                 <span>Read Aloud</span>
                 <div class="loading-bar"></div>
             </button>
@@ -423,20 +538,46 @@
                 <button class="tool-btn" data-command="underline" title="Underline"><u>U</u></button>
                 <div style="width:1px; background:var(--glass-border); margin:0 4px;"></div>
                 <button class="tool-btn" data-command="justifyLeft" title="Align Left">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="17" y1="10" x2="3" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="17" y1="18" x2="3" y2="18"></line>
+                    </svg>
                 </button>
                 <button class="tool-btn" data-command="justifyCenter" title="Align Center">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="10" x2="6" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="18" y1="18" x2="6" y2="18"></line></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="10" x2="6" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="18" y1="18" x2="6" y2="18"></line>
+                    </svg>
                 </button>
                 <button class="tool-btn" data-command="justifyRight" title="Align Right">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="21" y1="10" x2="7" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="21" y1="18" x2="7" y2="18"></line>
+                    </svg>
                 </button>
                 <div style="width:1px; background:var(--glass-border); margin:0 4px;"></div>
                 <button class="tool-btn" data-command="insertUnorderedList" title="Bullet List">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
                 </button>
                 <button class="tool-btn" id="insertImage" title="Insert Image">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
                 </button>
 
                 <div class="lang-selector">
@@ -448,13 +589,18 @@
 
             <div class="form-group">
                 <label>Blog Content</label>
-                <div id="editorContent" class="content-area" contenteditable="true" data-placeholder="Start writing your story here..."></div>
+                <div id="editorContent" class="content-area" contenteditable="true"
+                    data-placeholder="Start writing your story here..."></div>
             </div>
 
             <div class="actions">
                 <button class="secondary-btn" id="saveDraftBtn" style="display:none;">Save Draft</button>
                 <button class="primary-btn" id="publishBtn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
                     <span>Publish Blog</span>
                     <div class="loading-bar"></div>
                 </button>
@@ -466,9 +612,15 @@
     <div id="imageModal" class="modal">
         <div class="modal-content">
             <h3>Insert Image</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:8px;">Choose an image to upload to your blog</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:8px;">Choose an image to upload to your
+                blog</p>
             <div class="upload-area" id="dropZone">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:12px; opacity:0.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="margin-bottom:12px; opacity:0.5;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
                 <p>Click or drag to upload</p>
                 <input type="file" id="imageInput" accept="image/*" style="display:none;">
             </div>
@@ -477,7 +629,22 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Crop Modal -->
+    <div id="cropModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <h3>Crop Image</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:8px;">Adjust your image area</p>
+            <div style="width: 100%; max-height: 50vh; overflow: hidden; margin: 20px 0; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <img id="cropperImage" src="" style="max-width: 100%; display: block;" />
+            </div>
+            <div style="display:flex; gap:12px; justify-content: flex-end;">
+                <button class="secondary-btn" onclick="closeCropModal()">Cancel</button>
+                <button class="primary-btn" id="saveCropBtn">Save Crop</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
@@ -565,7 +732,7 @@
                     selection.removeAllRanges();
                     selection.addRange(range);
                 }
-                
+
                 uploadImage(file);
             }
         });
@@ -573,7 +740,7 @@
         async function uploadImage(file) {
             const originalBtnText = dropZone.innerHTML;
             dropZone.innerHTML = "<p>Uploading...</p>";
-            
+
             try {
                 const formData = new FormData();
                 formData.append("file", file);
@@ -585,15 +752,14 @@
                 });
 
                 if (!response.ok) throw new Error("Cloudinary upload failed");
-                
+
                 const data = await response.json();
                 const url = data.secure_url;
-                
+
                 // Insert into editor at current selection (or drop point)
                 editorContent.focus();
-                const img = `<img src="${url}" alt="Blog Image" style="max-width:100%; border-radius:12px; margin: 12px 0;">`;
-                document.execCommand("insertHTML", false, img);
-                
+                insertImageFigure(url);
+
                 imageModal.classList.remove("active");
             } catch (err) {
                 alert("Upload failed: " + err.message);
@@ -601,6 +767,211 @@
                 dropZone.innerHTML = originalBtnText;
             }
         }
+
+        // =============================================
+        //  IMAGE FIGURE SYSTEM: Insert, Drag, Resize
+        // =============================================
+        function insertImageFigure(url, widthPx) {
+            const figure = buildFigure(url, widthPx);
+            // Try to insert at selection, else append
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(figure);
+                // Place cursor after
+                range.setStartAfter(figure);
+                range.setEndAfter(figure);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                editorContent.appendChild(figure);
+            }
+            attachFigureHandlers(figure);
+        }
+
+        function buildFigure(url, widthPx) {
+            const figure = document.createElement('figure');
+            figure.className = 'editor-img-wrap';
+            figure.contentEditable = 'false';
+            figure.draggable = false; // we control drag from handle only
+
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = 'Blog Image';
+            img.style.width = widthPx ? widthPx + 'px' : '100%';
+
+            const dragHandle = document.createElement('div');
+            dragHandle.className = 'img-drag-handle';
+            dragHandle.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/>
+                    <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+                    <circle cx="9" cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
+                </svg> Drag to move`;
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'img-resize-handle';
+            resizeHandle.title = 'Drag to resize';
+
+            figure.appendChild(img);
+            figure.appendChild(dragHandle);
+            figure.appendChild(resizeHandle);
+            return figure;
+        }
+
+        // Track which figure is being dragged
+        let draggingFigure = null;
+        let dropCaretEl = null;
+
+        function attachFigureHandlers(figure) {
+            const dragHandle = figure.querySelector('.img-drag-handle');
+            const resizeHandle = figure.querySelector('.img-resize-handle');
+            const img = figure.querySelector('img');
+
+            // --- Drag to reposition ---
+            dragHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                draggingFigure = figure;
+                figure.classList.add('drag-over');
+
+                // Create drop caret
+                dropCaretEl = document.createElement('span');
+                dropCaretEl.className = 'drop-caret';
+
+                const onMouseMove = (ev) => {
+                    // Find the caret position under the mouse
+                    const el = document.elementFromPoint(ev.clientX, ev.clientY);
+                    if (el && editorContent.contains(el) && el !== figure && !figure.contains(el)) {
+                        const range = document.caretRangeFromPoint
+                            ? document.caretRangeFromPoint(ev.clientX, ev.clientY)
+                            : (document.caretPositionFromPoint
+                                ? (() => {
+                                    const pos = document.caretPositionFromPoint(ev.clientX, ev.clientY);
+                                    const r = document.createRange();
+                                    r.setStart(pos.offsetNode, pos.offset);
+                                    return r;
+                                  })()
+                                : null);
+                        if (range) {
+                            range.insertNode(dropCaretEl);
+                        }
+                    }
+                };
+
+                const onMouseUp = (ev) => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    figure.classList.remove('drag-over');
+
+                    if (dropCaretEl && dropCaretEl.parentNode) {
+                        // Insert the figure at the caret position
+                        dropCaretEl.parentNode.insertBefore(figure, dropCaretEl);
+                        dropCaretEl.parentNode.removeChild(dropCaretEl);
+                    }
+                    dropCaretEl = null;
+                    draggingFigure = null;
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            // --- Resize ---
+            let isResizing = false, startX, startW;
+            resizeHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isResizing = true;
+                startX = e.clientX;
+                startW = img.offsetWidth;
+
+                const onMove = (ev) => {
+                    if (!isResizing) return;
+                    const dx = ev.clientX - startX;
+                    const newW = Math.max(60, startW + dx);
+                    img.style.width = newW + 'px';
+                };
+                const onUp = () => {
+                    isResizing = false;
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                };
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+
+            // --- Double-click to crop ---
+            img.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                activeCropImg = img;
+                cropperImg.src = img.src;
+                cropModal.classList.add("active");
+                if (cropperInstance) cropperInstance.destroy();
+                cropperInstance = new Cropper(cropperImg, { viewMode: 2, autoCropArea: 1 });
+            });
+        }
+
+        // Re-attach handlers to any existing images added (e.g. from db load)
+        function reAttachAllFigures() {
+            editorContent.querySelectorAll('.editor-img-wrap').forEach(fig => {
+                if (!fig.dataset.attached) {
+                    fig.dataset.attached = '1';
+                    attachFigureHandlers(fig);
+                }
+            });
+        }
+
+        // Cropping Logic
+        let activeCropImg = null;
+        let cropperInstance = null;
+        const cropModal = document.getElementById("cropModal");
+        const cropperImg = document.getElementById("cropperImage");
+
+        window.closeCropModal = () => {
+            cropModal.classList.remove("active");
+            if (cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+            activeCropImg = null;
+        };
+
+        document.getElementById("saveCropBtn").onclick = async () => {
+            if (!cropperInstance || !activeCropImg) return;
+            
+            const saveBtn = document.getElementById("saveCropBtn");
+            const origText = saveBtn.innerText;
+            saveBtn.innerText = "Saving...";
+            saveBtn.disabled = true;
+
+            try {
+                cropperInstance.getCroppedCanvas({
+                    maxWidth: 1920,
+                    maxHeight: 1080
+                }).toBlob(async (blob) => {
+                    if (!blob) throw new Error("Could not create image blob");
+                    const formData = new FormData();
+                    formData.append("file", blob);
+                    formData.append("upload_preset", UPLOAD_PRESET);
+
+                    const response = await fetch(CLOUDINARY_URL, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error("Cloudinary crop upload failed");
+                    const data = await response.json();
+                    
+                    activeCropImg.src = data.secure_url;
+                    closeCropModal();
+                }, "image/jpeg", 0.9);
+            } catch(err) {
+                alert("Crop save failed: " + err.message);
+            } finally {
+                saveBtn.innerText = origText;
+                saveBtn.disabled = false;
+            }
+        };
 
         // Auth & Initial Load
         onAuthStateChanged(auth, async user => {
@@ -619,7 +990,7 @@
             } else {
                 // If create mode, but user is guest (somehow), check
                 if (!userData) {
-                     window.location.href = "index.html";
+                    window.location.href = "index.html";
                 }
             }
         });
@@ -629,11 +1000,11 @@
                 const blogSnap = await getDoc(doc(db, "community_resources", currentBlogId));
                 if (blogSnap.exists()) {
                     const data = blogSnap.data();
-                    
+
                     // Permission Check
                     const isAdmin = userData?.role === 'admin' || userData?.role === 'owner';
                     const isOwner = data.uploadedByUid === currentUser.uid;
-                    
+
                     if (!isAdmin && !isOwner) {
                         // READ MODE
                         pageTitle.textContent = "View Blog";
@@ -655,7 +1026,8 @@
 
                     blogTitle.value = data.title;
                     editorContent.innerHTML = data.content;
-                    
+                    reAttachAllFigures(); // restore drag/resize on load
+
                     // Show TTS
                     readAloudArea.style.display = "block";
                 }
@@ -689,7 +1061,7 @@
             speechSynthesis.cancel();
             ttsAudio.pause();
             ttsAudio.src = "";
-            
+
             ttsQueue = [];
             ttsIndex = 0;
 
@@ -739,17 +1111,17 @@
             const langPrefix = item.lang.split('-')[0];
             ttsBtn.querySelector("span").textContent = `Reading (${langPrefix})...`;
 
-            loadVoices(); 
+            loadVoices();
             const voice = availableVoices.find(v => v.lang.startsWith(langPrefix) && (v.name.includes("Online") || v.name.includes("Natural") || v.localService === false)) ||
-                          availableVoices.find(v => v.lang.startsWith(langPrefix)) ||
-                          availableVoices.find(v => v.name.toLowerCase().includes(langPrefix === 'si' ? 'sinhala' : 'tamil'));
+                availableVoices.find(v => v.lang.startsWith(langPrefix)) ||
+                availableVoices.find(v => v.name.toLowerCase().includes(langPrefix === 'si' ? 'sinhala' : 'tamil'));
 
             if (voice) {
                 const utterance = new SpeechSynthesisUtterance(item.text);
                 utterance.voice = voice;
                 utterance.lang = item.lang;
                 utterance.rate = 1.0;
-                
+
                 utterance.onend = () => {
                     ttsIndex++;
                     speakNextChunk();
@@ -764,10 +1136,10 @@
         function playGoogleFallback(item) {
             const tl = item.lang.split('-')[0];
             const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(item.text)}&tl=${tl}&client=tw-ob`;
-            
+
             // By setting src on a no-referrer iframe, we mimic the "direct browse" link behavior you found
             ttsFrame.src = url;
-            const charDelay = 85; 
+            const charDelay = 85;
             setTimeout(() => {
                 ttsIndex++;
                 speakNextChunk();
@@ -777,7 +1149,19 @@
         // Publish Logic
         publishBtn.onclick = async () => {
             const title = blogTitle.value.trim();
-            const content = editorContent.innerHTML.trim();
+
+            // Deep clone the editor content and strip all editor-only UI elements
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = editorContent.innerHTML;
+            // Remove drag handles and resize handles (editor-only UI)
+            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle').forEach(el => el.remove());
+            // Also clean up editor-only attributes on figure wrappers
+            tempDiv.querySelectorAll('.editor-img-wrap').forEach(fig => {
+                fig.removeAttribute('contenteditable');
+                fig.removeAttribute('draggable');
+                fig.removeAttribute('data-attached');
+            });
+            const content = tempDiv.innerHTML.trim();
 
             if (!title || !content || content === "<br>") {
                 alert("Please provide both title and content.");
@@ -809,7 +1193,7 @@
                         uploadedAt: serverTimestamp(),
                         courseId: currentCourseId || "",
                         moduleId: currentModuleId || "",
-                        link: "", 
+                        link: "",
                         likes: [],
                         dislikes: [],
                         commentCount: 0,
@@ -819,7 +1203,7 @@
                     currentBlogId = docRef.id;
                     alert("Blog published successfully!");
                 }
-                
+
                 window.location.href = `blog.html?id=${currentBlogId}`;
             } catch (err) {
                 alert("Operation failed: " + err.message);

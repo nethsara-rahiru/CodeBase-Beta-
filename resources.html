@@ -495,7 +495,51 @@
       color: var(--accent-secondary);
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
+      header {
+        padding: 16px 20px;
+        gap: 12px;
+      }
+      
+      .brand-area h1 {
+        display: none;
+      }
+
+      .user-profile .user-info {
+        display: none; 
+      }
+
+      .main-container {
+        padding: 20px;
+      }
+
+      .resource-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        gap: 16px;
+      }
+
+      .card-info {
+        width: 100%;
+      }
+      
+      .card-info h3 {
+        max-width: 100%;
+        white-space: normal;
+        font-size: 1.05rem;
+      }
+
+      .open-btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .breadcrumbs {
+        padding: 0 20px;
+        margin-top: 16px;
+      }
+
       .fab-container {
         bottom: 24px;
         right: 24px;
