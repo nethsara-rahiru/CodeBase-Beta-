@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduHub Dashboard | CodeBase</title>
+
+    <!-- Google Fonts: Inter & Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons (CDN for convenience) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-primary: #4f46e5;
+            --accent-secondary: #818cf8;
+            --accent-success: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 300px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.08) 0%, transparent 40%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar Styling --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .semester-switcher {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        .semester-switcher:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
+        .sidebar-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        /* --- Accordion Menu --- */
+        .accordion-item {
+            margin-bottom: 8px;
+        }
+
+        .accordion-header {
+            width: 100%;
+            padding: 14px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .accordion-item.active .accordion-header {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--accent-secondary);
+        }
+
+        .subject-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.active .chevron {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding-left: 44px;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 200px; /* Adjust as needed */
+        }
+
+        .resource-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .resource-link:hover {
+            color: var(--text-main);
+        }
+
+        .resource-link i {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* --- Main Content Styling --- */
+        .main-viewport {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .viewer-container {
+            flex: 1;
+            padding: 0;
+            background: #020617;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 100vh;
+        }
+
+        .iframe-wrapper {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            overflow: hidden;
+            border: none;
+            background: var(--bg-dark);
+            position: relative;
+        }
+
+        /* Floating Menu for Mobile */
+        .floating-menu-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 950;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        #content-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* --- Mobile UI --- */
+        .menu-btn {
+            display: none;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 950;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .menu-btn {
+                display: flex;
+            }
+
+            .viewer-container {
+                padding: 0;
+            }
+
+            .sidebar-toggle-btn {
+                display: block;
+            }
+        }
+
+        /* --- Empty State --- */
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            opacity: 0.2;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i data-lucide="graduation-cap" style="color: white; width: 20px;"></i>
+                </div>
+                <span class="brand-name">EduHub</span>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <select class="semester-switcher" id="yearSwitcher" style="flex: 1; padding: 8px; font-size: 0.8rem;">
+                    <option value="1">Year 1</option>
+                    <option value="2">Year 2</option>
+                    <option value="3">Year 3</option>
+                    <option value="4" selected>Year 4</option>
+                </select>
+                <select class="semester-switcher" id="semesterSwitcher" style="flex: 1; padding: 8px; font-size: 0.8rem;">
+                    <option value="1">Sem 1</option>
+                    <option value="2">Sem 2</option>
+                </select>
+            </div>
+            <select class="semester-switcher" id="subjectSwitcher" style="width: 100%;">
+                <option value="">Select a subject...</option>
+            </select>
+        </div>
+
+        <nav class="sidebar-menu" id="accordionMenu">
+            <!-- Subjects will be injected here -->
+        </nav>
+    </aside>
+
+    <main class="main-viewport">
+        <!-- Floating Mobile Menu Button -->
+        <button class="menu-btn floating-menu-btn" id="menuToggle">
+            <i data-lucide="menu"></i>
+        </button>
+
+        <section class="viewer-container">
+            <div class="iframe-wrapper" id="frameWrapper">
+                <div id="placeholder" class="empty-state">
+                    <i data-lucide="layout-dashboard"></i>
+                    <p>Welcome to EduHub. Select a subject and resource to begin.</p>
+                </div>
+                <iframe id="content-frame" style="display: none;"></iframe>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { auth, db } from "./assets/js/firebase.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+        // DOM Elements
+        const accordionMenu = document.getElementById('accordionMenu');
+        const yearSwitcher = document.getElementById('yearSwitcher');
+        const semesterSwitcher = document.getElementById('semesterSwitcher');
+        const subjectSwitcher = document.getElementById('subjectSwitcher');
+        const contentFrame = document.getElementById('content-frame');
+        const placeholder = document.getElementById('placeholder');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let currentUser = null;
+
+        // Auth State Listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                
+                // Fetch user data for current year/semester
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.level) yearSwitcher.value = userData.level;
+                    if (userData.semester) semesterSwitcher.value = userData.semester;
+                }
+                
+                loadCourses(yearSwitcher.value, semesterSwitcher.value);
+            } else {
+                // Not logged in -> Redirect to index.html (CodeBase default)
+                window.location.href = "index.html";
+            }
+        });
+
+        // Load Courses for Selected Year & Semester into Dropdown
+        async function loadCourses(year, semester) {
+            subjectSwitcher.innerHTML = '<option value="">Loading subjects...</option>';
+            accordionMenu.innerHTML = '';
+            
+            try {
+                const coursesRef = collection(db, "courses");
+                const querySnapshot = await getDocs(coursesRef);
+                
+                subjectSwitcher.innerHTML = '';
+                let firstCourseId = null;
+
+                querySnapshot.forEach((doc) => {
+                    const courseId = doc.id;
+                    const courseData = doc.data();
+                    
+                    if (courseId[2] == year && courseId[3] == semester) {
+                        const opt = document.createElement('option');
+                        opt.value = courseId;
+                        const title = courseData.name || courseData.title || courseData.courseName;
+                        opt.textContent = title ? `${courseId} - ${title}` : courseId;
+                        subjectSwitcher.appendChild(opt);
+                        if (!firstCourseId) firstCourseId = courseId;
+                    }
+                });
+
+                if (!firstCourseId) {
+                    subjectSwitcher.innerHTML = '<option value="">No subjects found</option>';
+                    accordionMenu.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">No subjects found for this selection.</div>';
+                } else {
+                    loadModules(firstCourseId); // Auto-load first course
+                }
+                
+            } catch (error) {
+                console.error("Error loading courses:", error);
+                subjectSwitcher.innerHTML = '<option value="">Error loading subjects</option>';
+            }
+        }
+
+        // Load Modules (Tree) for a Selected Subject
+        async function loadModules(courseId) {
+            accordionMenu.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">Loading course contents...</div>';
+            
+            try {
+                const contentRef = collection(db, "courses", courseId, "content");
+                const moduleSnap = await getDocs(contentRef);
+                
+                accordionMenu.innerHTML = '';
+                
+                if (moduleSnap.empty) {
+                    accordionMenu.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">No contents available for this subject.</div>';
+                    return;
+                }
+
+                // Sort modules if title holds numbers (like Module 1), purely optional but good
+                const modules = moduleSnap.docs.map(m => ({ id: m.id, ...m.data() }));
+                
+                modules.forEach(modData => {
+                    renderModuleItem(courseId, modData);
+                });
+                
+            } catch (error) {
+                console.error("Error loading modules:", error);
+                accordionMenu.innerHTML = '<div style="padding: 20px; color: #ef4444;">Error loading contents.</div>';
+            }
+        }
+
+        function renderModuleItem(courseId, modData) {
+            const item = document.createElement('div');
+            item.className = 'accordion-item';
+            
+            const header = document.createElement('button');
+            header.className = 'accordion-header';
+            const moduleTitle = modData.tittle || modData.title || modData.name || modData.id;
+            header.innerHTML = `
+                <div class="subject-info">
+                    <i data-lucide="folder-open" style="width: 18px; color: var(--accent-secondary);"></i>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;">${moduleTitle}</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron" style="width: 16px;"></i>
+            `;
+            
+            const content = document.createElement('div');
+            content.className = 'accordion-content';
+            
+            header.addEventListener('click', async () => {
+                const isActive = item.classList.contains('active');
+                
+                // Close others
+                document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+                
+                if (!isActive) {
+                    item.classList.add('active');
+                    if (content.innerHTML === '') {
+                        content.innerHTML = '<div style="padding: 10px 0; font-size: 0.8rem; color: var(--text-muted);">Fetching resources...</div>';
+                        await loadModuleResources(courseId, modData.id, content, moduleTitle);
+                    }
+                }
+            });
+
+            item.appendChild(header);
+            item.appendChild(content);
+            accordionMenu.appendChild(item);
+            lucide.createIcons();
+        }
+
+        // Load and Categorize Resources for a Specific Module
+        async function loadModuleResources(courseId, moduleId, container, moduleName) {
+            try {
+                const resources = { video: [], docs: [], code: [], blog: [] };
+
+                // Fetch official module resources
+                const resRef = collection(db, "courses", courseId, "content", moduleId, "resources");
+                const resSnap = await getDocs(resRef);
+                resSnap.forEach(r => categorizeResource({ ...r.data(), id: r.id }, resources));
+
+                // Fetch Community Resources
+                const commRef = collection(db, "community_resources");
+                const commSnap = await getDocs(query(commRef, where("courseId", "==", courseId), where("moduleId", "==", moduleId)));
+                commSnap.forEach(r => {
+                    const data = r.data();
+                    if (!data.isHidden) categorizeResource({ ...data, id: r.id }, resources);
+                });
+
+                renderCategorizedUI(container, resources, moduleName);
+
+            } catch (error) {
+                console.error("Error loading resources:", error);
+                container.innerHTML = '<div style="padding: 10px 0; color: #ef4444;">Failed to load resources.</div>';
+            }
+        }
+
+        function categorizeResource(data, groups) {
+            const type = (data.type || 'link').toLowerCase();
+            const resource = {
+                id: data.id,
+                title: data.title || data.tittle || 'Untitled',
+                src: data.link || '',
+                type: type
+            };
+
+            if (type === 'video') groups.video.push(resource);
+            else if (type === 'pdf' || type === 'docs') groups.docs.push(resource);
+            else if (type === 'blog') groups.blog.push(resource);
+            else if (type === 'github' || type === 'code') groups.code.push(resource);
+            else {
+                if (resource.src.includes('drive.google.com')) groups.docs.push(resource);
+                else groups.code.push(resource); 
+            }
+        }
+
+        function renderCategorizedUI(container, groups, moduleName) {
+            container.innerHTML = '';
+            
+            const categories = [
+                { id: 'video', label: 'Videos', icon: 'play-circle' },
+                { id: 'docs', label: 'Documents', icon: 'file-text' },
+                { id: 'blog', label: 'Blogs', icon: 'book-open' },
+                { id: 'code', label: 'Code & Links', icon: 'code' }
+            ];
+
+            categories.forEach(cat => {
+                if (groups[cat.id].length > 0) {
+                    const catLabel = document.createElement('div');
+                    catLabel.style = "font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-secondary); margin: 12px 0 4px; font-weight: 700; opacity: 0.8;";
+                    catLabel.innerText = cat.label;
+                    container.appendChild(catLabel);
+
+                    groups[cat.id].forEach(res => {
+                        const link = document.createElement('a');
+                        link.className = 'resource-link';
+                        link.innerHTML = `<i data-lucide="${cat.icon}"></i><span>${res.title}</span>`;
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            updateIframe(res.src, `${moduleName} - ${res.title}`, res.type, res.id);
+                            if (window.innerWidth <= 1024) toggleSidebar();
+                        });
+                        container.appendChild(link);
+                    });
+                }
+            });
+
+            if (container.innerHTML === '') {
+                container.innerHTML = '<div style="padding: 10px 0; font-size: 0.8rem; color: var(--text-muted);">No resources available.</div>';
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Update Iframe Function
+        function updateIframe(src, title, type, resId) {
+            // Links and Code repositories generally block iframes, so we open them directly
+            if (type === 'github' || type === 'link' || type === 'code') {
+                window.open(src, "_blank");
+                return;
+            }
+
+            placeholder.style.display = 'none';
+            contentFrame.style.display = 'block';
+            
+            let finalSrc = src;
+
+            if (type === 'blog') {
+                finalSrc = `blog.html?id=${resId}&mode=eduhub`;
+            }
+            // Handle YouTube
+            else if (type === 'video' || src.includes('youtube.com') || src.includes('youtu.be')) {
+                const ytMatch = src.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([\w-]+)/);
+                if (ytMatch) {
+                    finalSrc = `https://www.youtube.com/embed/${ytMatch[1]}`;
+                }
+            }
+            // Handle Google Drive PDFs seamlessly using CodeBase's PDF.js native reader
+            else if (type === 'pdf' || type === 'docs' || src.includes('drive.google.com')) {
+                const fileIdMatch = src.match(/\/file\/d\/([a-zA-Z0-9_-]+)\/|[?&]id=([a-zA-Z0-9_-]+)/);
+                const fileId = fileIdMatch ? (fileIdMatch[1] || fileIdMatch[2]) : null;
+                if (fileId) {
+                    finalSrc = `reader.html?id=${fileId}&mode=eduhub`;
+                }
+            }
+
+            contentFrame.src = finalSrc;
+        }
+
+        // Sidebar Toggle
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+
+        // Listeners
+        yearSwitcher.addEventListener('change', () => {
+            loadCourses(yearSwitcher.value, semesterSwitcher.value);
+        });
+        semesterSwitcher.addEventListener('change', () => {
+            loadCourses(yearSwitcher.value, semesterSwitcher.value);
+        });
+        subjectSwitcher.addEventListener('change', () => {
+            if (subjectSwitcher.value) loadModules(subjectSwitcher.value);
+        });
+
+        menuToggle.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+    </script>
+
+</body>
+
+</html>

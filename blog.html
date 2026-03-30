@@ -486,6 +486,13 @@
             loadBlog();
         });
 
+        // Hide back button if opened in EduHub
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mode') === 'eduhub') {
+            const backBtn = document.querySelector('.back-btn');
+            if (backBtn) backBtn.style.display = 'none';
+        }
+
         async function loadBlog() {
             try {
                 const blogSnap = await getDoc(doc(db, "community_resources", currentBlogId));

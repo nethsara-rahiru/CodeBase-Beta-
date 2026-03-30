@@ -191,6 +191,15 @@
     const previewURL = `https://drive.google.com/file/d/${fileId}/preview`;
     document.getElementById("pdfFrame").src = previewURL;
 
+    // Hide back button if opened in EduHub
+    if (params.get('mode') === 'eduhub') {
+      const backBtn = document.querySelector('.back-btn');
+      if (backBtn) backBtn.style.display = 'none';
+      // Optionally hide the header title if we want even more space
+      // const h1 = document.querySelector('h1');
+      // if (h1) h1.style.display = 'none';
+    }
+
     // Direct download (Google Drive allowed)
     function downloadPDF() {
       const link = document.createElement("a");
