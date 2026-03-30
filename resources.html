@@ -760,14 +760,14 @@
 
   <header id="navbar">
     <div class="brand-area">
-      <button class="back-btn" onclick="history.back()">
+      <a class="back-btn" href="content.html">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
         Back
-      </button>
+      </a>
       <h1>Resources</h1>
     </div>
     <div class="user-profile">
@@ -1140,7 +1140,9 @@
       const pinnedContainer = document.getElementById("pinnedContainer");
       if (pinnedContainer) pinnedContainer.innerHTML = "";
 
-      document.getElementById("commCount").textContent = commSnap?.size || 0;
+      // Calculate active community count (excluding hidden)
+      const activeCommCount = commSnap.docs.filter(d => d.data().isHidden !== true).length;
+      document.getElementById("commCount").textContent = activeCommCount;
 
       let allItems = [];
       if (currentTab === "course") {
@@ -1166,12 +1168,13 @@
         });
       }
 
-      // Filter by Search & Category
+      // Filter by Search, Category, and Hidden Status
       let filteredItems = allItems.filter(item => {
-        const matchesSearch = item.title.toLowerCase().includes(searchVal) ||
+        const isShown = item.isHidden !== true;
+        const matchesSearch = (item.title || "").toLowerCase().includes(searchVal) ||
           (item.ownerReg && item.ownerReg.toLowerCase().includes(searchVal));
         const matchesCat = currentCategory === "all" || item.type?.toLowerCase() === currentCategory;
-        return matchesSearch && matchesCat;
+        return isShown && matchesSearch && matchesCat;
       });
 
       if (currentTab === "course") {

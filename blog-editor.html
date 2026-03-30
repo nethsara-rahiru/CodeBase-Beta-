@@ -148,12 +148,13 @@
             padding: 12px;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
             margin-bottom: 24px;
             position: sticky;
-            top: 20px;
-            z-index: 10;
+            top: 88px;
+            z-index: 50;
             overflow-x: auto;
             flex-wrap: nowrap;
             scrollbar-width: none;
@@ -214,6 +215,42 @@
             border-color: var(--accent-primary);
         }
 
+        .size-selector {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            padding: 0 8px;
+            height: 40px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            min-width: 100px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        .size-selector:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--glass-border);
+        }
+
+        .size-selector:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .size-selector option {
+            background: var(--bg-dark);
+            color: white;
+        }
+
         .content-area {
             min-height: 400px;
             background: rgba(255, 255, 255, 0.02);
@@ -263,15 +300,62 @@
         .editor-img-wrap.drag-over {
             opacity: 0.4;
         }
-        /* Drag handle bar at top of image */
+        /* Action bar for images */
+        .editor-img-wrap .img-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+            pointer-events: all;
+        }
+        .editor-img-wrap:hover .img-actions {
+            opacity: 1;
+        }
+        .img-action-btn {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .img-action-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+        .img-action-btn.edit-btn::after {
+            content: ' Edit';
+        }
+        .img-action-btn.delete-btn::after {
+            content: ' Delete';
+        }
+        .img-action-btn.delete-btn:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        /* Drag handle bar remains top-center but simplified */
         .editor-img-wrap .img-drag-handle {
             position: absolute;
             top: 8px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(99, 102, 241, 0.85);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 4px 14px;
+            padding: 4px 12px;
             color: white;
             font-size: 0.7rem;
             font-weight: 700;
@@ -285,6 +369,10 @@
             align-items: center;
             gap: 6px;
             pointer-events: all;
+            backdrop-filter: blur(4px);
+        }
+        .editor-img-wrap .img-drag-handle::after {
+            content: 'DRAG';
         }
         .editor-img-wrap:hover .img-drag-handle {
             opacity: 1;
@@ -297,15 +385,26 @@
             position: absolute;
             bottom: 6px;
             right: 6px;
-            width: 18px;
-            height: 18px;
-            background: rgba(99, 102, 241, 0.85);
+            width: 20px;
+            height: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--glass-border);
             border-radius: 4px;
             cursor: se-resize;
             opacity: 0;
             transition: opacity 0.2s;
             z-index: 10;
             pointer-events: all;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .editor-img-wrap .img-resize-handle::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid white;
+            border-bottom: 2px solid white;
         }
         .editor-img-wrap:hover .img-resize-handle {
             opacity: 1;
@@ -398,6 +497,17 @@
             }
         }
 
+        .secondary-btn.delete-btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .secondary-btn.delete-btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+        }
+
         .secondary-btn {
             padding: 12px 32px;
             background: rgba(255, 255, 255, 0.05);
@@ -478,6 +588,81 @@
             font-family: 'Latha', 'Plus Jakarta Sans', sans-serif;
         }
 
+        /* Confirmation Modal */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .confirm-modal.active { display: flex; }
+
+        .confirm-box {
+            background: #1e293b;
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .confirm-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .confirm-box p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 32px;
+            font-size: 0.95rem;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .confirm-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .confirm-no {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+        }
+
+        .confirm-yes {
+            background: var(--danger);
+            border: none;
+            color: white;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+        }
+
+        .confirm-yes:hover { transform: translateY(-2px); opacity: 0.9; }
+
         @media (max-width: 640px) {
             header {
                 padding: 12px 20px;
@@ -492,7 +677,7 @@
             }
 
             .toolbar {
-                top: 60px;
+                top: 72px;
             }
         }
     </style>
@@ -501,7 +686,7 @@
 <body>
     <header>
         <div class="brand-area">
-            <a onclick="history.back()" class="back-btn">
+            <a id="backBtn" class="back-btn" href="resources.html">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -532,7 +717,7 @@
                 <input type="text" id="blogTitle" class="title-input" placeholder="Enter an eye-catching title...">
             </div>
 
-            <div class="toolbar" id="editorToolbar">
+            <div class="toolbar" id="editorToolbar" translate="no">
                 <button class="tool-btn" data-command="bold" title="Bold"><b>B</b></button>
                 <button class="tool-btn" data-command="italic" title="Italic"><i>I</i></button>
                 <button class="tool-btn" data-command="underline" title="Underline"><u>U</u></button>
@@ -579,6 +764,36 @@
                         <polyline points="21 15 16 10 5 21"></polyline>
                     </svg>
                 </button>
+                <div style="width:1px; background:var(--glass-border); margin:0 4px;"></div>
+                <button class="tool-btn" data-command="outdent" title="Outdent (decrease indent)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                        <line x1="21" y1="18" x2="3" y2="18"></line>
+                        <polyline points="7 8 3 12 7 16"></polyline>
+                    </svg>
+                </button>
+                <button class="tool-btn" data-command="indent" title="Indent (increase indent)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                        <line x1="21" y1="18" x2="3" y2="18"></line>
+                        <polyline points="3 8 7 12 3 16"></polyline>
+                    </svg>
+                </button>
+
+                <div style="width:1px; background:var(--glass-border); margin:0 4px;"></div>
+
+                <select class="size-selector" id="fontSelector" title="Font Size">
+                    <option value="10px">Tiny</option>
+                    <option value="13px">Small</option>
+                    <option value="16px" selected>Normal</option>
+                    <option value="18px">Large</option>
+                    <option value="24px">Extra Large</option>
+                    <option value="32px">Huge</option>
+                    <option value="48px">Giant</option>
+                </select>
+
 
                 <div class="lang-selector">
                     <button class="lang-btn active" data-lang="en">EN</button>
@@ -593,7 +808,17 @@
                     data-placeholder="Start writing your story here..."></div>
             </div>
 
-            <div class="actions">
+            <div class="actions" id="editorActions">
+                <button class="secondary-btn delete-btn-danger" id="deleteBlogBtn" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14H6L5 6"></path>
+                        <path d="M10 11v6"></path>
+                        <path d="M14 11v6"></path>
+                        <path d="M9 6V4h6v2"></path>
+                    </svg>
+                    Delete Blog
+                </button>
                 <button class="secondary-btn" id="saveDraftBtn" style="display:none;">Save Draft</button>
                 <button class="primary-btn" id="publishBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -607,6 +832,19 @@
             </div>
         </div>
     </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-box">
+            <h2 id="confirmTitle">Confirm Action</h2>
+            <p id="confirmMsg">Are you sure you want to proceed?</p>
+            <div class="confirm-actions">
+                <button class="confirm-no" id="confirmNo">Cancel</button>
+                <button class="confirm-yes" id="confirmYes">Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Image Upload Modal -->
     <div id="imageModal" class="modal">
@@ -657,6 +895,46 @@
         const pageTitle = document.getElementById("pageTitle");
         const ttsBtn = document.getElementById("ttsBtn");
         const readAloudArea = document.getElementById("readAloudArea");
+        const deleteBlogBtn = document.getElementById("deleteBlogBtn");
+        const toastContainer = document.getElementById("toastContainer");
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        const confirmModal = document.getElementById("confirmModal");
+        const confirmTitle = document.getElementById("confirmTitle");
+        const confirmMsg = document.getElementById("confirmMsg");
+        const confirmYes = document.getElementById("confirmYes");
+        const confirmNo = document.getElementById("confirmNo");
+
+        function showConfirm(title, message, yesText = "Confirm", isDanger = true) {
+            return new Promise((resolve) => {
+                confirmTitle.textContent = title;
+                confirmMsg.textContent = message;
+                confirmYes.textContent = yesText;
+                confirmYes.className = isDanger ? "confirm-yes" : "confirm-yes primary"; // could support primary blue if needed
+                
+                confirmModal.classList.add("active");
+
+                const handleChoice = (choice) => {
+                    confirmModal.classList.remove("active");
+                    confirmYes.onclick = null;
+                    confirmNo.onclick = null;
+                    resolve(choice);
+                };
+
+                confirmYes.onclick = () => handleChoice(true);
+                confirmNo.onclick = () => handleChoice(false);
+            });
+        }
 
         let currentUser = null;
         let userData = null;
@@ -664,6 +942,10 @@
         let currentCourseId = localStorage.getItem("selectedCourseId");
         let currentModuleId = localStorage.getItem("selectedContentId");
         let isEditMode = !!currentBlogId;
+
+        // Set back button destination based on mode
+        const backBtn = document.getElementById("backBtn");
+        backBtn.href = isEditMode ? `blog.html?id=${currentBlogId}` : "resources.html";
 
         // Language Handling
         document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -686,6 +968,68 @@
                 btn.classList.toggle("active", document.queryCommandState(command));
             };
         });
+
+        const fontSelector = document.getElementById("fontSelector");
+        
+        // Use CSS styles instead of outdated HTML tags for formatting
+        document.execCommand('styleWithCSS', false, true);
+        
+        // Update toolbar states based on current selection
+        const updateToolbar = () => {
+            document.querySelectorAll(".tool-btn[data-command]").forEach(btn => {
+                const command = btn.dataset.command;
+                try {
+                    btn.classList.toggle("active", document.queryCommandState(command));
+                } catch (e) {}
+            });
+
+            // Update font size selector
+            try {
+                // Get the computed font size of the element at cursor
+                const sel = window.getSelection();
+                if (sel.rangeCount) {
+                    let node = sel.anchorNode;
+                    if (node.nodeType === 3) node = node.parentNode;
+                    const style = window.getComputedStyle(node);
+                    const size = style.fontSize;
+                    if (size) {
+                        // Match nearest option in dropdown
+                        fontSelector.value = size;
+                    }
+                }
+            } catch (e) {}
+        };
+
+        document.addEventListener("selectionchange", updateToolbar);
+        editorContent.addEventListener("keyup", updateToolbar);
+        editorContent.addEventListener("mouseup", updateToolbar);
+
+        fontSelector.onchange = () => {
+            const size = fontSelector.value;
+            const sel = window.getSelection();
+            if (sel.rangeCount) {
+                const range = sel.getRangeAt(0);
+                if (!range.collapsed) {
+                    const span = document.createElement("span");
+                    span.style.fontSize = size;
+                    try {
+                        const content = range.extractContents();
+                        span.appendChild(content);
+                        range.insertNode(span);
+                        
+                        sel.removeAllRanges();
+                        const newRange = document.createRange();
+                        newRange.selectNodeContents(span);
+                        sel.addRange(newRange);
+                    } catch (err) {
+                        // Fallback to execCommand if complex range
+                        document.execCommand("fontSize", false, "3"); // dummy for toggle
+                    }
+                }
+            }
+            editorContent.focus();
+            updateToolbar();
+        };
 
         // Cloudinary Configuration
         const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dbnvewztc/image/upload";
@@ -803,20 +1147,41 @@
 
             const dragHandle = document.createElement('div');
             dragHandle.className = 'img-drag-handle';
+            dragHandle.setAttribute('translate', 'no');
             dragHandle.innerHTML = `
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/>
                     <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
                     <circle cx="9" cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
-                </svg> Drag to move`;
+                </svg>`;
 
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'img-resize-handle';
             resizeHandle.title = 'Drag to resize';
+            resizeHandle.setAttribute('translate', 'no');
+
+            // Action bar: Edit + Delete
+            const actionsBar = document.createElement('div');
+            actionsBar.className = 'img-actions';
+            actionsBar.setAttribute('translate', 'no');
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'img-action-btn edit-btn';
+            editBtn.title = 'Edit / Re-crop image';
+            editBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'img-action-btn delete-btn';
+            deleteBtn.title = 'Remove image';
+            deleteBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+
+            actionsBar.appendChild(editBtn);
+            actionsBar.appendChild(deleteBtn);
 
             figure.appendChild(img);
             figure.appendChild(dragHandle);
             figure.appendChild(resizeHandle);
+            figure.appendChild(actionsBar);
             return figure;
         }
 
@@ -900,7 +1265,22 @@
                 document.addEventListener('mouseup', onUp);
             });
 
-            // --- Double-click to crop ---
+            // --- Edit button → open crop modal ---
+            const editBtn = figure.querySelector('.edit-btn');
+            editBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                activeCropImg = img;
+                cropperImg.src = img.src;
+                cropModal.classList.add("active");
+                if (cropperInstance) cropperInstance.destroy();
+                cropperInstance = new Cropper(cropperImg, { viewMode: 2, autoCropArea: 1 });
+            });
+
+            // --- Double-click also opens crop (power-user shortcut) ---
             img.addEventListener('dblclick', (e) => {
                 e.stopPropagation();
                 activeCropImg = img;
@@ -909,11 +1289,55 @@
                 if (cropperInstance) cropperInstance.destroy();
                 cropperInstance = new Cropper(cropperImg, { viewMode: 2, autoCropArea: 1 });
             });
+
+            // --- Delete button → remove figure ---
+            const deleteBtn = figure.querySelector('.delete-btn');
+            deleteBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Remove this image from the blog?')) {
+                    figure.remove();
+                }
+            });
         }
 
         // Re-attach handlers to any existing images added (e.g. from db load)
         function reAttachAllFigures() {
             editorContent.querySelectorAll('.editor-img-wrap').forEach(fig => {
+                // Upgrade legacy figures that were saved without the UI controls
+                if (!fig.querySelector('.img-drag-handle')) {
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'img-drag-handle';
+                    dragHandle.setAttribute('translate', 'no');
+                    dragHandle.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="19" r="2"/><circle cx="15" cy="19" r="2"/></svg> Drag`;
+                    fig.appendChild(dragHandle);
+                }
+                if (!fig.querySelector('.img-resize-handle')) {
+                    const resizeHandle = document.createElement('div');
+                    resizeHandle.className = 'img-resize-handle';
+                    resizeHandle.setAttribute('translate', 'no');
+                    resizeHandle.title = 'Drag to resize';
+                    fig.appendChild(resizeHandle);
+                }
+                if (!fig.querySelector('.img-actions')) {
+                    const actionsBar = document.createElement('div');
+                    actionsBar.className = 'img-actions';
+                    actionsBar.setAttribute('translate', 'no');
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'img-action-btn edit-btn';
+                    editBtn.title = 'Edit / Re-crop image';
+                    editBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit`;
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'img-action-btn delete-btn';
+                    deleteBtn.title = 'Remove image';
+                    deleteBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete`;
+                    actionsBar.appendChild(editBtn);
+                    actionsBar.appendChild(deleteBtn);
+                    fig.appendChild(actionsBar);
+                }
                 if (!fig.dataset.attached) {
                     fig.dataset.attached = '1';
                     attachFigureHandlers(fig);
@@ -1010,6 +1434,7 @@
                         pageTitle.textContent = "View Blog";
                         document.getElementById("editorToolbar").style.display = "none";
                         publishBtn.style.display = "none";
+                        deleteBlogBtn.style.display = "none";
                         editorContent.contentEditable = "false";
                         blogTitle.readOnly = true;
                         blogTitle.style.border = "none";
@@ -1017,6 +1442,7 @@
                         blogTitle.style.padding = "0";
                     } else {
                         pageTitle.textContent = "Edit Blog";
+                        deleteBlogBtn.style.display = "flex";
                         publishBtn.innerHTML = `
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                             <span>Update Blog</span>
@@ -1055,7 +1481,40 @@
         setInterval(loadVoices, 500);
 
         ttsBtn.onclick = () => {
-            const text = editorContent.innerText.replace(/[\n\r]+/g, ' ').trim();
+            if (ttsBtn.classList.contains("processing")) {
+                speechSynthesis.cancel();
+                ttsAudio.pause();
+                ttsAudio.src = "";
+                ttsQueue = [];
+                ttsIndex = 0;
+                ttsBtn.classList.remove("processing", "btn-loading");
+                ttsBtn.querySelector("span").textContent = "Read Aloud";
+                return;
+            }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = editorContent.innerHTML;
+            
+            // Sanitization: Remove hidden editor UI
+            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions').forEach(el => el.remove());
+
+            // Robust text extraction with forced newlines for blocks
+            let text = "";
+            const blockTags = ["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "BLOCKQUOTE", "BR"];
+            const walk = (node) => {
+                if (node.nodeType === 3) {
+                    // Normalize internal whitespace to prevent unintended wraps from breaking the sentence
+                    text += node.textContent.replace(/[\n\r]+/g, ' ');
+                } else if (node.nodeType === 1) {
+                    const isBlock = blockTags.includes(node.tagName);
+                    if (isBlock && text && !text.endsWith("\n")) text += "\n";
+                    node.childNodes.forEach(child => walk(child));
+                    if (isBlock && !text.endsWith("\n")) text += "\n";
+                }
+            };
+            walk(tempDiv);
+            text = text.replace(/[ ]+/g, ' ').replace(/[\n\r]{2,}/g, '\n\n').trim();
+            
             if (!text) return;
 
             speechSynthesis.cancel();
@@ -1065,33 +1524,57 @@
             ttsQueue = [];
             ttsIndex = 0;
 
-            // Detect languages & split text
-            let currentLang = 'en';
-            let currentText = '';
-            for (let char of text) {
-                const code = char.charCodeAt(0);
-                let charLang = 'en';
-                if (code >= 0x0D80 && code <= 0x0DFF) charLang = 'si';
-                else if (code >= 0x0B80 && code <= 0x0BFF) charLang = 'ta';
-                else if (/[\s\d\W]/.test(char)) charLang = currentLang;
+            // Split into paragraphs/lines to create natural pauses between them
+            const lines = text.split('\n');
+            const processedQueue = [];
 
-                if (charLang !== currentLang && currentText.trim()) {
-                    ttsQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
-                    currentText = '';
-                    currentLang = charLang;
-                } else if (charLang !== currentLang && !currentText.trim()) {
-                    currentLang = charLang;
+            lines.forEach((line, lineIndex) => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    processedQueue.push({ pause: 400 });
+                    return;
                 }
-                currentText += char;
-            }
-            if (currentText.trim()) ttsQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
 
-            const final = [];
-            ttsQueue.forEach(item => {
-                const chunks = item.text.match(/.{1,150}(\s|$)/g) || [item.text];
-                chunks.forEach(c => final.push({ text: c.trim(), lang: item.lang }));
+                // Detect languages within this line
+                let currentLang = 'en';
+                let currentText = '';
+                
+                for (let char of trimmed) {
+                    const code = char.charCodeAt(0);
+                    let charLang = 'en';
+                    if (code >= 0x0D80 && code <= 0x0DFF) charLang = 'si';
+                    else if (code >= 0x0B80 && code <= 0x0BFF) charLang = 'ta';
+                    else if (/[\s\d\W]/.test(char)) charLang = currentLang;
+
+                    if (charLang !== currentLang && currentText.trim()) {
+                        processedQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
+                        currentText = '';
+                        currentLang = charLang;
+                    } else if (charLang !== currentLang && !currentText.trim()) {
+                        currentLang = charLang;
+                    }
+                    currentText += char;
+                }
+                if (currentText.trim()) processedQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
+
+                // End of a line = mandatory pause
+                processedQueue.push({ pause: 600 });
             });
-            ttsQueue = final.filter(q => q.text.length > 0);
+
+            // Split long sentences within chunks while maintaining language
+            const final = [];
+            processedQueue.forEach(item => {
+                if (item.pause) {
+                    final.push(item);
+                    return;
+                }
+                const chunks = item.text.match(/.{1,150}(\.|\?|!|\s|$)/g) || [item.text];
+                chunks.forEach(c => {
+                    const ct = c.trim();
+                    if (ct) final.push({ text: ct, lang: item.lang });
+                });
+            });
+            ttsQueue = final;
 
             if (ttsQueue.length > 0) {
                 ttsBtn.classList.add("processing", "btn-loading");
@@ -1108,6 +1591,17 @@
             }
 
             const item = ttsQueue[ttsIndex];
+
+            // Handle explicit pauses
+            if (item.pause) {
+                setTimeout(() => {
+                    if (!ttsBtn.classList.contains("processing")) return; // if user stopped it
+                    ttsIndex++;
+                    speakNextChunk();
+                }, item.pause);
+                return;
+            }
+
             const langPrefix = item.lang.split('-')[0];
             ttsBtn.querySelector("span").textContent = `Reading (${langPrefix})...`;
 
@@ -1146,25 +1640,61 @@
             }, item.text.length * charDelay + 1000);
         }
 
+        // Delete Logic
+        deleteBlogBtn.onclick = async () => {
+            const confirmed = await showConfirm("Delete Blog", "Are you sure you want to delete this blog? This action cannot be undone.");
+            if (!confirmed) return;
+
+            deleteBlogBtn.disabled = true;
+            deleteBlogBtn.classList.add("processing", "btn-loading");
+            
+            try {
+                await updateDoc(doc(db, "community_resources", currentBlogId), {
+                    isHidden: true,
+                    deletedAt: serverTimestamp()
+                });
+                showToast("Blog deleted successfully", "success");
+                setTimeout(() => window.location.href = "resources.html", 1500);
+            } catch (err) {
+                showToast("Deletion failed: " + err.message, "error");
+                deleteBlogBtn.disabled = false;
+                deleteBlogBtn.classList.remove("processing", "btn-loading");
+            }
+        };
+
         // Publish Logic
         publishBtn.onclick = async () => {
             const title = blogTitle.value.trim();
 
-            // Deep clone the editor content and strip all editor-only UI elements
+            // Deep clone and clean everything editor-only
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = editorContent.innerHTML;
-            // Remove drag handles and resize handles (editor-only UI)
-            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle').forEach(el => el.remove());
-            // Also clean up editor-only attributes on figure wrappers
+            
+            // 1. Remove obvious UI handles and labels
+            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions').forEach(el => el.remove());
+            
+            // 2. Remove ANY leftover button text that might have been injected/translated
+            tempDiv.querySelectorAll('.img-action-btn').forEach(btn => btn.remove());
+            
+            // 3. Clean figure attributes
             tempDiv.querySelectorAll('.editor-img-wrap').forEach(fig => {
                 fig.removeAttribute('contenteditable');
                 fig.removeAttribute('draggable');
                 fig.removeAttribute('data-attached');
+                // If by any chance there's text outside the img/handles now (due to range.extract mismatch)
+                // we clean it up
+                Array.from(fig.childNodes).forEach(node => {
+                    if (node.nodeType === 3) node.remove(); // Remove stray text in figure
+                });
             });
+
+            // 4. Final sweep for any leftover browser-translation markers or empty spans
+            tempDiv.querySelectorAll('span:empty, font:empty, b:empty, i:empty').forEach(el => el.remove());
+
             const content = tempDiv.innerHTML.trim();
 
             if (!title || !content || content === "<br>") {
-                alert("Please provide both title and content.");
+                showToast("Please provide both title and content.", "error");
                 return;
             }
 
@@ -1180,7 +1710,8 @@
                         updatedAt: serverTimestamp()
                     };
                     await updateDoc(doc(db, "community_resources", currentBlogId), updateData);
-                    alert("Blog updated successfully!");
+                    showToast("Blog updated successfully!");
+                    setTimeout(() => window.location.href = `blog.html?id=${currentBlogId}`, 1500);
                 } else {
                     const blogData = {
                         title: title,
@@ -1201,12 +1732,11 @@
                     };
                     const docRef = await addDoc(collection(db, "community_resources"), blogData);
                     currentBlogId = docRef.id;
-                    alert("Blog published successfully!");
+                    showToast("Blog published successfully!");
+                    setTimeout(() => window.location.href = `blog.html?id=${currentBlogId}`, 1500);
                 }
-
-                window.location.href = `blog.html?id=${currentBlogId}`;
             } catch (err) {
-                alert("Operation failed: " + err.message);
+                showToast("Operation failed: " + err.message, "error");
                 publishBtn.disabled = false;
                 publishBtn.classList.remove("processing", "btn-loading");
                 publishBtn.querySelector("span").textContent = isEditMode ? "Update Blog" : "Publish Blog";

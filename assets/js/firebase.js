@@ -4,6 +4,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import {
@@ -14,7 +16,9 @@ import {
   collection,
   getDocs,
   query,
-  where
+  where,
+  serverTimestamp,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 // Firebase config
@@ -50,13 +54,32 @@ const ALLOWED_DOMAINS = ["@std.uwu.ac.lk", "@stu.vau.ac.lk"];
 
 let isAuthProcessing = false;
 
+// Pick up result from redirect if any
+getRedirectResult(auth)
+  .then((result) => {
+    if (result) {
+      window.handleUserAuth(result.user);
+    }
+  })
+  .catch((error) => {
+    console.error("Redirect login failed:", error);
+  });
+
 window.googleLogin = async function () {
   try {
-    const result = await signInWithPopup(auth, provider);
-    await window.handleUserAuth(result.user);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Use redirect mode for mobile to ensure compatibility with WebViews
+      await signInWithRedirect(auth, provider);
+    } else {
+      // Stick to popup for desktop
+      const result = await signInWithPopup(auth, provider);
+      await window.handleUserAuth(result.user);
+    }
   } catch (err) {
     console.error("Login failed:", err);
-    throw err; 
+    throw err;
   }
 };
 
@@ -142,6 +165,21 @@ window.handleUserAuth = async function (user) {
         isAuthProcessing = false;
         return;
       }
+
+      // ---------------------------------------------------------
+      // Log System Activity (Traffic Tracking)
+      // ---------------------------------------------------------
+      try {
+        await addDoc(collection(db, "activity"), {
+          uid: user.uid,
+          regNo: userDocData.registrationNumber || "N/A",
+          timestamp: serverTimestamp(),
+          type: "login"
+        });
+      } catch (logErr) {
+        console.warn("Failed to log activity:", logErr);
+      }
+      // ---------------------------------------------------------
 
       // Final redirect if we are on a login/landing page
       const isOnAuthPage = window.location.pathname.includes("index.html") || 

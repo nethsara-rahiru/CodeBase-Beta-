@@ -5,6 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard | CodeBase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <style>
@@ -891,6 +894,16 @@
       background: rgba(255, 255, 255, 0.08) !important;
       letter-spacing: 0.02em;
     }
+
+    .chart-container {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 24px;
+      margin-top: 32px;
+      width: 100%;
+      height: 300px;
+    }
   </style>
 </head>
 
@@ -940,12 +953,15 @@
     <!-- Tab 1: Dashboard Stats -->
     <div class="tab-content active" id="dashboardTab">
       <div class="stats-grid">
-        <div class="stat-card"><span class="stat-val" id="statUsers">0</span><span class="stat-label">Total Users</span>
-        </div>
-        <div class="stat-card"><span class="stat-val" id="statCourses">0</span><span class="stat-label">Courses</span>
-        </div>
-        <div class="stat-card"><span class="stat-val" id="statOrgs">0</span><span
-            class="stat-label">Organizations</span></div>
+        <div class="stat-card"><span class="stat-val" id="statUsers">0</span><span class="stat-label">Total Users</span></div>
+        <div class="stat-card"><span class="stat-val" id="statTodayTraffic">0</span><span class="stat-label">Traffic Today</span></div>
+        <div class="stat-card"><span class="stat-val" id="statActiveBatch">-</span><span class="stat-label">Top Batch</span></div>
+        <div class="stat-card"><span class="stat-val" id="statCourses">0</span><span class="stat-label">Courses</span></div>
+        <div class="stat-card"><span class="stat-val" id="statOrgs">0</span><span class="stat-label">Organizations</span></div>
+      </div>
+
+      <div class="chart-container">
+          <canvas id="trafficChart"></canvas>
       </div>
       <div class="section-header" style="margin-top: 40px;">
         <h2>System Controls</h2>
@@ -1533,6 +1549,94 @@
       document.getElementById("statUsers").textContent = users.size;
       document.getElementById("statCourses").textContent = courses.size;
       document.getElementById("statOrgs").textContent = orgs.size;
+
+      // Modern Performance Tracking
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const qActivity = query(collection(db, "activity"), where("timestamp", ">=", sevenDaysAgo));
+      const activitySnap = await getDocs(qActivity);
+      
+      const logs = activitySnap.docs.map(d => ({...d.data(), date: d.data().timestamp?.toDate()}));
+      const now = new Date();
+      now.setHours(0,0,0,0);
+
+      // 1. Traffic Today
+      const todayLogs = logs.filter(l => l.date >= now);
+      document.getElementById("statTodayTraffic").textContent = todayLogs.length;
+
+      // 2. Most Active Batch
+      const batchCounts = {};
+      logs.forEach(l => {
+          if (!l.regNo || l.regNo === "N/A") return;
+          // Extract year from UWU/CST/20/001 format
+          const parts = l.regNo.split('/');
+          if (parts.length >= 3) {
+              const batch = parts[2]; // assuming the format
+              batchCounts[batch] = (batchCounts[batch] || 0) + 1;
+          }
+      });
+      const topBatch = Object.keys(batchCounts).reduce((a, b) => batchCounts[a] > batchCounts[b] ? a : b, "-");
+      document.getElementById("statActiveBatch").textContent = topBatch !== "-" ? `20${topBatch}` : "-";
+
+      // 3. Traffic Graph (Last 7 Days)
+      const graphData = {};
+      for(let i=6; i>=0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const key = d.toLocaleDateString('en-US', { weekday: 'short' });
+          graphData[key] = 0;
+      }
+
+      logs.forEach(l => {
+          if (!l.date) return;
+          const key = l.date.toLocaleDateString('en-US', { weekday: 'short' });
+          if (graphData[key] !== undefined) graphData[key]++;
+      });
+
+      renderTrafficChart(Object.keys(graphData), Object.values(graphData));
+    }
+
+    let trafficChartInstance = null;
+    function renderTrafficChart(labels, values) {
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        if (trafficChartInstance) trafficChartInstance.destroy();
+
+        trafficChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'System Traffic',
+                    data: values,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#6366f1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                }
+            }
+        });
     }
 
     // LANDING

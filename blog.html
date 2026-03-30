@@ -141,6 +141,13 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
+        /* Hide all editor-only image controls in the viewer */
+        .blog-content .img-drag-handle,
+        .blog-content .img-resize-handle,
+        .blog-content .img-actions {
+            display: none !important;
+        }
+
         /* Tool Buttons */
         .secondary-btn,
         .edit-btn {
@@ -310,7 +317,7 @@
 <body>
     <header>
         <div class="brand-area">
-            <a onclick="history.back()" class="back-btn">
+            <a href="resources.html" class="back-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -400,7 +407,7 @@
         window.translateContent = async (targetLang) => {
             document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
             document.getElementById("lang_" + targetLang).classList.add("active");
-
+            
             const contentDiv = document.getElementById("blogContent");
             if (targetLang === 'en') {
                 contentDiv.innerHTML = originalBlogHtml;
@@ -413,41 +420,53 @@
             contentDiv.style.opacity = '0.5';
 
             try {
-                // To avoid breaking images/complex structures if API is aggressive,
-                // we'll extract HTML tags as placeholders, translate, and restore.
-                let tempHtml = originalBlogHtml;
-                const tagsMap = {};
-                let tagIndex = 0;
+                const clone = document.createElement('div');
+                clone.innerHTML = originalBlogHtml;
 
-                tempHtml = tempHtml.replace(/<[^>]+>/g, (match) => {
-                    const key = `[#${tagIndex}#]`;
-                    tagsMap[key] = match;
-                    tagIndex++;
-                    return key;
-                });
+                const textNodes = [];
+                const walk = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, null, false);
+                let node;
+                while(node = walk.nextNode()) {
+                    if (node.textContent.trim().length > 0) {
+                        textNodes.push(node);
+                    }
+                }
 
-                const formData = new URLSearchParams();
-                formData.append('q', tempHtml);
+                if (textNodes.length > 0) {
+                    // Translate each node individually to ensure perfect alignment
+                    // We process in small concurrent batches to be fast but safe
+                    const batchTranslate = async (nodes) => {
+                        return Promise.all(nodes.map(async (n) => {
+                            try {
+                                const formData = new URLSearchParams();
+                                formData.append('q', n.textContent);
+                                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: formData
+                                });
+                                const json = await res.json();
+                                if (json && json[0]) {
+                                    // Segmented response, join all translated segments for this node
+                                    n.textContent = json[0].map(s => s[0]).join('');
+                                }
+                            } catch (e) {
+                                console.warn("Failed to translate a node, skipping", e);
+                            }
+                        }));
+                    };
 
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData
-                });
-
-                const json = await res.json();
-                let translatedHtml = json[0].map(item => item[0]).join('');
-
-                // Restore tags (handling cases where Google adds spaces, e.g. [# 0 #] or missing # like [12#])
-                translatedHtml = translatedHtml.replace(/\[\s*#?\s*(\d+)\s*#?\s*\]/g, (match, p1) => {
-                    return tagsMap[`[#${p1}#]`] || match;
-                });
-
-                contentDiv.innerHTML = translatedHtml;
+                    // Process in batches of 10 to keep it manageable
+                    for (let i = 0; i < textNodes.length; i += 10) {
+                        await batchTranslate(textNodes.slice(i, i + 10));
+                    }
+                }
+                
+                contentDiv.innerHTML = clone.innerHTML;
             } catch (e) {
                 console.error("Translation fail", e);
-                alert("Translation failed down to network error. Try again later.");
-                document.getElementById("lang_en").click(); // revert to English
+                alert("Translation failed. Please try again later.");
+                document.getElementById("lang_en").click();
             } finally {
                 contentDiv.style.opacity = '1';
                 ttsBtnSpan.textContent = originalTtsText;
@@ -516,38 +535,97 @@
         setInterval(loadVoices, 500);
 
         ttsBtn.onclick = () => {
-            const text = document.getElementById("blogContent").innerText.replace(/[\n\r]+/g, ' ').trim();
+            if (ttsBtn.classList.contains("processing")) {
+                speechSynthesis.cancel();
+                ttsAudio.pause();
+                ttsAudio.src = "";
+                ttsQueue = [];
+                ttsIndex = 0;
+                ttsBtn.classList.remove("processing", "btn-loading");
+                ttsBtn.querySelector("span").textContent = "Read Aloud";
+                return;
+            }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = document.getElementById("blogContent").innerHTML;
+            
+            // Sanitization: Remove hidden editor UI
+            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions').forEach(el => el.remove());
+
+            // Robust text extraction with forced newlines for blocks
+            let text = "";
+            const blockTags = ["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "BLOCKQUOTE", "BR"];
+            const walk = (node) => {
+                if (node.nodeType === 3) {
+                    // Normalize internal whitespace to prevent unintended wraps from breaking the sentence
+                    text += node.textContent.replace(/[\n\r]+/g, ' ');
+                } else if (node.nodeType === 1) {
+                    const isBlock = blockTags.includes(node.tagName);
+                    if (isBlock && text && !text.endsWith("\n")) text += "\n";
+                    node.childNodes.forEach(child => walk(child));
+                    if (isBlock && !text.endsWith("\n")) text += "\n";
+                }
+            };
+            walk(tempDiv);
+            text = text.replace(/[ ]+/g, ' ').replace(/[\n\r]{2,}/g, '\n\n').trim();
+            
             if (!text) return;
 
             window.speechSynthesis.cancel();
             ttsAudio.pause();
             ttsQueue = []; ttsIndex = 0;
 
-            let currentLang = 'en';
-            let currentText = '';
-            for (let char of text) {
-                const code = char.charCodeAt(0);
-                let charLang = 'en';
-                if (code >= 0x0D80 && code <= 0x0DFF) charLang = 'si';
-                else if (code >= 0x0B80 && code <= 0x0BFF) charLang = 'ta';
-                else if (/[\s\d\W]/.test(char)) charLang = currentLang;
+            // Split into paragraphs/lines to create natural pauses between them
+            const lines = text.split('\n');
+            const processedQueue = [];
 
-                if (charLang !== currentLang && currentText.trim()) {
-                    ttsQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
-                    currentText = ''; currentLang = charLang;
-                } else if (charLang !== currentLang && !currentText.trim()) {
-                    currentLang = charLang;
+            lines.forEach((line, lineIndex) => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    processedQueue.push({ pause: 400 });
+                    return;
                 }
-                currentText += char;
-            }
-            if (currentText.trim()) ttsQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
 
-            const final = [];
-            ttsQueue.forEach(item => {
-                const chunks = item.text.match(/.{1,150}(\s|$)/g) || [item.text];
-                chunks.forEach(c => final.push({ text: c.trim(), lang: item.lang }));
+                // Detect languages within this line
+                let currentLang = 'en';
+                let currentText = '';
+                
+                for (let char of trimmed) {
+                    const code = char.charCodeAt(0);
+                    let charLang = 'en';
+                    if (code >= 0x0D80 && code <= 0x0DFF) charLang = 'si';
+                    else if (code >= 0x0B80 && code <= 0x0BFF) charLang = 'ta';
+                    else if (/[\s\d\W]/.test(char)) charLang = currentLang;
+
+                    if (charLang !== currentLang && currentText.trim()) {
+                        processedQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
+                        currentText = '';
+                        currentLang = charLang;
+                    } else if (charLang !== currentLang && !currentText.trim()) {
+                        currentLang = charLang;
+                    }
+                    currentText += char;
+                }
+                if (currentText.trim()) processedQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
+                
+                // End of a line = mandatory pause
+                processedQueue.push({ pause: 600 });
             });
-            ttsQueue = final.filter(q => q.text.length > 0);
+
+            // Split long sentences within chunks while maintaining language
+            const final = [];
+            processedQueue.forEach(item => {
+                if (item.pause) {
+                    final.push(item);
+                    return;
+                }
+                const chunks = item.text.match(/.{1,150}(\.|\?|!|\s|$)/g) || [item.text];
+                chunks.forEach(c => {
+                    const ct = c.trim();
+                    if (ct) final.push({ text: ct, lang: item.lang });
+                });
+            });
+            ttsQueue = final;
 
             if (ttsQueue.length > 0) {
                 ttsBtn.classList.add("processing");
@@ -564,6 +642,17 @@
             }
 
             const item = ttsQueue[ttsIndex];
+            
+            // Handle explicit pauses
+            if (item.pause) {
+                setTimeout(() => {
+                    if (!ttsBtn.classList.contains("processing")) return; // if user stopped it
+                    ttsIndex++;
+                    speakNextChunk();
+                }, item.pause);
+                return;
+            }
+
             const langPrefix = item.lang.split('-')[0];
             ttsBtn.querySelector("span").textContent = `Reading (${langPrefix})...`;
 
