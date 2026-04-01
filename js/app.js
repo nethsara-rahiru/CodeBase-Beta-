@@ -55,10 +55,10 @@ signupBtn.addEventListener("click", async () => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password.value);
 
         // Save user in Firestore
-        await setDoc(doc(db, "users", regNumber.value), {
-            regNumber: regNumber.value,
-            role: "student"
-        });
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+        regNumber: regNumber.value,
+        role: "student"
+      });
 
         message.textContent = "Signup successful! Please login.";
     } catch (error) {
