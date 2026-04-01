@@ -133,7 +133,8 @@ window.handleUserAuth = async function (user) {
       alert("Access denied. Only approved university emails or whitelisted accounts allowed.");
       await signOut(auth);
       localStorage.clear();
-      if (!window.location.pathname.includes("index.html") && !window.location.pathname.includes("login.html")) {
+      const path = window.location.pathname.toLowerCase();
+      if (!path.includes("index.html") && !path.includes("login.html") && path !== "/" && !path.endsWith("/") && path.includes(".html")) {
           window.location.href = "index.html"; 
       }
       isAuthProcessing = false;
@@ -182,10 +183,12 @@ window.handleUserAuth = async function (user) {
       // ---------------------------------------------------------
 
       // Final redirect if we are on a login/landing page
-      const isOnAuthPage = window.location.pathname.includes("index.html") || 
-                           window.location.pathname.includes("login.html") || 
-                           window.location.pathname === "/" || 
-                           window.location.pathname.endsWith("/");
+      const path = window.location.pathname.toLowerCase();
+      const isOnAuthPage = path.includes("index.html") || 
+                           path.includes("login.html") || 
+                           path === "/" || 
+                           path.endsWith("/") ||
+                           !path.includes(".html"); 
       
       if (isOnAuthPage) {
           redirectByRole(userDocData.role || "student");

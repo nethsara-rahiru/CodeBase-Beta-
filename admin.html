@@ -1456,7 +1456,20 @@
 
       // Ensure permissions are loaded BEFORE triggering initial tab load
       await enforcePermissions(userData);
-      loadTabData("dashboard");
+      
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        const tabBtn = document.querySelector(`.nav-item[data-tab="${tabParam}"]`);
+        if (tabBtn && tabBtn.style.display !== 'none') {
+          tabBtn.click();
+        } else {
+          loadTabData("dashboard");
+        }
+      } else {
+        loadTabData("dashboard");
+      }
+
       loadSystemSettings();
     });
 
