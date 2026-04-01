@@ -34,6 +34,7 @@ export default function App() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: "729735531784-k35el19cfoph90jt2iuc9s3hngbv1mqi.apps.googleusercontent.com",
     webClientId: "729735531784-k35el19cfoph90jt2iuc9s3hngbv1mqi.apps.googleusercontent.com", // Often used for Expo Go
+    responseType: "id_token",
   });
 
   useEffect(() => {
@@ -74,9 +75,14 @@ export default function App() {
       <LinearGradient colors={['#0f172a', '#1e293b']} style={styles.loginContainer}>
         <StatusBar style="light" />
         <View style={styles.header}>
-            <View style={styles.logoContainer}>
-                <Text style={styles.logoText}>CB</Text>
-            </View>
+            <LinearGradient 
+                colors={['#6366f1', '#ec4899']} 
+                start={{ x: 0, y: 0 }} 
+                end={{ x: 1, y: 1 }} 
+                style={styles.logoContainer}
+            >
+             <Text style={styles.logoText}>CB</Text>
+            </LinearGradient>
             <Text style={styles.brandTitle}>CodeBase</Text>
             <Text style={styles.subtitle}>Your Secure Learning Ecosystem</Text>
         </View>
@@ -136,8 +142,8 @@ const styles = StyleSheet.create({
       width: 80,
       height: 80,
       borderRadius: 24,
-      background: 'linear-gradient(45deg, #6366f1, #ec4899)', // not supported on RN directly, use style
-      backgroundColor: '#6366f1',
+      //background: 'linear-gradient(45deg, #6366f1, #ec4899)', // not supported on RN directly, use style
+     // backgroundColor: '#6366f1',
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 20,
