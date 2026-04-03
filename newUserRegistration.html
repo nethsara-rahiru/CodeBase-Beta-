@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Student Registration</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #7b2cbf;
+            --secondary-color: #3a0ca3;
+            --accent-color: #f72585;
+            --text-light: #ffffff;
+            --text-muted: #b0b0d0;
+            --error-color: #ff4d4d;
+            --success-color: #00f5d4;
+            --glass-bg: rgba(20, 20, 40, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --font-main: 'Outfit', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #150050, #3f0071, #fb3640);
+            background-size: 300% 300%;
+            animation: gradientBg 12s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            color: var(--text-light);
+        }
+
+        @keyframes gradientBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            perspective: 1000px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            transform: rotate(30deg);
+            pointer-events: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #00f5d4, #b5179e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 15px rgba(247, 37, 133, 0.3);
+        }
+
+        /* Select styling for dark mode */
+        select option {
+            background-color: #1a1a2e;
+            color: #fff;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Captcha Section */
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 2rem;
+        }
+
+        .captcha-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--success-color);
+            user-select: none;
+        }
+
+        .captcha-container input {
+            padding: 0.8rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(45deg, var(--accent-color), var(--primary-color));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(247, 37, 133, 0.4);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(247, 37, 133, 0.6);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px);
+        }
+
+        button[type="submit"]:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            color: var(--success-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Loading Spinner inside button */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .btn-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .submitting .btn-text {
+            opacity: 0;
+        }
+
+        .submitting .spinner {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .glass-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="glass-card">
+            <div class="header">
+                <h1>Student Portal</h1>
+                <p>Register for the upcoming academic session</p>
+            </div>
+
+            <form id="registrationForm" novalidate>
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="e.g. John Doe" autocomplete="name">
+                    <div class="error-message" id="fullNameError">Name must contain only letters and spaces (min 3 chars).</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="regNumber">Registration Number</label>
+                    <input type="text" id="regNumber" placeholder="YYYY/XXX/NNN" style="text-transform: uppercase;">
+                    <div class="error-message" id="regNumberError">Format must be YYYY/XXX/NNN (e.g., 2021/ICT/001).</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="name@domain.com" autocomplete="email">
+                    <div class="error-message" id="emailError">Please enter a valid email address.</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="year">Academic Year</label>
+                        <select id="year">
+                            <option value="" disabled selected>Select Year</option>
+                            <option value="1">Year 1</option>
+                            <option value="2">Year 2</option>
+                            <option value="3">Year 3</option>
+                            <option value="4">Year 4</option>
+                        </select>
+                        <div class="error-message" id="yearError">Please select your year.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <select id="semester">
+                            <option value="" disabled selected>Select Semester</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                        </select>
+                        <div class="error-message" id="semesterError">Please select your semester.</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number (Sri Lanka)</label>
+                    <input type="tel" id="phone" placeholder="07XXXXXXXX" autocomplete="tel">
+                    <div class="error-message" id="phoneError">Must be exactly 10 digits starting with 07.</div>
+                </div>
+
+                <div class="captcha-container">
+                    <div class="captcha-text" id="captchaQuestion">What is X + Y?</div>
+                    <input type="text" id="captchaAnswer" placeholder="Answer" autocomplete="off">
+                    <div class="error-message" id="captchaError" style="position: absolute; bottom: -20px; left: 0;">Incorrect CAPTCHA answer.</div>
+                </div>
+
+                <button type="submit" id="submitBtn">
+                    <span class="btn-text">Register Now</span>
+                    <div class="spinner"></div>
+                </button>
+                <div class="success-message" id="successMessage">Registration Successful! Redirecting...</div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registrationForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const captchaQuestionEl = document.getElementById('captchaQuestion');
+            const captchaAnswerEl = document.getElementById('captchaAnswer');
+            const successMessage = document.getElementById('successMessage');
+
+            // Fields to validate
+            const fields = {
+                fullName: {
+                    element: document.getElementById('fullName'),
+                    errorEl: document.getElementById('fullNameError'),
+                    validate: (val) => /^[A-Za-z\s]{3,}$/.test(val) && val.trim().length >= 3
+                },
+                regNumber: {
+                    element: document.getElementById('regNumber'),
+                    errorEl: document.getElementById('regNumberError'),
+                    validate: (val) => /^\d{4}\/[A-Za-z]+\/\d{3}$/.test(val)
+                },
+                email: {
+                    element: document.getElementById('email'),
+                    errorEl: document.getElementById('emailError'),
+                    validate: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) && !/\s/.test(val)
+                },
+                year: {
+                    element: document.getElementById('year'),
+                    errorEl: document.getElementById('yearError'),
+                    validate: (val) => val !== ""
+                },
+                semester: {
+                    element: document.getElementById('semester'),
+                    errorEl: document.getElementById('semesterError'),
+                    validate: (val) => val !== ""
+                },
+                phone: {
+                    element: document.getElementById('phone'),
+                    errorEl: document.getElementById('phoneError'),
+                    validate: (val) => /^07\d{8}$/.test(val)
+                }
+            };
+
+            let expectedCaptchaAnswer = 0;
+            let isSubmitting = false;
+
+            // Generate Captcha
+            function generateCaptcha() {
+                const num1 = Math.floor(Math.random() * 10) + 1;
+                const num2 = Math.floor(Math.random() * 10) + 1;
+                expectedCaptchaAnswer = num1 + num2;
+                captchaQuestionEl.textContent = `What is ${num1} + ${num2}?`;
+                captchaAnswerEl.value = '';
+                document.getElementById('captchaError').style.display = 'none';
+            }
+
+            // Initialize Captcha
+            generateCaptcha();
+
+            function showError(fieldKey, show) {
+                const field = fields[fieldKey];
+                if (show) {
+                    field.errorEl.style.display = 'block';
+                    field.element.style.borderColor = 'var(--error-color)';
+                } else {
+                    field.errorEl.style.display = 'none';
+                    field.element.style.borderColor = 'var(--glass-border)';
+                }
+            }
+
+            // Real-time validation handlers
+            for (const key in fields) {
+                fields[key].element.addEventListener('input', () => {
+                    const val = fields[key].element.value.trim();
+                    if(val !== "") {
+                        showError(key, !fields[key].validate(val));
+                    }
+                });
+                
+                // Formulate reg number properly if user types
+                if (key === 'regNumber') {
+                    fields[key].element.addEventListener('input', (e) => {
+                        e.target.value = e.target.value.toUpperCase();
+                    });
+                }
+            }
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                if (isSubmitting) return; // Anti rapid submission
+
+                let isValid = true;
+
+                // Validate main fields
+                for (const key in fields) {
+                    const field = fields[key];
+                    // Trim values before validation
+                    const val = field.element.value.trim();
+                    field.element.value = val; // Apply trim back to input
+
+                    if (!field.validate(val)) {
+                        showError(key, true);
+                        isValid = false;
+                    } else {
+                        showError(key, false);
+                    }
+                }
+
+                // Validate Captcha
+                const userCaptcha = parseInt(captchaAnswerEl.value.trim(), 10);
+                const captchaErrorEl = document.getElementById('captchaError');
+                if (isNaN(userCaptcha) || userCaptcha !== expectedCaptchaAnswer) {
+                    captchaErrorEl.style.display = 'block';
+                    captchaAnswerEl.style.borderColor = 'var(--error-color)';
+                    generateCaptcha(); // Regenerate on failure
+                    isValid = false;
+                } else {
+                    captchaErrorEl.style.display = 'none';
+                    captchaAnswerEl.style.borderColor = 'var(--glass-border)';
+                }
+
+                if (isValid) {
+                    isSubmitting = true;
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('submitting');
+                    
+                    // Simulate API network request (Anti-gravity smooth UX)
+                    setTimeout(() => {
+                        submitBtn.classList.remove('submitting');
+                        submitBtn.style.display = 'none';
+                        successMessage.style.display = 'block';
+                        
+                        // Reset form after 3 seconds showing success
+                        setTimeout(() => {
+                            form.reset();
+                            submitBtn.style.display = 'block';
+                            submitBtn.disabled = false;
+                            isSubmitting = false;
+                            successMessage.style.display = 'none';
+                            generateCaptcha();
+                        }, 3000);
+                    }, 1500);
+                } else {
+                    // Shake effect on error
+                    const card = document.querySelector('.glass-card');
+                    card.style.transform = 'translateX(-10px)';
+                    setTimeout(() => card.style.transform = 'translateX(10px)', 50);
+                    setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
+                    setTimeout(() => card.style.transform = 'translateX(10px)', 150);
+                    setTimeout(() => card.style.transform = 'translateX(0)', 200);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
