@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New User Registration</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #ec4899;
+            --bg-color: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            perspective: 1000px;
+        }
+
+        .glass-panel {
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+
+        .form-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .form-control:focus + label,
+        .form-group:focus-within label {
+            color: var(--primary);
+        }
+
+        .form-control::placeholder {
+            color: rgba(148, 163, 184, 0.4);
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        select.form-control option {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+        }
+
+        .submit-btn:hover::before {
+            opacity: 1;
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Decorative glowing orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(99, 102, 241, 0.2);
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: rgba(236, 72, 153, 0.2);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            from {
+                transform: translate(0, 0);
+            }
+            to {
+                transform: translate(30px, 30px);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .glass-panel {
+                padding: 2rem;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            font-weight: 500;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .form-control.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .form-control.error:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <div class="glass-panel">
+            <div class="header">
+                <h1>Join Us</h1>
+                <p>Register for your new account</p>
+            </div>
+
+            <form id="registrationForm" onsubmit="handleRegistration(event)">
+                <div class="form-grid">
+                    
+                    <div class="form-group full-width">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="e.g. John Doe" required>
+                        <span class="error-message" id="fullNameError"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="regNumber">Registration Number</label>
+                        <input type="text" id="regNumber" class="form-control" placeholder="e.g. 2021/ICT/001" required>
+                        <span class="error-message" id="regNumberError"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="john@example.com" required>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="year">Year</label>
+                        <select id="year" class="form-control" required>
+                            <option value="" disabled selected>Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                        <span class="error-message" id="yearError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <select id="semester" class="form-control" required>
+                            <option value="" disabled selected>Select Sem</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                        </select>
+                        <span class="error-message" id="semesterError"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="e.g. 0771234567" required>
+                        <span class="error-message" id="phoneError"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="captcha">Security Check: What is <span id="captchaQuestion"></span>?</label>
+                        <input type="text" id="captcha" class="form-control" placeholder="Your answer" required>
+                        <span class="error-message" id="captchaError"></span>
+                    </div>
+
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>Create Account</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form State
+        let correctCaptchaAnswer = 0;
+        let isSubmitting = false;
+
+        // Anti-Bot Captcha Generation
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            correctCaptchaAnswer = num1 + num2;
+            document.getElementById('captchaQuestion').innerText = `${num1} + ${num2}`;
+        }
+        
+        // Initialize captcha on format load
+        generateCaptcha();
+
+        function showError(inputId, message) {
+            const input = document.getElementById(inputId);
+            const errorElement = document.getElementById(`${inputId}Error`);
+            input.classList.add('error');
+            errorElement.innerText = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
+        }
+
+        function handleRegistration(event) {
+            event.preventDefault();
+            
+            // Prevent multiple rapid submissions
+            if (isSubmitting) return;
+
+            clearErrors();
+            let isValid = true;
+
+            // Trim spaces before validation
+            const fullName = document.getElementById('fullName').value.trim();
+            const regNumber = document.getElementById('regNumber').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const year = document.getElementById('year').value;
+            const semester = document.getElementById('semester').value;
+            const phone = document.getElementById('phone').value.trim();
+            const captcha = document.getElementById('captcha').value.trim();
+
+            // Name Validation: Only letters & spaces, min 3 chars
+            const nameRegex = /^[A-Za-z\s]{3,}$/;
+            if (!nameRegex.test(fullName)) {
+                showError('fullName', 'Name must contain only letters and spaces, and be at least 3 characters long.');
+                isValid = false;
+            }
+
+            // Reg Number Validation: YYYY/XXX/NNN
+            const regRegex = /^\d{4}\/[A-Za-z]+\/\d{3}$/;
+            if (!regRegex.test(regNumber)) {
+                showError('regNumber', 'Invalid format. Use YYYY/XXX/NNN (e.g., 2021/ICT/001).');
+                isValid = false;
+            }
+
+            // Email Validation: Valid format, no spaces
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email) || email.includes(' ')) {
+                showError('email', 'Please enter a valid email address.');
+                isValid = false;
+            }
+
+            // Year Validation
+            if (!['1', '2', '3', '4'].includes(year)) {
+                showError('year', 'Please select a valid year.');
+                isValid = false;
+            }
+
+            // Semester Validation
+            if (!['1', '2'].includes(semester)) {
+                showError('semester', 'Please select a valid semester.');
+                isValid = false;
+            }
+
+            // Phone Validation (Sri Lanka format)
+            const phoneRegex = /^07\d{8}$/;
+            if (!phoneRegex.test(phone)) {
+                showError('phone', 'Phone must be exactly 10 digits and start with 07.');
+                isValid = false;
+            }
+
+            // Captcha Validation
+            if (parseInt(captcha) !== correctCaptchaAnswer) {
+                showError('captcha', 'Incorrect security answer. Please try again.');
+                isValid = false;
+                generateCaptcha(); // Refresh CAPTCHA on failure
+            }
+
+            // Prevent Submission if invalid
+            if (!isValid) return;
+
+            // Submitting state activation
+            isSubmitting = true;
+            const btn = document.querySelector('.submit-btn');
+            const originalText = btn.innerHTML;
+            
+            // Disable submit button after one click
+            btn.innerHTML = '<span>Processing...</span>';
+            btn.style.opacity = '0.8';
+            btn.style.pointerEvents = 'none';
+
+            // Simulate form submission
+            setTimeout(() => {
+                btn.innerHTML = '<span>Registered Successfully! ✨</span>';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                btn.style.opacity = '1';
+                
+                // Clear form & regenerate captcha
+                document.getElementById('registrationForm').reset();
+                generateCaptcha();
+
+                // Reset button after completion
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                    btn.style.pointerEvents = 'auto'; // allow re-submitting after success cooldown
+                    isSubmitting = false; 
+                }, 3000);
+                
+            }, 1500);
+        }
+
+        // Fun label behavior + Remove errors on Interaction
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('label').style.color = '#818cf8';
+                input.classList.remove('error');
+                const err = input.parentElement.querySelector('.error-message');
+                if (err) err.style.display = 'none';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('label').style.color = 'var(--text-muted)';
+            });
+        });
+    </script>
+</body>
+</html>
