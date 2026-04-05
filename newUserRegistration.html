@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary-color: #7b2cbf;
@@ -43,9 +44,17 @@
         }
 
         @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .container {
@@ -74,7 +83,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
             transform: rotate(30deg);
             pointer-events: none;
         }
@@ -124,7 +133,8 @@
             transition: color 0.3s ease;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
             padding: 1rem 1.2rem;
             background: rgba(0, 0, 0, 0.2);
@@ -136,7 +146,8 @@
             transition: all 0.3s ease;
         }
 
-        input:focus, select:focus {
+        input:focus,
+        select:focus {
             border-color: var(--accent-color);
             background: rgba(0, 0, 0, 0.4);
             box-shadow: 0 0 15px rgba(247, 37, 133, 0.3);
@@ -157,8 +168,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Captcha Section */
@@ -236,7 +254,7 @@
             display: none;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
@@ -247,7 +265,9 @@
         }
 
         @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
 
         .btn-text {
@@ -267,12 +287,14 @@
                 flex-direction: column;
                 gap: 0;
             }
+
             .glass-card {
                 padding: 1.5rem;
             }
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -286,13 +308,15 @@
                 <div class="form-group">
                     <label for="fullName">Full Name</label>
                     <input type="text" id="fullName" placeholder="e.g. John Doe" autocomplete="name">
-                    <div class="error-message" id="fullNameError">Name must contain only letters and spaces (min 3 chars).</div>
+                    <div class="error-message" id="fullNameError">Name must contain only letters and spaces (min 3
+                        chars).</div>
                 </div>
 
                 <div class="form-group">
                     <label for="regNumber">Registration Number</label>
                     <input type="text" id="regNumber" placeholder="YYYY/XXX/NNN" style="text-transform: uppercase;">
-                    <div class="error-message" id="regNumberError">Format must be YYYY/XXX/NNN (e.g., 2021/ICT/001).</div>
+                    <div class="error-message" id="regNumberError">Format must be YYYY/XXX/NNN (e.g., 2021/ICT/001).
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -334,7 +358,8 @@
                 <div class="captcha-container">
                     <div class="captcha-text" id="captchaQuestion">What is X + Y?</div>
                     <input type="text" id="captchaAnswer" placeholder="Answer" autocomplete="off">
-                    <div class="error-message" id="captchaError" style="position: absolute; bottom: -20px; left: 0;">Incorrect CAPTCHA answer.</div>
+                    <div class="error-message" id="captchaError" style="position: absolute; bottom: -20px; left: 0;">
+                        Incorrect CAPTCHA answer.</div>
                 </div>
 
                 <button type="submit" id="submitBtn">
@@ -419,11 +444,11 @@
             for (const key in fields) {
                 fields[key].element.addEventListener('input', () => {
                     const val = fields[key].element.value.trim();
-                    if(val !== "") {
+                    if (val !== "") {
                         showError(key, !fields[key].validate(val));
                     }
                 });
-                
+
                 // Formulate reg number properly if user types
                 if (key === 'regNumber') {
                     fields[key].element.addEventListener('input', (e) => {
@@ -471,13 +496,13 @@
                     isSubmitting = true;
                     submitBtn.disabled = true;
                     submitBtn.classList.add('submitting');
-                    
+
                     // Simulate API network request (Anti-gravity smooth UX)
                     setTimeout(() => {
                         submitBtn.classList.remove('submitting');
                         submitBtn.style.display = 'none';
                         successMessage.style.display = 'block';
-                        
+
                         // Reset form after 3 seconds showing success
                         setTimeout(() => {
                             form.reset();
@@ -501,4 +526,5 @@
         });
     </script>
 </body>
+
 </html>
