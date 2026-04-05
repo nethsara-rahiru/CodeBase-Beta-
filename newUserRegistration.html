@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary-color: #7b2cbf;
@@ -32,7 +33,7 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #150050, #3f0071, #fb3640);
+            background: linear-gradient(135deg, #150050, #3f0071, #4361ee);
             background-size: 300% 300%;
             animation: gradientBg 12s ease infinite;
             display: flex;
@@ -43,9 +44,17 @@
         }
 
         @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .container {
@@ -74,7 +83,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
             transform: rotate(30deg);
             pointer-events: none;
         }
@@ -124,7 +133,8 @@
             transition: color 0.3s ease;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
             padding: 1rem 1.2rem;
             background: rgba(0, 0, 0, 0.2);
@@ -136,7 +146,8 @@
             transition: all 0.3s ease;
         }
 
-        input:focus, select:focus {
+        input:focus,
+        select:focus {
             border-color: var(--accent-color);
             background: rgba(0, 0, 0, 0.4);
             box-shadow: 0 0 15px rgba(247, 37, 133, 0.3);
@@ -157,33 +168,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
 
-        /* Captcha Section */
-        .captcha-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-            margin-bottom: 2rem;
-        }
-
-        .captcha-text {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--success-color);
-            user-select: none;
-        }
-
-        .captcha-container input {
-            padding: 0.8rem;
-            text-align: center;
-            font-weight: bold;
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         button[type="submit"] {
@@ -236,7 +229,7 @@
             display: none;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
@@ -247,7 +240,9 @@
         }
 
         @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
 
         .btn-text {
@@ -267,32 +262,37 @@
                 flex-direction: column;
                 gap: 0;
             }
+
             .glass-card {
                 padding: 1.5rem;
             }
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
         <div class="glass-card">
             <div class="header">
                 <h1>Student Portal</h1>
-                <p>Register for the upcoming academic session</p>
+                <p>Registration for CodeBase - Access your university study materials</p>
             </div>
 
             <form id="registrationForm" novalidate>
                 <div class="form-group">
                     <label for="fullName">Full Name</label>
                     <input type="text" id="fullName" placeholder="e.g. John Doe" autocomplete="name">
-                    <div class="error-message" id="fullNameError">Name must contain only letters and spaces (min 3 chars).</div>
+                    <div class="error-message" id="fullNameError">Name must contain only letters and spaces (min 3
+                        chars).</div>
                 </div>
 
                 <div class="form-group">
                     <label for="regNumber">Registration Number</label>
-                    <input type="text" id="regNumber" placeholder="YYYY/XXX/NNN" style="text-transform: uppercase;">
-                    <div class="error-message" id="regNumberError">Format must be YYYY/XXX/NNN (e.g., 2021/ICT/001).</div>
+                    <input type="text" id="regNumber" placeholder="YYYY/DEPT/NN" style="text-transform: uppercase;">
+                    <div class="error-message" id="regNumberError">Format must be YYYY/DEPT/NNN (e.g., 2022/ICT/90).
+                        Allowed depts: ICT, ASB, ASP, ENS, BS. Year must be 2019 onwards.
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -327,14 +327,9 @@
 
                 <div class="form-group">
                     <label for="phone">Phone Number (Sri Lanka)</label>
-                    <input type="tel" id="phone" placeholder="07XXXXXXXX" autocomplete="tel">
-                    <div class="error-message" id="phoneError">Must be exactly 10 digits starting with 07.</div>
-                </div>
-
-                <div class="captcha-container">
-                    <div class="captcha-text" id="captchaQuestion">What is X + Y?</div>
-                    <input type="text" id="captchaAnswer" placeholder="Answer" autocomplete="off">
-                    <div class="error-message" id="captchaError" style="position: absolute; bottom: -20px; left: 0;">Incorrect CAPTCHA answer.</div>
+                    <input type="tel" id="phone" placeholder="+947XXXXXXXX or 07XXXXXXXX" autocomplete="tel">
+                    <div class="error-message" id="phoneError">Must be a valid Sri Lankan phone number (starts with 07
+                        or +947).</div>
                 </div>
 
                 <button type="submit" id="submitBtn">
@@ -350,8 +345,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('registrationForm');
             const submitBtn = document.getElementById('submitBtn');
-            const captchaQuestionEl = document.getElementById('captchaQuestion');
-            const captchaAnswerEl = document.getElementById('captchaAnswer');
             const successMessage = document.getElementById('successMessage');
 
             // Fields to validate
@@ -364,7 +357,11 @@
                 regNumber: {
                     element: document.getElementById('regNumber'),
                     errorEl: document.getElementById('regNumberError'),
-                    validate: (val) => /^\d{4}\/[A-Za-z]+\/\d{3}$/.test(val)
+                    validate: (val) => {
+                        if (!/^\d{4}\/(ICT|ASB|ASP|ENS|BS)\/\d{1,3}$/.test(val)) return false;
+                        const year = parseInt(val.split('/')[0], 10);
+                        return year >= 2019;
+                    }
                 },
                 email: {
                     element: document.getElementById('email'),
@@ -384,25 +381,11 @@
                 phone: {
                     element: document.getElementById('phone'),
                     errorEl: document.getElementById('phoneError'),
-                    validate: (val) => /^07\d{8}$/.test(val)
+                    validate: (val) => /^(?:\+94|0)7\d{8}$/.test(val)
                 }
             };
 
-            let expectedCaptchaAnswer = 0;
             let isSubmitting = false;
-
-            // Generate Captcha
-            function generateCaptcha() {
-                const num1 = Math.floor(Math.random() * 10) + 1;
-                const num2 = Math.floor(Math.random() * 10) + 1;
-                expectedCaptchaAnswer = num1 + num2;
-                captchaQuestionEl.textContent = `What is ${num1} + ${num2}?`;
-                captchaAnswerEl.value = '';
-                document.getElementById('captchaError').style.display = 'none';
-            }
-
-            // Initialize Captcha
-            generateCaptcha();
 
             function showError(fieldKey, show) {
                 const field = fields[fieldKey];
@@ -419,15 +402,28 @@
             for (const key in fields) {
                 fields[key].element.addEventListener('input', () => {
                     const val = fields[key].element.value.trim();
-                    if(val !== "") {
+                    if (val !== "") {
                         showError(key, !fields[key].validate(val));
                     }
                 });
-                
+
                 // Formulate reg number properly if user types
                 if (key === 'regNumber') {
                     fields[key].element.addEventListener('input', (e) => {
-                        e.target.value = e.target.value.toUpperCase();
+                        let val = e.target.value.toUpperCase().replace(/[^A-Z0-9\/]/g, '');
+                        // auto insert first slash
+                        if (/^\d{4}[^\/]/.test(val)) {
+                            val = val.substring(0, 4) + '/' + val.substring(4);
+                        }
+                        // auto insert second slash
+                        val = val.replace(/^(\d{4}\/[A-Z]+)(\d)/, '$1/$2');
+
+                        let parts = val.split('/');
+                        if (parts[0]) parts[0] = parts[0].replace(/[^0-9]/g, '').substring(0, 4);
+                        if (parts[1] !== undefined) parts[1] = parts[1].replace(/[^A-Z]/g, '');
+                        if (parts[2] !== undefined) parts[2] = parts[2].replace(/[^0-9]/g, '').substring(0, 3);
+
+                        e.target.value = parts.slice(0, 3).join('/');
                     });
                 }
             }
@@ -454,30 +450,18 @@
                     }
                 }
 
-                // Validate Captcha
-                const userCaptcha = parseInt(captchaAnswerEl.value.trim(), 10);
-                const captchaErrorEl = document.getElementById('captchaError');
-                if (isNaN(userCaptcha) || userCaptcha !== expectedCaptchaAnswer) {
-                    captchaErrorEl.style.display = 'block';
-                    captchaAnswerEl.style.borderColor = 'var(--error-color)';
-                    generateCaptcha(); // Regenerate on failure
-                    isValid = false;
-                } else {
-                    captchaErrorEl.style.display = 'none';
-                    captchaAnswerEl.style.borderColor = 'var(--glass-border)';
-                }
 
                 if (isValid) {
                     isSubmitting = true;
                     submitBtn.disabled = true;
                     submitBtn.classList.add('submitting');
-                    
+
                     // Simulate API network request (Anti-gravity smooth UX)
                     setTimeout(() => {
                         submitBtn.classList.remove('submitting');
                         submitBtn.style.display = 'none';
                         successMessage.style.display = 'block';
-                        
+
                         // Reset form after 3 seconds showing success
                         setTimeout(() => {
                             form.reset();
@@ -485,7 +469,6 @@
                             submitBtn.disabled = false;
                             isSubmitting = false;
                             successMessage.style.display = 'none';
-                            generateCaptcha();
                         }, 3000);
                     }, 1500);
                 } else {
@@ -501,4 +484,5 @@
         });
     </script>
 </body>
+
 </html>
