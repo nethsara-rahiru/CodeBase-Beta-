@@ -33,7 +33,7 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #150050, #3f0071, #fb3640);
+            background: linear-gradient(135deg, #150050, #3f0071, #4361ee);
             background-size: 300% 300%;
             animation: gradientBg 12s ease infinite;
             display: flex;
@@ -179,31 +179,6 @@
             }
         }
 
-        /* Captcha Section */
-        .captcha-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-            margin-bottom: 2rem;
-        }
-
-        .captcha-text {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--success-color);
-            user-select: none;
-        }
-
-        .captcha-container input {
-            padding: 0.8rem;
-            text-align: center;
-            font-weight: bold;
-        }
-
         button[type="submit"] {
             width: 100%;
             padding: 1.2rem;
@@ -301,7 +276,7 @@
         <div class="glass-card">
             <div class="header">
                 <h1>Student Portal</h1>
-                <p>Register for the upcoming academic session</p>
+                <p>Registration for CodeBase - Access your university study materials</p>
             </div>
 
             <form id="registrationForm" novalidate>
@@ -314,8 +289,9 @@
 
                 <div class="form-group">
                     <label for="regNumber">Registration Number</label>
-                    <input type="text" id="regNumber" placeholder="YYYY/XXX/NNN" style="text-transform: uppercase;">
-                    <div class="error-message" id="regNumberError">Format must be YYYY/XXX/NNN (e.g., 2021/ICT/001).
+                    <input type="text" id="regNumber" placeholder="YYYY/DEPT/NN" style="text-transform: uppercase;">
+                    <div class="error-message" id="regNumberError">Format must be YYYY/DEPT/NNN (e.g., 2022/ICT/90).
+                        Allowed depts: ICT, ASB, ASP, ENS, BS. Year must be 2019 onwards.
                     </div>
                 </div>
 
@@ -351,15 +327,9 @@
 
                 <div class="form-group">
                     <label for="phone">Phone Number (Sri Lanka)</label>
-                    <input type="tel" id="phone" placeholder="07XXXXXXXX" autocomplete="tel">
-                    <div class="error-message" id="phoneError">Must be exactly 10 digits starting with 07.</div>
-                </div>
-
-                <div class="captcha-container">
-                    <div class="captcha-text" id="captchaQuestion">What is X + Y?</div>
-                    <input type="text" id="captchaAnswer" placeholder="Answer" autocomplete="off">
-                    <div class="error-message" id="captchaError" style="position: absolute; bottom: -20px; left: 0;">
-                        Incorrect CAPTCHA answer.</div>
+                    <input type="tel" id="phone" placeholder="+947XXXXXXXX or 07XXXXXXXX" autocomplete="tel">
+                    <div class="error-message" id="phoneError">Must be a valid Sri Lankan phone number (starts with 07
+                        or +947).</div>
                 </div>
 
                 <button type="submit" id="submitBtn">
@@ -375,8 +345,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('registrationForm');
             const submitBtn = document.getElementById('submitBtn');
-            const captchaQuestionEl = document.getElementById('captchaQuestion');
-            const captchaAnswerEl = document.getElementById('captchaAnswer');
             const successMessage = document.getElementById('successMessage');
 
             // Fields to validate
@@ -389,7 +357,11 @@
                 regNumber: {
                     element: document.getElementById('regNumber'),
                     errorEl: document.getElementById('regNumberError'),
-                    validate: (val) => /^\d{4}\/[A-Za-z]+\/\d{3}$/.test(val)
+                    validate: (val) => {
+                        if (!/^\d{4}\/(ICT|ASB|ASP|ENS|BS)\/\d{1,3}$/.test(val)) return false;
+                        const year = parseInt(val.split('/')[0], 10);
+                        return year >= 2019;
+                    }
                 },
                 email: {
                     element: document.getElementById('email'),
@@ -409,25 +381,11 @@
                 phone: {
                     element: document.getElementById('phone'),
                     errorEl: document.getElementById('phoneError'),
-                    validate: (val) => /^07\d{8}$/.test(val)
+                    validate: (val) => /^(?:\+94|0)7\d{8}$/.test(val)
                 }
             };
 
-            let expectedCaptchaAnswer = 0;
             let isSubmitting = false;
-
-            // Generate Captcha
-            function generateCaptcha() {
-                const num1 = Math.floor(Math.random() * 10) + 1;
-                const num2 = Math.floor(Math.random() * 10) + 1;
-                expectedCaptchaAnswer = num1 + num2;
-                captchaQuestionEl.textContent = `What is ${num1} + ${num2}?`;
-                captchaAnswerEl.value = '';
-                document.getElementById('captchaError').style.display = 'none';
-            }
-
-            // Initialize Captcha
-            generateCaptcha();
 
             function showError(fieldKey, show) {
                 const field = fields[fieldKey];
@@ -452,7 +410,20 @@
                 // Formulate reg number properly if user types
                 if (key === 'regNumber') {
                     fields[key].element.addEventListener('input', (e) => {
-                        e.target.value = e.target.value.toUpperCase();
+                        let val = e.target.value.toUpperCase().replace(/[^A-Z0-9\/]/g, '');
+                        // auto insert first slash
+                        if (/^\d{4}[^\/]/.test(val)) {
+                            val = val.substring(0, 4) + '/' + val.substring(4);
+                        }
+                        // auto insert second slash
+                        val = val.replace(/^(\d{4}\/[A-Z]+)(\d)/, '$1/$2');
+
+                        let parts = val.split('/');
+                        if (parts[0]) parts[0] = parts[0].replace(/[^0-9]/g, '').substring(0, 4);
+                        if (parts[1] !== undefined) parts[1] = parts[1].replace(/[^A-Z]/g, '');
+                        if (parts[2] !== undefined) parts[2] = parts[2].replace(/[^0-9]/g, '').substring(0, 3);
+
+                        e.target.value = parts.slice(0, 3).join('/');
                     });
                 }
             }
@@ -479,18 +450,6 @@
                     }
                 }
 
-                // Validate Captcha
-                const userCaptcha = parseInt(captchaAnswerEl.value.trim(), 10);
-                const captchaErrorEl = document.getElementById('captchaError');
-                if (isNaN(userCaptcha) || userCaptcha !== expectedCaptchaAnswer) {
-                    captchaErrorEl.style.display = 'block';
-                    captchaAnswerEl.style.borderColor = 'var(--error-color)';
-                    generateCaptcha(); // Regenerate on failure
-                    isValid = false;
-                } else {
-                    captchaErrorEl.style.display = 'none';
-                    captchaAnswerEl.style.borderColor = 'var(--glass-border)';
-                }
 
                 if (isValid) {
                     isSubmitting = true;
@@ -510,7 +469,6 @@
                             submitBtn.disabled = false;
                             isSubmitting = false;
                             successMessage.style.display = 'none';
-                            generateCaptcha();
                         }, 3000);
                     }, 1500);
                 } else {
