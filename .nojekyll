@@ -1,0 +1,2 @@
+This file tells GitHub Pages to disable the Jekyll build engine. 
+This is crucial for static web projects containing folders starting with underscores or complex directory structures that Jekyll might fail to process.
