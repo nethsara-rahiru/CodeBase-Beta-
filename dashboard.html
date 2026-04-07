@@ -1015,6 +1015,228 @@
         padding-bottom: 100px !important;
       }
     }
+    /* Premium profile header nextgen */
+    .profile-header-nextgen {
+        position: relative;
+        background: var(--glass-bg);
+        border-radius: 36px;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        margin-bottom: 40px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.3);
+        animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .cover-photo {
+        height: 280px;
+        background: linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #818cf8 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    .cover-photo::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 40%, rgba(15, 23, 42, 0.6));
+    }
+    .profile-info-row {
+        padding: 0 48px 40px;
+        display: flex;
+        align-items: flex-end;
+        gap: 32px;
+        margin-top: -80px;
+        position: relative;
+        z-index: 2;
+    }
+    .profile-pic-container {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 48px;
+        border: 8px solid var(--bg-dark);
+        overflow: hidden;
+        background: #1e293b;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    }
+    .profile-pic-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .profile-text {
+        flex: 1;
+        padding-bottom: 20px;
+    }
+    .profile-text h1 {
+        font-size: 2.75rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0;
+        background: linear-gradient(to right, #ffffff, #94a3b8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+    .profile-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-top: 14px;
+        font-size: 1.05rem;
+    }
+    .profile-meta span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .profile-meta .dot {
+        width: 5px;
+        height: 5px;
+        background: var(--accent-primary);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--accent-primary);
+    }
+    
+    @media (max-width: 768px) {
+        .profile-info-row {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-top: -90px;
+            padding: 0 24px 32px;
+        }
+        .profile-pic-container {
+            width: 140px;
+            height: 140px;
+            border-radius: 36px;
+        }
+        .profile-text h1 { font-size: 2rem; }
+        .profile-meta { justify-content: center; font-size: 0.9rem; flex-wrap: wrap; }
+    }
+    /* Modal Overlays for Mandatory Updates */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.95);
+        backdrop-filter: blur(24px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 2005;
+    }
+    .modal-content-glass {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 40px;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+        animation: modalSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .icon-bubble {
+        width: 80px;
+        height: 80px;
+        border-radius: 24px;
+        background: rgba(79, 70, 229, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+    @keyframes modalSlideUp {
+        from { opacity: 0; transform: translateY(30px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* User Directory Search Flyout */
+    .search-results-flyout {
+        position: absolute;
+        top: calc(100% + 12px);
+        left: 0;
+        right: 0;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(40px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        max-height: 420px;
+        overflow-y: auto;
+        z-index: 1010;
+        box-shadow: 0 50px 120px rgba(0,0,0,0.6);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .user-search-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 18px;
+        border-radius: 14px;
+        color: white;
+        text-decoration: none;
+        transition: 0.25s;
+        cursor: pointer;
+    }
+    .user-search-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateX(4px);
+    }
+    .user-search-item img {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid var(--glass-border);
+    }
+    .main-header.tab-hidden { display: none !important; }
+    .main-header { transition: opacity 0.3s ease; }
+
+    /* Stepper UI */
+    .stepper-h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
+    .stepper-p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.5; }
+    .stepper-list { display: flex; flex-direction: column; gap: 12px; }
+    .step-opt {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        padding: 18px 24px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .step-opt::after {
+        content: '→';
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.2s;
+    }
+    .step-opt:hover {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+    }
+    .step-opt:hover::after {
+        opacity: 1;
+        transform: translateX(0);
+    }
   </style>
 </head>
 
@@ -1069,6 +1291,13 @@
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
         </svg>
         My Courses
+      </div>
+      <div class="nav-item" id="navGPA">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+        My GPA
       </div>
       <a href="about.html" class="nav-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1125,16 +1354,38 @@
 
     <!-- TAB 2: PROFILE -->
     <div id="profileSection" style="display:none;">
-      <div class="profile-tab-layout">
-        <!-- GPA Box (Top) -->
-        <div class="gpa-display-card">
-          <span class="label"
-            style="text-transform: uppercase; font-size: 1rem; font-weight: 600; opacity: 0.9; letter-spacing: 0.1em;">Academic
-            Standing — GPA</span>
-          <div class="gpa-val" id="gpaScore">0.00</div>
-          <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500;" id="gpaStatus">Start adding your results!</p>
+      
+      <!-- New Profile Search Engine -->
+      <div style="margin-bottom: 32px; position: relative;">
+          <div style="position: relative; max-width: 600px; margin: 0 auto;">
+              <input type="text" id="userDirectorySearch" placeholder="Search user directory (Name, Reg No, Email)..." 
+                  style="width: 100%; padding: 18px 24px 18px 56px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--glass-border); border-radius: 20px; color: white; font-family: inherit; font-size: 1rem; backdrop-filter: blur(10px); transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+              <svg style="position: absolute; left: 24px; top: 50%; transform: translateY(-50%); color: var(--text-muted);" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              
+              <!-- Search Results Flyout -->
+              <div id="userSearchResults" class="search-results-flyout" style="display:none;"></div>
+          </div>
+      </div>
+      
+      <!-- Next-Gen Profile Header -->
+      <div class="profile-header-nextgen">
+        <div class="cover-photo" id="profileCover"></div>
+        <div class="profile-info-row">
+            <div class="profile-pic-container">
+                <img id="profileTabPic" src="https://ui-avatars.com/api/?name=User" alt="Profile">
+            </div>
+            <div class="profile-text">
+                <h1 id="profileTabName">Loading...</h1>
+                <div class="profile-meta">
+                    <span id="profileTabUni">University Identifier</span>
+                    <div class="dot"></div>
+                    <span id="profileTabStream">Academic Stream</span>
+                </div>
+            </div>
         </div>
+      </div>
 
+      <div class="profile-tab-layout">
         <!-- Stats (Points) -->
         <section class="org-section">
           <h3 style="font-size: 1.25rem; font-weight: 700;">Performance Overview</h3>
@@ -1147,9 +1398,53 @@
           </div>
         </section>
 
+
+        <!-- Organizations -->
+        <section class="org-section">
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Joined Organizations & Roles</h3>
+          <div id="joinedOrgsList" class="org-grid" style="margin-top: 20px;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">No organizations joined yet.</p>
+          </div>
+        </section>
+
+        <!-- Contributions & Impact -->
+        <section class="org-section" style="margin-top: 40px; border-top: 1px solid var(--glass-border); padding-top: 40px;">
+          <div class="section-title-wrap" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3 style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--accent-secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">My Impact & Contributions</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Knowledge you've shared with the community</p>
+            </div>
+            <div id="contributionCount" style="padding: 8px 20px; background: rgba(79, 70, 229, 0.15); border: 1px solid var(--accent-primary); border-radius: 100px; color: var(--accent-secondary); font-weight: 800; font-size: 0.9rem; box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);">
+              0 UPLOADS
+            </div>
+          </div>
+          
+          <div id="userContributionsList" class="org-grid" style="margin-top: 32px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 40px; background: rgba(255,255,255,0.01); border: 2px dashed var(--glass-border); border-radius: 32px;">
+                <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.2;">🚀</div>
+                <h4 style="color: var(--text-main); margin-bottom: 8px;">Start Your Legacy</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 300px; margin: 0 auto;">Your contributions to the community will appear here. Share resources or write blogs to inspire others!</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB 2.5: MY GPA -->
+    <div id="gpaSection" style="display:none;">
+      <div class="profile-tab-layout">
+        <!-- GPA Box (Top) -->
+        <div class="gpa-display-card">
+          <span class="label"
+            style="text-transform: uppercase; font-size: 1rem; font-weight: 600; opacity: 0.9; letter-spacing: 0.1em;">Academic
+            Standing — GPA</span>
+          <div class="gpa-val" id="gpaScore">0.00</div>
+          <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500;" id="gpaStatus">Start adding your results!</p>
+        </div>
+
         <!-- Results Table -->
         <section class="org-section">
-          <h3 style="font-size: 1.25rem; font-weight: 700;">Academic Results</h3>
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Academic Results Ledger</h3>
           <div class="results-table-wrap">
             <table class="results-table">
               <thead>
@@ -1164,16 +1459,10 @@
                 <!-- Dynamic Rows -->
               </tbody>
             </table>
-            <button class="add-res-btn" onclick="promptAddResult()">+ Add New Result</button>
-            <button class="save-btn" style="margin-top: 20px;" onclick="saveResults()">Save All Results</button>
-          </div>
-        </section>
-
-        <!-- Organizations -->
-        <section class="org-section">
-          <h3 style="font-size: 1.25rem; font-weight: 700;">Joined Organizations & Roles</h3>
-          <div id="joinedOrgsList" class="org-grid" style="margin-top: 20px;">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">No organizations joined yet.</p>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+              <button class="add-res-btn" style="margin:0; flex:1;" onclick="promptAddResult()">+ Add New Result</button>
+              <button class="save-btn" style="margin:0; flex:1; background: var(--accent-success);" onclick="saveResults()">Save My Results</button>
+            </div>
           </div>
         </section>
       </div>
@@ -1230,6 +1519,23 @@
         </div>
       </section>
     </div>
+    <!-- Guided Profile Completion Stepper -->
+    <div id="profileCompletionModal" class="modal-overlay" style="display:none; z-index: 2005;">
+      <div class="modal-content-glass" style="max-width: 500px; width: 100%; padding: 48px; text-align: center;">
+        
+        <div id="stepperBody">
+            <!-- Dynamic Step Content -->
+             <div class="loading-spinner" style="margin: 0 auto; width: 40px; height: 40px; border-width: 3px;"></div>
+             <p style="margin-top: 16px; color: var(--text-muted);">Preparing your setup...</p>
+        </div>
+
+        <!-- Hidden inputs for data collection -->
+        <input type="hidden" id="finalUni">
+        <input type="hidden" id="finalStream">
+        <input type="hidden" id="finalLevel">
+        <input type="hidden" id="finalSemester">
+      </div>
+    </div>
   </main>
 
   <div id="toast" class="toast">Success!</div>
@@ -1246,8 +1552,20 @@
     const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dbnvewztc/image/upload";
     const UPLOAD_PRESET = "ml_default"; // Change this if you have a specific preset
 
-    const sections = { dashboard: document.getElementById("dashboardSection"), profile: document.getElementById("profileSection"), courses: document.getElementById("coursesSection"), settings: document.getElementById("settingsSection") };
-    const navs = { dashboard: document.getElementById("navDashboard"), profile: document.getElementById("navProfile"), courses: document.getElementById("navCourses"), settings: document.getElementById("navSettings") };
+    const sections = { 
+        dashboard: document.getElementById("dashboardSection"), 
+        profile: document.getElementById("profileSection"), 
+        gpa: document.getElementById("gpaSection"),
+        courses: document.getElementById("coursesSection"), 
+        settings: document.getElementById("settingsSection") 
+    };
+    const navs = { 
+        dashboard: document.getElementById("navDashboard"), 
+        profile: document.getElementById("navProfile"), 
+        gpa: document.getElementById("navGPA"),
+        courses: document.getElementById("navCourses"), 
+        settings: document.getElementById("navSettings") 
+    };
 
     let currentUser = null;
     let selectedFile = null;
@@ -1479,14 +1797,38 @@
       calculateGPA();
     };
 
-    function updateUserUI(data, userAuth) {
+    async function updateUserUI(data, userAuth) {
       const photo = data.photoUrl || userAuth.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
       document.getElementById("userPhoto").src = photo;
       document.getElementById("formPicPreview").src = photo;
+      document.getElementById("profileTabPic").src = photo;
+
       document.getElementById("userName").textContent = data.name;
+      document.getElementById("profileTabName").textContent = data.name;
+
       document.getElementById("userEmail").textContent = userAuth.email;
       document.getElementById("userRegNo").textContent = data.registrationNumber;
       document.getElementById("userPoints").textContent = data.points || 0;
+
+      // New Next-Gen Profile Info
+      const uniSpan = document.getElementById("profileTabUni");
+      const streamSpan = document.getElementById("profileTabStream");
+      
+      uniSpan.textContent = data.universityId || "Member";
+      streamSpan.textContent = data.stream || "Student";
+
+      // Async Resolve Names
+      if (data.universityId) {
+          try {
+              const uSnap = await getDoc(doc(db, "universities", data.universityId.toLowerCase()));
+              if (uSnap.exists()) uniSpan.textContent = uSnap.data().name;
+              
+              if (data.stream) {
+                  const sSnap = await getDoc(doc(db, "universities", data.universityId.toLowerCase(), "streams", data.stream.toUpperCase()));
+                  if (sSnap.exists()) streamSpan.textContent = sSnap.data().name;
+              }
+          } catch(e) { console.error("Resolve failed", e); }
+      }
 
       const hour = new Date().getHours();
       document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
@@ -1501,11 +1843,184 @@
       document.getElementById("editBio").value = data.bio || "";
     }
 
+    async function renderUserContributions(uid) {
+        const list = document.getElementById("userContributionsList");
+        const countBadge = document.getElementById("contributionCount");
+        
+        try {
+            const userSnap = await getDoc(doc(db, "users", uid));
+            if (!userSnap.exists()) return;
+            const regNo = userSnap.data().registrationNumber;
+
+            // Everything is in community_resources (Resources & Blogs)
+            const snap = await getDocs(collection(db, "community_resources"));
+
+            // Filter by Registration Number
+            // For resources: uploadedBy = regNo
+            // For blogs: ownerReg = regNo
+            const allHits = snap.docs
+                .map(d => ({ ...d.data(), id: d.id }))
+                .filter(d => (d.uploadedBy === regNo || d.ownerReg === regNo) && !d.isHidden)
+                .sort((a,b) => (b.uploadedAt?.toDate() || 0) - (a.uploadedAt?.toDate() || 0));
+
+            if (allHits.length === 0) {
+                list.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 40px; background: rgba(255,255,255,0.01); border: 2px dashed var(--glass-border); border-radius: 32px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.2;">🚀</div>
+                        <h4 style="color: var(--text-main); margin-bottom: 8px;">Start Your Legacy</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 300px; margin: 0 auto;">Your contributions linked to <b>${regNo}</b> will appear here.</p>
+                    </div>
+                `;
+                countBadge.textContent = "0 UPLOADS";
+                return;
+            }
+
+            list.innerHTML = "";
+            allHits.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "org-item";
+                card.style.cssText = "display: flex; align-items: center; gap: 16px; padding: 20px; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 20px;";
+                
+                const isBlog = item.type === 'blog';
+                const icon = isBlog ? 'fa-feather-alt' : (item.type === 'pdf' ? 'fa-file-pdf' : 'fa-link');
+                const color = isBlog ? '#ec4899' : '#6366f1';
+                
+                card.innerHTML = `
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: ${color}20; color: ${color}; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${item.title}</h4>
+                        <p style="margin: 4px 0 0; font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${item.type?.toUpperCase()} • PUBLISHED</p>
+                    </div>
+                    <div style="padding: 4px 10px; border: 1px solid ${color}; color: ${color}; font-size: 0.65rem; border-radius: 6px; font-weight: 800; letter-spacing: 0.05em;">LIVE</div>
+                `;
+                
+                card.onclick = () => {
+                    if(isBlog) window.location.href = `read-blog.html?id=${item.id}`;
+                    else {
+                        const type = item.type.toLowerCase();
+                        if (type === "pdf") {
+                            const m = item.link?.match(/\/file\/d\/([a-zA-Z0-9_-]+)\/|[?&]id=([a-zA-Z0-9_-]+)/);
+                            const fileId = m ? (m[1] || m[2]) : null;
+                            if (fileId) window.location.href = `reader.html?id=${fileId}`;
+                            else window.open(item.link, "_blank");
+                        } else window.open(item.link || item.url, '_blank');
+                    }
+                };
+                
+                list.appendChild(card);
+            });
+
+            countBadge.textContent = `${allHits.length} CONTRIBUTIONS`;
+            countBadge.style.background = "var(--accent-success)20";
+            countBadge.style.color = "var(--accent-success)";
+            countBadge.style.borderColor = "var(--accent-success)";
+
+        } catch (e) {
+            console.error("Contributions Error:", e);
+        }
+    }
+
+    // 🎓 STEPPER ENGINE
+    async function startSetupStepper(userData, userAuth) {
+        const modal = document.getElementById("profileCompletionModal");
+        const body = document.getElementById("stepperBody");
+        modal.style.display = "flex";
+
+        const state = {
+            universityId: userData.universityId || "",
+            stream: userData.stream || "",
+            level: userData.level || "",
+            semester: userData.semester || ""
+        };
+
+        const steps = [];
+        if (!state.universityId) steps.push('university');
+        if (!state.stream) steps.push('stream');
+        if (!state.level) steps.push('level');
+        if (!state.semester) steps.push('semester');
+
+        let currentStepIdx = 0;
+
+        const renderStep = async () => {
+            const step = steps[currentStepIdx];
+            if (!step) {
+                return finishSetup();
+            }
+
+            body.innerHTML = '<div class="loading-spinner" style="margin:30px auto;"></div>';
+
+            try {
+                if (step === 'university') {
+                    const unis = await getDocs(collection(db, "universities"));
+                    body.innerHTML = `
+                        <h2 class="stepper-h2">Which University?</h2>
+                        <p class="stepper-p">Select your campus to access localized resources.</p>
+                        <div class="stepper-list">
+                            ${unis.docs.map(d => `<button class="step-opt" onclick="setStepData('universityId', '${d.id}')">${d.data().name}</button>`).join('')}
+                        </div>
+                    `;
+                } else if (step === 'stream') {
+                    const streams = await getDocs(collection(db, "universities", state.universityId.toLowerCase(), "streams"));
+                    body.innerHTML = `
+                        <h2 class="stepper-h2">Your Stream</h2>
+                        <p class="stepper-p">Select your academic department.</p>
+                        <div class="stepper-list">
+                            ${streams.docs.map(d => `<button class="step-opt" onclick="setStepData('stream', '${d.id}')">${d.data().name}</button>`).join('')}
+                        </div>
+                    `;
+                } else if (step === 'level') {
+                    body.innerHTML = `
+                        <h2 class="stepper-h2">Current Year</h2>
+                        <p class="stepper-p">Which year of study are you in?</p>
+                        <div class="stepper-list">
+                            <button class="step-opt" onclick="setStepData('level', '1')">Year 1</button>
+                            <button class="step-opt" onclick="setStepData('level', '2')">Year 2</button>
+                            <button class="step-opt" onclick="setStepData('level', '3')">Year 3</button>
+                            <button class="step-opt" onclick="setStepData('level', '4')">Year 4</button>
+                        </div>
+                    `;
+                } else if (step === 'semester') {
+                    body.innerHTML = `
+                        <h2 class="stepper-h2">Almost there!</h2>
+                        <p class="stepper-p">Which semester is active for you?</p>
+                        <div class="stepper-list">
+                            <button class="step-opt" onclick="setStepData('semester', '1')">Semester 01</button>
+                            <button class="step-opt" onclick="setStepData('semester', '2')">Semester 02</button>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                body.innerHTML = `<p style="color:var(--danger);">Error loading steps: ${err.message}</p>`;
+            }
+        };
+
+        window.setStepData = (key, val) => {
+            state[key] = val;
+            currentStepIdx++;
+            renderStep();
+        };
+
+        const finishSetup = async () => {
+            body.innerHTML = `
+                <div class="loading-spinner" style="margin:30px auto;"></div>
+                <h2 class="stepper-h2">All set!</h2>
+                <p class="stepper-p">Synchronizing your academic profile...</p>
+            `;
+            await updateDoc(doc(db, "users", userAuth.uid), state);
+            modal.style.display = "none";
+            location.reload(); 
+        };
+
+        renderStep();
+    }
+
     // Initialize with cache
     applyCachedData();
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = "index.html"; return; }
+      if (!user) { window.location.href = "login.html"; return; }
       currentUser = user;
 
       try {
@@ -1527,6 +2042,44 @@
         }
 
         const data = userSnap.data();
+
+        // 🛡️ Auto-detect Uni and Stream if undefined
+        if (!data.universityId || !data.stream) {
+            let updatedFields = {};
+            const email = (user.email || "").toLowerCase();
+            const regNo = (data.registrationNumber || "").toUpperCase();
+
+            // 1. Resolve University (e.g., vau from vau.ac.lk)
+            if (!data.universityId) {
+                if (email.includes("vau")) updatedFields.universityId = "vau";
+                else if (email.includes("uwu")) updatedFields.universityId = "uwu";
+            }
+
+            // 2. Resolve Stream (e.g., ICT from UWU/ICT/21/001)
+            if (!data.stream) {
+                const parts = regNo.split('/');
+                // Typical format: UNI/STREAM/YEAR/NUMBER
+                if (parts.length >= 2) {
+                    const possibleStream = parts[1];
+                    if (possibleStream.length <= 5) { // Validation for short codes
+                        updatedFields.stream = possibleStream;
+                    }
+                }
+            }
+
+            if (Object.keys(updatedFields).length > 0) {
+                try {
+                    await updateDoc(doc(db, "users", user.uid), updatedFields);
+                    Object.assign(data, updatedFields);
+                } catch(e) { console.error("Auto-sync failed:", e); }
+            }
+        }
+
+        // 🚨 GUIDED STEPPER CHECK: Missing essential records
+        if (!data.universityId || !data.stream || !data.level || !data.semester) {
+            startSetupStepper(data, user);
+        }
+
         allCoursesSnap = coursesSnap; // Save to global for UI refreshes
         loadUserResults(data, coursesSnap); // Load GPA results with auto-progression
         const sysData = sysSnap.exists() ? sysSnap.data() : { maintenance: false };
@@ -1536,12 +2089,13 @@
           alert("Site is under maintenance.");
           signOut(auth);
           localStorage.clear();
-          window.location.href = "index.html";
+          window.location.href = "login.html";
           return;
         }
 
         // Update UI & Cache
         updateUserUI(data, user);
+        renderUserContributions(user.uid);
         localStorage.setItem("userData", JSON.stringify({ ...data, email: user.email, photoUrl: data.photoUrl || user.photoURL }));
 
         renderCourses(coursesSnap, data.level, data.semester);
@@ -1556,6 +2110,49 @@
 
         initOrgStatus();
         renderJoinedOrgs();
+        
+        // 🧪 Initialize Peer Directory Search
+        const searchInput = document.getElementById("userDirectorySearch");
+        const flyout = document.getElementById("userSearchResults");
+        
+        searchInput.oninput = async (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (query.length < 2) { flyout.style.display = "none"; return; }
+            
+            // Local directory search (from all users) - Note: In enterprise use specialized indexes
+            const usersSnap = await getDocs(collection(db, "users"));
+            const results = usersSnap.docs
+                .map(d => ({ ...d.data(), id: d.id }))
+                .filter(u => 
+                    u.name?.toLowerCase().includes(query) || 
+                    u.registrationNumber?.toLowerCase().includes(query) || 
+                    u.email?.toLowerCase().includes(query)
+                ).slice(0, 8); // Top hits
+
+            if (results.length > 0) {
+                flyout.style.display = "flex";
+                flyout.innerHTML = results.map(u => `
+                    <div class="user-search-item" onclick="window.location.href='public-profile.html?uid=${u.id}'">
+                        <img src="${u.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`}" alt="${u.name}">
+                        <div style="flex:1;">
+                            <h4 style="margin:0; font-size:0.9rem;">${u.name}</h4>
+                            <p style="margin:2px 0 0; font-size:0.7rem; color:var(--text-muted);">${u.registrationNumber}</p>
+                        </div>
+                        <span style="font-size:0.6rem; background:rgba(79, 70, 229, 0.2); padding:4px 8px; border-radius:6px; color:var(--accent-primary); font-weight:700;">VISIT PROFILE</span>
+                    </div>
+                `).join('');
+            } else {
+                flyout.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:10px;">No exact matches found</p>';
+            }
+        };
+
+        // Close flyout on outside click
+        window.addEventListener('click', (e) => {
+            if (!flyout.contains(e.target) && e.target !== searchInput) {
+                flyout.style.display = 'none';
+            }
+        });
+
       } catch (err) {
         console.error("Dashboard optimization failed:", err);
       }
@@ -1656,12 +2253,26 @@
       }, 5000);
     }
 
-    Object.keys(navs).forEach(key => { navs[key].onclick = () => switchTab(key); });
-
     function switchTab(target) {
-      Object.keys(sections).forEach(k => sections[k].style.display = k === target ? "flex" : "none");
-      Object.keys(navs).forEach(k => navs[k].classList.toggle("active", k === target));
+      const header = document.querySelector(".main-header");
+      if (target === 'profile') {
+          header.classList.add("tab-hidden");
+      } else {
+          header.classList.remove("tab-hidden");
+      }
+
+      Object.keys(sections).forEach(k => {
+          if (sections[k]) sections[k].style.display = (k === target) ? "block" : "none";
+      });
+      Object.keys(navs).forEach(k => {
+          if (navs[k]) navs[k].classList.toggle("active", k === target);
+      });
+      if (window.innerWidth <= 1024) toggleSidebar();
     }
+
+    Object.keys(navs).forEach(key => {
+      if (navs[key]) navs[key].onclick = () => switchTab(key);
+    });
 
     const profileAvatarWraps = document.querySelectorAll(".profile-avatar-wrap");
     profileAvatarWraps.forEach(wrap => {
@@ -1788,7 +2399,7 @@
       initOrgStatus(); renderJoinedOrgs();
     };
 
-    document.getElementById("logoutBtn").onclick = () => { signOut(auth).then(() => { localStorage.clear(); window.location.href = "index.html"; }); };
+    document.getElementById("logoutBtn").onclick = () => { signOut(auth).then(() => { localStorage.clear(); window.location.href = "login.html"; }); };
 
     // Mobile Sidebar Toggle
     const menuToggle = document.getElementById('menuToggle');

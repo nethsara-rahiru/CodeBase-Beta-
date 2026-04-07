@@ -445,7 +445,7 @@
             photoURL: localStorage.getItem("photoUrl")
           };
         } else {
-          window.location.href = "index.html";
+          window.location.href = "login.html";
           return;
         }
       }
@@ -556,7 +556,7 @@
     document.getElementById("logoutBtn").addEventListener("click", () => {
       signOut(auth).then(() => {
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       });
     });
   </script>

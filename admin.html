@@ -904,6 +904,48 @@
       width: 100%;
       height: 300px;
     }
+    .clickable-row {
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .clickable-row:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* User Details Grid */
+    .user-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      text-align: left;
+    }
+
+    .detail-item {
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 10px;
+    }
+
+    .detail-item label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .detail-item span {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    @media (max-width: 600px) {
+      .user-details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -929,6 +971,7 @@
       <div class="nav-item" data-tab="landing">Landing Page</div>
       <div class="nav-item" data-tab="courses">Courses</div>
       <div class="nav-item" data-tab="organizations">Organizations</div>
+      <div class="nav-item" data-tab="universitys">Universitys</div>
       <div class="nav-item" data-tab="staff">Staff Management</div>
       <div class="nav-item" data-tab="users">Users</div>
       <div class="nav-item" data-tab="allowed-emails">Allowed Emails</div>
@@ -962,6 +1005,27 @@
 
       <div class="chart-container">
           <canvas id="trafficChart"></canvas>
+      </div>
+
+      <div class="admin-card" style="margin-top: 24px;">
+        <div class="section-header">
+          <h2>Recent Logins</h2>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Real-time user access feed</p>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="recentLoginsTableBody">
+              <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading activity...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <div class="section-header" style="margin-top: 40px;">
         <h2>System Controls</h2>
@@ -1129,7 +1193,89 @@
       </div>
     </div>
 
-    <!-- Tab 5: Users -->
+    <!-- Tab: Universitys -->
+    <div class="tab-content" id="universitysTab">
+      <div class="grid-container" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; align-items: start;">
+        
+        <!-- Left: Universities List -->
+        <div class="admin-card">
+          <div class="section-header">
+            <h2>Universities</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Manage institution domains</p>
+          </div>
+          <form id="uniDomainForm" class="grid-form">
+            <div class="form-group">
+              <label>Domain Identifier</label>
+              <input type="text" id="uniDomainId" placeholder="vau" required>
+            </div>
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="uniShortName" placeholder="University of Vavuniya" required>
+            </div>
+            <button type="submit" class="action-btn" style="width: 100%; margin-top: 10px;">Add University</button>
+          </form>
+          <div class="table-container" style="margin-top: 20px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="uniDomainsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Streams Management (Conditional) -->
+        <div id="streamsSection" class="admin-card" style="display: none; opacity: 0; transform: translateY(10px); transition: all 0.3s ease;">
+          <div class="section-header">
+            <h2 id="selectedUniTitle">Streams</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Define department streams for this campus</p>
+          </div>
+          <form id="uniStreamForm" class="grid-form">
+            <div class="form-group">
+              <label>Stream Code (e.g., ICT)</label>
+              <input type="text" id="streamCode" placeholder="ICT" required>
+            </div>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="streamName" placeholder="Information Technology" required>
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+              <button type="submit" class="action-btn">Add Stream</button>
+            </div>
+          </form>
+          <div class="table-container" style="margin-top: 20px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Full Name</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="uniStreamsTableBody">
+                <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading streams...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Placeholder when no uni selected -->
+        <div id="uniPlaceholder" class="admin-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 400px; border-style: dashed; opacity: 0.6;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10v6M12 4L2 10l10 6 10-6-10-6z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+          <p style="margin-top: 16px; color: var(--text-muted);">Select a university to manage its streams</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab 7: Users -->
     <div class="tab-content" id="usersTab">
       <div class="admin-card">
         <div class="section-header">
@@ -1387,6 +1533,21 @@
         </div>
       </div>
     </div>
+
+    <!-- User Details Modal -->
+    <div id="userDetailsModal" class="modal">
+      <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+          <h2>User Profile Details</h2>
+        </div>
+        <div id="userDetailsBody" class="user-details-grid" style="margin-top: 20px;">
+          <!-- Populated by JS -->
+        </div>
+        <div class="modal-actions" style="margin-top: 30px;">
+          <button class="action-btn" onclick="closeUserDetailsModal()">Close Profile</button>
+        </div>
+      </div>
+    </div>
     </div>
   </main>
 
@@ -1447,7 +1608,7 @@
     });
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = "index.html"; return; }
+      if (!user) { window.location.href = "login.html"; return; }
       const snap = await getDoc(doc(db, "users", user.uid));
       const userData = snap.data();
       if (!snap.exists() || !["owner", "admin", "editor"].includes(userData.role)) {
@@ -1482,6 +1643,7 @@
       if (tab === "users") { loadUsers(); loadBannedUsers(); }
       if (tab === "allowed-emails") loadAllowedEmails();
       if (tab === "community") loadCommunityResources();
+      if (tab === "universitys") loadUniversitys();
     }
 
     async function loadSystemSettings() {
@@ -1532,9 +1694,10 @@
         organizations: perms.canManageOrgs,
         courses: perms.canManageCourses,
         users: perms.canManageUsers,
-        "allowed-emails": perms.canManageUsers, // Same permission as users
+        "allowed-emails": perms.canManageUsers,
+        universitys: perms.canManageUsers || userData.role === "owner",
         staff: perms.canManageStaff || userData.role === "owner",
-        community: true // Or consider a permission check for community later
+        community: true
       };
 
       document.querySelectorAll('.nav-item').forEach(item => {
@@ -1608,6 +1771,37 @@
       });
 
       renderTrafficChart(Object.keys(graphData), Object.values(graphData));
+
+      // 4. Recent Logins Table
+      const recentBody = document.getElementById("recentLoginsTableBody");
+      const qRecent = query(collection(db, "activity"), 
+          where("type", "==", "login"),
+          orderBy("timestamp", "desc"),
+          limit(10)
+      );
+      
+      const recentSnap = await getDocs(qRecent);
+      recentBody.innerHTML = "";
+      
+      if (recentSnap.empty) {
+          recentBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No login activity recorded</td></tr>';
+      } else {
+          recentSnap.forEach(doc => {
+              const d = doc.data();
+              const time = d.timestamp?.toDate() ? d.timestamp.toDate().toLocaleString('en-US', { 
+                  month: 'short', day: 'numeric', 
+                  hour: '2-digit', minute: '2-digit' 
+              }) : '---';
+              
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                  <td>${d.userName || d.name || 'Anonymous'}<br><small style="color:var(--text-muted);">${d.regNo || d.registrationNumber || ''}</small></td>
+                  <td>${d.userEmail || d.email || '---'}</td>
+                  <td style="font-size:0.8rem;">${time}</td>
+              `;
+              recentBody.appendChild(row);
+          });
+      }
     }
 
     let trafficChartInstance = null;
@@ -1856,6 +2050,111 @@
       if (confirm("Delete organization?")) { await deleteDoc(doc(db, "organizations", id)); loadOrgs(); }
     };
 
+    // UNIVERSITYS & STREAMS
+    let activeSelectedUniId = null;
+
+    async function loadUniversitys() {
+      const domainSnap = await getDocs(collection(db, "universities"));
+      const domainBody = document.getElementById("uniDomainsTableBody");
+      domainBody.innerHTML = "";
+      domainSnap.forEach(d => {
+        const data = d.data();
+        const row = document.createElement("tr");
+        row.className = "clickable-row";
+        if (activeSelectedUniId === d.id) row.style.background = "rgba(99, 102, 241, 0.15)";
+        
+        row.innerHTML = `
+          <td>${d.id}</td>
+          <td>${data.name}</td>
+          <td onclick="event.stopPropagation()">
+            <button class="btn-delete" style="padding:4px 8px; font-size:10px;" onclick="deleteUniversity('${d.id}')">Delete</button>
+          </td>
+        `;
+        row.onclick = () => selectUniversity(d.id, data.name);
+        domainBody.appendChild(row);
+      });
+      
+      if (!activeSelectedUniId) {
+          document.getElementById("streamsSection").style.display = "none";
+          document.getElementById("uniPlaceholder").style.display = "flex";
+      }
+    }
+
+    window.selectUniversity = async (id, name) => {
+        activeSelectedUniId = id;
+        document.getElementById("selectedUniTitle").textContent = `Streams for ${name}`;
+        
+        const section = document.getElementById("streamsSection");
+        const placeholder = document.getElementById("uniPlaceholder");
+        
+        placeholder.style.display = "none";
+        section.style.display = "block";
+        setTimeout(() => {
+            section.style.opacity = "1";
+            section.style.transform = "translateY(0)";
+        }, 10);
+
+        loadUniversitys(); 
+        loadStreams(id);
+    };
+
+    async function loadStreams(uniId) {
+        const streamBody = document.getElementById("uniStreamsTableBody");
+        streamBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading streams...</td></tr>';
+        
+        const snap = await getDocs(collection(db, "universities", uniId, "streams"));
+        streamBody.innerHTML = "";
+        
+        if (snap.empty) {
+            streamBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No streams defined for this university</td></tr>';
+            return;
+        }
+
+        snap.forEach(d => {
+            const data = d.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td><button class="btn-delete" onclick="deleteStream('${d.id}')">Delete</button></td>`;
+            streamBody.appendChild(row);
+        });
+    }
+
+    document.getElementById("uniDomainForm").onsubmit = async (e) => {
+      e.preventDefault();
+      if (!currentAdminPerms.isOwner) return alert("Only the owner can manage university access.");
+      const id = document.getElementById("uniDomainId").value.trim().toLowerCase();
+      const name = document.getElementById("uniShortName").value.trim();
+      await setDoc(doc(db, "universities", id), { name });
+      e.target.reset(); loadUniversitys();
+    };
+
+    window.deleteUniversity = async (id) => {
+      if (!currentAdminPerms.isOwner) return alert("Only the owner can delete universities.");
+      if (confirm("Delete university domain access? All its streams will also be effectively lost.")) {
+          await deleteDoc(doc(db, "universities", id));
+          if (activeSelectedUniId === id) activeSelectedUniId = null;
+          loadUniversitys();
+      }
+    };
+
+    document.getElementById("uniStreamForm").onsubmit = async (e) => {
+      e.preventDefault();
+      if (!activeSelectedUniId) return;
+      if (!currentAdminPerms.isOwner) return alert("Only the owner can manage streams.");
+      const id = document.getElementById("streamCode").value.trim().toUpperCase();
+      const name = document.getElementById("streamName").value.trim();
+      await setDoc(doc(db, "universities", activeSelectedUniId, "streams", id), { name });
+      e.target.reset(); loadStreams(activeSelectedUniId);
+    };
+
+    window.deleteStream = async (id) => {
+      if (!activeSelectedUniId) return;
+      if (!currentAdminPerms.isOwner) return alert("Only the owner can delete streams.");
+      if (confirm("Delete this academic stream for this university?")) { 
+          await deleteDoc(doc(db, "universities", activeSelectedUniId, "streams", id)); 
+          loadStreams(activeSelectedUniId); 
+      }
+    };
+
     // STAFF MANAGEMENT (RBAC)
     window.loadStaff = async () => {
       if (!currentAdminPerms.isOwner) return;
@@ -2091,12 +2390,15 @@
         const displayRole = roleTitles.length > 0 ? roleTitles.join(" | ") : (systemRole === 'admin' ? 'Admin' : systemRole.charAt(0).toUpperCase() + systemRole.slice(1));
 
         const row = document.createElement("tr");
+        row.className = "clickable-row";
+        row.onclick = () => showUserDetails(data.id);
+
         row.innerHTML = `
           <td>${data.name}</td>
           <td>${data.email}</td>
           <td>${data.registrationNumber}</td>
           <td><span class="role-badge role-${systemRole}">${displayRole}</span></td>
-          <td>
+          <td onclick="event.stopPropagation()">
             <div style="display: flex; align-items: center; gap: 8px;">
               <select onchange="updateRole('${data.id}', this)" style="padding:4px; font-size:12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
                 <option value="student" ${systemRole == 'student' ? 'selected' : ''}>Student</option>
@@ -2112,6 +2414,102 @@
 
     // Search event listener
     document.getElementById("searchUsers").oninput = renderUsers;
+
+    window.showUserDetails = async (uid) => {
+      const user = userDataStore.find(u => u.id === uid);
+      if (!user) return;
+
+      const body = document.getElementById("userDetailsBody");
+      body.innerHTML = '<div style="grid-column: span 2; text-align:center; padding:20px; color:var(--text-muted);">Loading profile analytics...</div>';
+      document.getElementById("userDetailsModal").classList.add("active");
+
+      // Fetch last login from activity collection
+      let lastLoginStr = "Never";
+      try {
+          const qLogin = query(collection(db, "activity"), 
+              where("regNo", "==", user.registrationNumber),
+              where("type", "==", "login"),
+              orderBy("timestamp", "desc"),
+              limit(1)
+          );
+          const loginSnap = await getDocs(qLogin);
+          if (!loginSnap.empty) {
+              const loginDoc = loginSnap.docs[0].data();
+              if (loginDoc.timestamp?.toDate()) {
+                  lastLoginStr = loginDoc.timestamp.toDate().toLocaleString('en-US', {
+                      weekday: 'short', month: 'short', day: 'numeric', 
+                      hour: '2-digit', minute: '2-digit'
+                  });
+              }
+          }
+      } catch (err) { console.error("Error fetching activity:", err); }
+
+      const systemRole = user.role || "student";
+      const roleIds = user.customRoleIds || (user.customRoleId ? [user.customRoleId] : []);
+      const roleTitles = roleIds.map(rid => allRolesMap[rid] || rid).filter(s => s);
+      const displayRole = roleTitles.length > 0 ? roleTitles.join(" | ") : (systemRole === 'admin' ? 'Admin' : systemRole.charAt(0).toUpperCase() + systemRole.slice(1));
+
+      // Resolve Uni and Stream full names
+      let uniFullName = user.universityId || "---";
+      let streamFullName = user.stream || "---";
+
+      if (user.universityId) {
+          try {
+              const uSnap = await getDoc(doc(db, "universities", user.universityId.toLowerCase()));
+              if (uSnap.exists()) uniFullName = uSnap.data().name;
+              
+              if (user.stream) {
+                  const sSnap = await getDoc(doc(db, "universities", user.universityId.toLowerCase(), "streams", user.stream.toUpperCase()));
+                  if (sSnap.exists()) streamFullName = sSnap.data().name;
+              }
+          } catch (e) { console.error("Error resolving names:", e); }
+      }
+
+      body.innerHTML = `
+        <div class="detail-item" style="grid-column: span 2;">
+          <label>Full Name</label>
+          <span>${user.name || "---"}</span>
+        </div>
+        <div class="detail-item">
+          <label>Email Address</label>
+          <span>${user.email || "---"}</span>
+        </div>
+        <div class="detail-item">
+          <label>Registration Number</label>
+          <span>${user.registrationNumber || "---"}</span>
+        </div>
+        <div class="detail-item">
+          <label>University</label>
+          <span style="color:var(--accent-primary); font-weight:700;">${uniFullName}</span>
+        </div>
+        <div class="detail-item">
+          <label>Academic Stream</label>
+          <span>${streamFullName}</span>
+        </div>
+        <div class="detail-item">
+          <label>Level</label>
+          <span>Level ${user.level || "---"}</span>
+        </div>
+        <div class="detail-item">
+          <label>Semester</label>
+          <span>Semester ${user.semester || "---"}</span>
+        </div>
+        <div class="detail-item">
+          <label>Role</label>
+          <span class="role-badge role-${systemRole}">${displayRole}</span>
+        </div>
+        <div class="detail-item" style="grid-column: span 2;">
+            <label>Last Activity / Login</label>
+            <span style="color:var(--text-muted); font-size:0.9rem;">${lastLoginStr}</span>
+        </div>
+        <div class="detail-item" style="grid-column: span 2;">
+            <label>Joined Organizations</label>
+            <span>${(user.joinedOrgs || []).length > 0 ? user.joinedOrgs.join(", ") : "None"}</span>
+        </div>
+      `;
+    };
+
+    window.closeUserDetailsModal = () => document.getElementById("userDetailsModal").classList.remove("active");
 
     async function loadBannedUsers() {
       if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
@@ -2230,7 +2628,7 @@
       }
     };
 
-    document.getElementById("logoutBtn").onclick = () => signOut(auth).then(() => window.location.href = "index.html");
+    document.getElementById("logoutBtn").onclick = () => signOut(auth).then(() => window.location.href = "login.html");
 
     // COMMUNITY RESOURCES
     let communityDataStore = [];

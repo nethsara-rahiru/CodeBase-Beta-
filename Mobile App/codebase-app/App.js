@@ -109,7 +109,7 @@ export default function App() {
       <StatusBar style="light" backgroundColor="#0f172a" />
       <View style={styles.webviewWrapper}>
         <WebView 
-          source={{ uri: 'https://unicodebase.vercel.app/loading.html' }}
+          source={{ uri: 'https://unicodebase.vercel.app/index.html' }}
           style={styles.webview}
           userAgent="Mozilla/5.0 (Linux; Android 10; Android SDK built for x86) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
           javaScriptEnabled={true}

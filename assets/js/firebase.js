@@ -134,8 +134,8 @@ window.handleUserAuth = async function (user) {
       await signOut(auth);
       localStorage.clear();
       const path = window.location.pathname.toLowerCase();
-      if (!path.includes("index.html") && !path.includes("login.html") && path !== "/" && !path.endsWith("/") && path.includes(".html")) {
-          window.location.href = "index.html"; 
+      if (!path.includes("login.html") && path !== "/" && !path.endsWith("/") && path.includes(".html")) {
+          window.location.href = "login.html"; 
       }
       isAuthProcessing = false;
       return;
@@ -152,7 +152,7 @@ window.handleUserAuth = async function (user) {
         alert("Your account is banned.");
         await signOut(auth);
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
         isAuthProcessing = false;
         return;
       }
@@ -162,7 +162,7 @@ window.handleUserAuth = async function (user) {
         alert("Site is under maintenance. Only staff allowed.");
         await signOut(auth);
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
         isAuthProcessing = false;
         return;
       }
@@ -182,10 +182,10 @@ window.handleUserAuth = async function (user) {
       }
       // ---------------------------------------------------------
 
-      // Final redirect if we are on a login/landing page
+      // Final redirect if we are on an auth or landing page
       const path = window.location.pathname.toLowerCase();
-      const isOnAuthPage = path.includes("index.html") || 
-                           path.includes("login.html") || 
+      const isOnAuthPage = path.includes("login.html") || 
+                           path.includes("login-access.html") || 
                            path === "/" || 
                            path.endsWith("/") ||
                            !path.includes(".html"); 

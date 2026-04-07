@@ -271,7 +271,7 @@
           };
         } else {
           // No Firebase user and no appCode -> redirect to login
-          window.location.href = "index.html";
+          window.location.href = "login.html";
           return;
         }
       }
@@ -286,7 +286,7 @@
     document.getElementById("logoutBtn").addEventListener("click", () => {
       signOut(auth).then(() => {
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       });
     });
   </script>

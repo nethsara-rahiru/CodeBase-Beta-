@@ -20,8 +20,9 @@ Provides course materials, organization management, and community resources.
 
 ```
 .
-├── index.html            ← Main login page (Google OAuth)
-├── login.html            ← Alternate login page
+├── index.html            ← Entry & Loading screen
+├── login.html            ← Main authentication page
+├── login-access.html     ← Admin access control management
 ├── register.html         ← First-time user registration
 ├── dashboard.html        ← Student dashboard
 ├── admin.html            ← Admin control panel
@@ -32,8 +33,6 @@ Provides course materials, organization management, and community resources.
 ├── org.html              ← Organization details
 ├── player.html           ← Video player
 ├── reader.html           ← PDF reader
-├── loading.html          ← Loading screen
-├── login-access.html     ← Admin access control
 ├── access-denied.html    ← 403 error page
 ├── privacy.html          ← Privacy policy
 ├── assets/
@@ -78,7 +77,7 @@ Provides course materials, organization management, and community resources.
 
 ## Login Flow
 
-1. User visits `index.html` (or `login.html`).
+1. User visits `login.html`.
 2. Clicks **Continue with Google** → Firebase Google OAuth popup.
 3. Domain is checked against `ALLOWED_DOMAINS` in `assets/js/firebase.js`  
    (currently `@std.uwu.ac.lk` and `@stu.vau.ac.lk`) — or the email must be in the Firestore `allowedEmails` whitelist.
