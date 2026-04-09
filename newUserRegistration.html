@@ -457,6 +457,19 @@
                     <div class="error-message" id="emailError">Please enter a valid email address.</div>
                 </div>
 
+                <div class="form-group">
+                    <label for="university">Select University</label>
+                    <select id="university">
+                        <option value="" disabled selected>Select your university</option>
+                        <option value="vau">University of Vavuniya</option>
+                        <option value="uwu">Uva Wellassa University</option>
+                        <option value="ousl">Open University of Sri Lanka</option>
+                        <option value="susl">Sabaragamuwa University of Sri Lanka</option>
+                        <option value="other">Other / External</option>
+                    </select>
+                    <div class="error-message" id="universityError">Please select your university.</div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="year">Academic Year</label>
@@ -497,11 +510,34 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { db } from "./assets/js/firebase.js";
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('registrationForm');
             const submitBtn = document.getElementById('submitBtn');
             const successMessage = document.getElementById('successMessage');
+            const uniSelect = document.getElementById('university');
+
+            // Fetch universities from Firestore
+            async function fetchUniversities() {
+                try {
+                    const snap = await getDocs(collection(db, "universities"));
+                    uniSelect.innerHTML = '<option value="" disabled selected>Select your university</option>';
+                    snap.docs.forEach(d => {
+                        const data = d.data();
+                        const option = document.createElement('option');
+                        option.value = d.id;
+                        option.textContent = data.name || d.id.toUpperCase();
+                        uniSelect.appendChild(option);
+                    });
+                } catch (err) {
+                    console.error("Fetch universities failed:", err);
+                    uniSelect.innerHTML = '<option value="" disabled selected>Failed to load campuses</option>';
+                }
+            }
+            fetchUniversities();
 
             // Fields to validate
             const fields = {
@@ -523,6 +559,11 @@
                     element: document.getElementById('email'),
                     errorEl: document.getElementById('emailError'),
                     validate: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) && !/\s/.test(val)
+                },
+                university: {
+                    element: document.getElementById('university'),
+                    errorEl: document.getElementById('universityError'),
+                    validate: (val) => val !== ""
                 },
                 year: {
                     element: document.getElementById('year'),
@@ -590,6 +631,7 @@
                 if (isSubmitting) return; // Anti rapid submission
 
                 let isValid = true;
+                const formData = {};
 
                 // Validate main fields
                 for (const key in fields) {
@@ -597,6 +639,7 @@
                     // Trim values before validation
                     const val = field.element.value.trim();
                     field.element.value = val; // Apply trim back to input
+                    formData[key] = val;
 
                     if (!field.validate(val)) {
                         showError(key, true);
@@ -611,6 +654,8 @@
                     isSubmitting = true;
                     submitBtn.disabled = true;
                     submitBtn.classList.add('submitting');
+                    
+                    console.log("Form Data to Save:", formData);
 
                     // Simulate API network request (Anti-gravity smooth UX)
                     setTimeout(() => {

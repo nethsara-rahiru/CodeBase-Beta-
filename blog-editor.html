@@ -10,6 +10,10 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
         :root {
@@ -426,6 +430,149 @@
             50% { opacity: 0.3; }
         }
 
+        /* --- Code Box Component --- */
+        .code-box-wrap {
+            display: block;
+            position: relative;
+            margin: 32px 0;
+            background: linear-gradient(145deg, #1e1e2e 0%, #161621 100%); /* Tokyo Night deeper gradient */
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            user-select: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 12px 40px -10px rgba(0,0,0,0.7);
+        }
+        .code-box-wrap:hover {
+            box-shadow: 0 20px 50px -12px rgba(0,0,0,0.8);
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+        .code-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+        }
+        .code-lang-select {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            outline: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .code-lang-select:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: #818cf8;
+        }
+        .code-copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .code-box-content {
+            padding: 24px;
+            padding-left: 20px;
+            overflow-x: auto;
+            position: relative;
+            background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.03), transparent 200px);
+        }
+        .code-box-content pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            tab-size: 4;
+            white-space: pre-wrap !important;
+            overflow-x: auto;
+        }
+        .code-box-content code {
+            outline: none !important;
+            display: block !important;
+            min-height: 1.5em;
+            white-space: pre-wrap !important; 
+            overflow-wrap: anywhere !important;
+            word-break: break-all;
+        }
+        .code-box-content code:empty:before {
+            content: attr(data-placeholder);
+            color: rgba(255, 255, 255, 0.2);
+            font-style: italic;
+        }
+        /* Custom scrollbar for code boxes */
+        .code-box-content::-webkit-scrollbar {
+            height: 6px;
+        }
+        .code-box-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .code-box-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* Reusing handles from images for consistency */
+        .code-box-wrap .img-drag-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--accent-primary);
+            border-radius: 20px;
+            padding: 6px 16px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: grab;
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .code-box-wrap:hover .img-drag-handle { opacity: 1; }
+        .code-box-wrap .img-drag-handle:active { cursor: grabbing; }
+
+        .code-box-wrap .img-actions {
+            position: absolute;
+            top: 40px;
+            right: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        .code-box-wrap:hover .img-actions { opacity: 1; }
+
         .actions {
             display: flex;
             justify-content: flex-end;
@@ -764,6 +911,12 @@
                         <polyline points="21 15 16 10 5 21"></polyline>
                     </svg>
                 </button>
+                <button class="tool-btn" id="insertCode" title="Insert Code Box">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                </button>
                 <div style="width:1px; background:var(--glass-border); margin:0 4px;"></div>
                 <button class="tool-btn" data-command="outdent" title="Outdent (decrease indent)">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -882,6 +1035,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Code Modal REMOVED -->
 
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
@@ -1042,6 +1197,238 @@
 
         document.getElementById("insertImage").onclick = () => imageModal.classList.add("active");
         window.closeImageModal = () => imageModal.classList.remove("active");
+
+        // Code Insertion (Directly Editable)
+        document.getElementById("insertCode").onclick = () => {
+            insertCodeBox("", "javascript");
+        };
+
+        function insertCodeBox(code, lang) {
+            const wrap = buildCodeBox(code, lang);
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(wrap);
+                
+                // Insert a break after
+                const br = document.createElement("br");
+                wrap.parentNode.insertBefore(br, wrap.nextSibling);
+                
+                // Focus the code element
+                const codeEl = wrap.querySelector('code');
+                codeEl.focus();
+                
+                sel.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.selectNodeContents(codeEl);
+                newRange.collapse(true);
+                sel.addRange(newRange);
+            } else {
+                editorContent.appendChild(wrap);
+                editorContent.appendChild(document.createElement("br"));
+                wrap.querySelector('code').focus();
+            }
+            attachFigureHandlers(wrap);
+            if (code) hljs.highlightElement(wrap.querySelector('code'));
+        }
+
+        function buildCodeBox(code, lang) {
+            const wrap = document.createElement('div');
+            wrap.className = 'code-box-wrap notranslate';
+            wrap.setAttribute('translate', 'no');
+            wrap.contentEditable = 'false';
+
+            const header = document.createElement('div');
+            header.className = 'code-box-header';
+            
+            // Language dropdown inside the box for easy access
+            const langSelect = document.createElement('select');
+            langSelect.className = 'code-lang-select';
+            const langs = ["javascript", "python", "html", "css", "cpp", "java", "php", "sql", "plaintext"];
+            langs.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l;
+                opt.textContent = l.toUpperCase();
+                if (l === lang) opt.selected = true;
+                langSelect.appendChild(opt);
+            });
+            langSelect.onchange = () => {
+                const codeEl = wrap.querySelector('code');
+                codeEl.className = `language-${langSelect.value}`;
+                hljs.highlightElement(codeEl);
+            };
+
+            const actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '8px';
+            actions.style.alignItems = 'center';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'code-copy-btn';
+            copyBtn.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg> Copy
+            `;
+            copyBtn.onclick = () => window.copyCodeFromBtn(copyBtn);
+
+            header.appendChild(langSelect);
+            actions.appendChild(copyBtn);
+            header.appendChild(actions);
+
+            const content = document.createElement('div');
+            content.className = 'code-box-content';
+            
+            const pre = document.createElement('pre');
+            const codeEl = document.createElement('code');
+            codeEl.className = `language-${lang}`;
+            codeEl.contentEditable = 'true';
+            codeEl.spellcheck = false;
+            
+            // Initial placeholder behavior
+            if (!code) {
+                codeEl.setAttribute('data-placeholder', 'Enter code here...');
+            }
+
+            const escapedCode = code
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            codeEl.innerHTML = escapedCode || "";
+            pre.appendChild(codeEl);
+            content.appendChild(pre);
+
+            // Live Highlighting with Debounce and Caret Restoration
+            let highlightTimeout;
+            const triggerHighlight = () => {
+                clearTimeout(highlightTimeout);
+                highlightTimeout = setTimeout(() => {
+                    const savedSelection = saveCaretPosition(codeEl);
+                    hljs.highlightElement(codeEl);
+                    restoreCaretPosition(codeEl, savedSelection);
+                }, 1000);
+            };
+
+            codeEl.addEventListener('input', triggerHighlight);
+
+            // Force Plain Text Paste and manage newlines
+            codeEl.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const text = e.clipboardData.getData('text/plain');
+                
+                // More robust text insertion for multi-line preservation
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+                
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                
+                // Create a text node for the whole block to ensure \n are handled by white-space: pre-wrap
+                const textNode = document.createTextNode(text);
+                range.insertNode(textNode);
+                
+                // Move selection to end of pasted text
+                range.setStartAfter(textNode);
+                range.setEndAfter(textNode);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                triggerHighlight();
+            });
+
+            // Tab key support
+            codeEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    document.execCommand('insertText', false, '    ');
+                }
+            });
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'img-resize-handle';
+            
+            const dragHandle = document.createElement('div');
+            dragHandle.className = 'img-drag-handle';
+            dragHandle.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/>
+                    <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+                    <circle cx="9" cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
+                </svg> DRAG`;
+
+            const actionsBar = document.createElement('div');
+            actionsBar.className = 'img-actions';
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'img-action-btn delete-btn';
+            deleteBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+            deleteBtn.onclick = () => { if(confirm('Remove code box?')) wrap.remove(); };
+            actionsBar.appendChild(deleteBtn);
+
+            wrap.appendChild(header);
+            wrap.appendChild(content);
+            wrap.appendChild(resizeHandle);
+            wrap.appendChild(dragHandle);
+            wrap.appendChild(actionsBar);
+            return wrap;
+        }
+
+        // Caret Helpers for Live Highlighting in contenteditable
+        function saveCaretPosition(el) {
+            const sel = window.getSelection();
+            if (sel.rangeCount === 0) return null;
+            const range = sel.getRangeAt(0);
+            const preSelectionRange = range.cloneRange();
+            preSelectionRange.selectNodeContents(el);
+            preSelectionRange.setEnd(range.startContainer, range.startOffset);
+            return preSelectionRange.toString().length;
+        }
+
+        function restoreCaretPosition(el, offset) {
+            if (offset === null) return;
+            const sel = window.getSelection();
+            const range = document.createRange();
+            let currentOffset = 0;
+            const nodeStack = [el];
+            let found = false;
+
+            while (nodeStack.length > 0 && !found) {
+                const node = nodeStack.pop();
+                if (node.nodeType === 3) {
+                    const nextOffset = currentOffset + node.length;
+                    if (offset >= currentOffset && offset <= nextOffset) {
+                        range.setStart(node, offset - currentOffset);
+                        range.setEnd(node, offset - currentOffset);
+                        found = true;
+                    }
+                    currentOffset = nextOffset;
+                } else {
+                    let i = node.childNodes.length;
+                    while (i--) nodeStack.push(node.childNodes[i]);
+                }
+            }
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+
+        window.copyCodeFromBtn = (btn) => {
+            const wrap = btn.closest('.code-box-wrap');
+            const code = wrap.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg> Copied!
+                `;
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        };
 
         dropZone.onclick = () => imageInput.click();
 
@@ -1248,13 +1635,16 @@
                 e.preventDefault();
                 isResizing = true;
                 startX = e.clientX;
-                startW = img.offsetWidth;
-
+                
+                // Determine if we are resizing an image or a code box
+                const targetEl = img ? img : figure;
+                startW = targetEl.offsetWidth;
+                
                 const onMove = (ev) => {
                     if (!isResizing) return;
                     const dx = ev.clientX - startX;
-                    const newW = Math.max(60, startW + dx);
-                    img.style.width = newW + 'px';
+                    const newW = Math.max(100, startW + dx);
+                    targetEl.style.width = newW + 'px';
                 };
                 const onUp = () => {
                     isResizing = false;
@@ -1341,6 +1731,29 @@
                 if (!fig.dataset.attached) {
                     fig.dataset.attached = '1';
                     attachFigureHandlers(fig);
+                }
+            });
+
+            // Handle code boxes
+            editorContent.querySelectorAll('.code-box-wrap').forEach(wrap => {
+                if (!wrap.querySelector('.img-drag-handle')) {
+                    // Re-inject UI if missing (e.g. legacy load)
+                    // ... actually the logic below handles removal of UI before save
+                    // so we need to rebuild the header and UI on load if they were stripped
+                }
+                
+                // For now, if it was saved as clean HTML, we might need a more robust rebuild
+                // but since we save with the header, we just need to reattach handlers
+                const copyBtn = wrap.querySelector('.code-copy-btn');
+                if (copyBtn) {
+                    copyBtn.onclick = () => window.copyCodeFromBtn(copyBtn);
+                }
+                
+                if (!wrap.dataset.attached) {
+                    wrap.dataset.attached = '1';
+                    attachFigureHandlers(wrap);
+                    // Re-highlight
+                    hljs.highlightElement(wrap.querySelector('code'));
                 }
             });
         }
@@ -1676,15 +2089,22 @@
             // 2. Remove ANY leftover button text that might have been injected/translated
             tempDiv.querySelectorAll('.img-action-btn').forEach(btn => btn.remove());
             
-            // 3. Clean figure attributes
-            tempDiv.querySelectorAll('.editor-img-wrap').forEach(fig => {
+            // 3. Clean wrap attributes and their editable children
+            tempDiv.querySelectorAll('.editor-img-wrap, .code-box-wrap').forEach(fig => {
                 fig.removeAttribute('contenteditable');
                 fig.removeAttribute('draggable');
                 fig.removeAttribute('data-attached');
-                // If by any chance there's text outside the img/handles now (due to range.extract mismatch)
-                // we clean it up
+                
+                // Deep clean children
+                fig.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+                fig.querySelectorAll('[spellcheck]').forEach(el => el.removeAttribute('spellcheck'));
+                
+                // Remove buttons and handles specifically
+                fig.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions, .code-copy-btn-wrap').forEach(el => el.remove());
+                
+                // Clean stray text in figure/wrap (except for the code content itself)
                 Array.from(fig.childNodes).forEach(node => {
-                    if (node.nodeType === 3) node.remove(); // Remove stray text in figure
+                    if (node.nodeType === 3 && !fig.classList.contains('code-box-wrap')) node.remove(); 
                 });
             });
 

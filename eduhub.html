@@ -14,15 +14,16 @@
 
     <style>
         :root {
-            --bg-dark: #0f172a;
+            --bg-dark: #020617; /* Deeper navy */
+            --sidebar-bg: rgba(15, 23, 42, 0.6);
             --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent-primary: #4f46e5;
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --accent-primary: #6366f1;
             --accent-secondary: #818cf8;
-            --accent-success: #10b981;
+            --accent-glow: rgba(99, 102, 241, 0.2);
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --sidebar-width: 300px;
+            --text-muted: #64748b;
+            --sidebar-width: 320px;
         }
 
         * {
@@ -33,11 +34,11 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
             background: var(--bg-dark);
             background-image:
-                radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.12) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.05) 0%, transparent 40%);
             color: var(--text-main);
             height: 100vh;
             display: flex;
@@ -48,9 +49,9 @@
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
@@ -60,106 +61,121 @@
         }
 
         .sidebar-header {
-            padding: 32px 24px;
-            border-bottom: 1px solid var(--glass-border);
+            padding: 40px 24px 24px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 14px;
+            margin-bottom: 32px;
         }
 
         .brand-logo {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 8px 16px -4px var(--accent-glow);
         }
 
         .brand-name {
             font-family: 'Poppins', sans-serif;
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
             background: linear-gradient(to right, #fff, #94a3b8);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        .switcher-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
         .semester-switcher {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 12px 16px;
+            border-radius: 14px;
+            padding: 10px 16px;
             color: var(--text-main);
             font-family: inherit;
-            font-weight: 500;
+            font-size: 0.85rem;
+            font-weight: 600;
             cursor: pointer;
             outline: none;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-size: 16px;
+            background-size: 14px;
+        }
+
+        .semester-switcher:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .semester-switcher:focus {
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            background-color: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
         .sidebar-menu {
             flex: 1;
             overflow-y: auto;
-            padding: 24px 12px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+            padding: 16px 12px 40px;
         }
 
         .sidebar-menu::-webkit-scrollbar {
-            width: 4px;
+            width: 5px;
         }
 
         .sidebar-menu::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
         }
 
         /* --- Accordion Menu --- */
         .accordion-item {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .accordion-header {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 16px;
             background: transparent;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 500;
+            font-size: 0.9rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .accordion-header:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             color: var(--text-main);
+            transform: translateX(4px);
         }
 
         .accordion-item.active .accordion-header {
-            background: rgba(79, 70, 229, 0.1);
+            background: rgba(99, 102, 241, 0.08);
             color: var(--accent-secondary);
         }
 
@@ -169,44 +185,68 @@
             gap: 12px;
         }
 
+        .module-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .accordion-item.active .module-icon {
+            color: var(--accent-secondary);
+        }
+
         .chevron {
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 14px;
+            opacity: 0.6;
         }
 
         .accordion-item.active .chevron {
             transform: rotate(180deg);
+            opacity: 1;
         }
 
         .accordion-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            padding-left: 44px;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-left: 42px;
+            border-left: 1px solid rgba(255, 255, 255, 0.04);
+            margin-left: 25px;
         }
 
         .accordion-item.active .accordion-content {
-            max-height: 200px; /* Adjust as needed */
+            max-height: 800px; 
+            margin-top: 4px;
+            margin-bottom: 12px;
         }
 
         .resource-link {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 0;
+            padding: 10px 12px;
+            margin: 2px 0;
+            border-radius: 10px;
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.825rem;
+            font-weight: 500;
             transition: all 0.2s;
             cursor: pointer;
         }
 
         .resource-link:hover {
+            background: rgba(255, 255, 255, 0.03);
             color: var(--text-main);
+            padding-left: 16px;
         }
 
         .resource-link i {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
         }
 
         /* --- Main Content Styling --- */
@@ -216,6 +256,7 @@
             flex-direction: column;
             overflow: hidden;
             position: relative;
+            background: #000;
         }
 
         .viewer-container {
@@ -327,24 +368,24 @@
         <div class="sidebar-header">
             <div class="brand">
                 <div class="brand-logo">
-                    <i data-lucide="graduation-cap" style="color: white; width: 20px;"></i>
+                    <i data-lucide="zap" style="color: white; width: 18px; fill: white;"></i>
                 </div>
                 <span class="brand-name">EduHub</span>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <select class="semester-switcher" id="yearSwitcher" style="flex: 1; padding: 8px; font-size: 0.8rem;">
+            <div class="switcher-grid">
+                <select class="semester-switcher" id="yearSwitcher">
                     <option value="1">Year 1</option>
                     <option value="2">Year 2</option>
                     <option value="3">Year 3</option>
                     <option value="4" selected>Year 4</option>
                 </select>
-                <select class="semester-switcher" id="semesterSwitcher" style="flex: 1; padding: 8px; font-size: 0.8rem;">
+                <select class="semester-switcher" id="semesterSwitcher">
                     <option value="1">Sem 1</option>
                     <option value="2">Sem 2</option>
                 </select>
             </div>
-            <select class="semester-switcher" id="subjectSwitcher" style="width: 100%;">
+            <select class="semester-switcher" id="subjectSwitcher" style="width: 100%; border-radius: 12px; margin-top: 4px;">
                 <option value="">Select a subject...</option>
             </select>
         </div>
@@ -488,10 +529,10 @@
             const moduleTitle = modData.tittle || modData.title || modData.name || modData.id;
             header.innerHTML = `
                 <div class="subject-info">
-                    <i data-lucide="folder-open" style="width: 18px; color: var(--accent-secondary);"></i>
+                    <i data-lucide="folder" class="module-icon"></i>
                     <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;">${moduleTitle}</span>
                 </div>
-                <i data-lucide="chevron-down" class="chevron" style="width: 16px;"></i>
+                <i data-lucide="chevron-down" class="chevron"></i>
             `;
             
             const content = document.createElement('div');

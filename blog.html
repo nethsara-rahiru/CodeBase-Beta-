@@ -7,6 +7,9 @@
     <title>View Blog | CodeBase</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -141,11 +144,88 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
-        /* Hide all editor-only image controls in the viewer */
+        /* Hide all editor-only handles in the viewer */
         .blog-content .img-drag-handle,
         .blog-content .img-resize-handle,
         .blog-content .img-actions {
             display: none !important;
+        }
+
+        /* --- Code Box Component Viewer Styles --- */
+        .code-box-wrap {
+            display: block;
+            position: relative;
+            margin: 32px 0;
+            background: linear-gradient(145deg, #1e1e2e 0%, #161621 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: 0 12px 40px -10px rgba(0,0,0,0.7);
+        }
+        .code-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+        }
+        .code-lang-select {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            pointer-events: none; /* Viewers can't change it */
+            appearance: none;
+        }
+        .code-copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .code-copy-btn.copied {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        .code-box-content {
+            padding: 24px;
+            padding-left: 20px;
+            overflow-x: auto;
+            background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.03), transparent 200px);
+        }
+        .code-box-content pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            tab-size: 4;
+            white-space: pre-wrap !important;
+        }
+        .code-box-content code {
+            display: block;
+            white-space: pre-wrap !important;
+            overflow-wrap: anywhere !important;
         }
 
         /* Tool Buttons */
@@ -424,7 +504,15 @@
                 clone.innerHTML = originalBlogHtml;
 
                 const textNodes = [];
-                const walk = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, null, false);
+                const walk = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function(node) {
+                        // Skip if node is inside a code box
+                        if (node.parentElement.closest('.code-box-wrap')) {
+                            return NodeFilter.FILTER_REJECT;
+                        }
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                }, false);
                 let node;
                 while(node = walk.nextNode()) {
                     if (node.textContent.trim().length > 0) {
@@ -463,6 +551,9 @@
                 }
                 
                 contentDiv.innerHTML = clone.innerHTML;
+                
+                // Re-highlight codes after injection
+                contentDiv.querySelectorAll('code').forEach(el => hljs.highlightElement(el));
             } catch (e) {
                 console.error("Translation fail", e);
                 alert("Translation failed. Please try again later.");
@@ -521,6 +612,9 @@
 
                     loaderArea.style.display = "none";
                     displayArea.style.display = "block";
+                    
+                    // Highlight all code blocks
+                    document.querySelectorAll('#blogContent code').forEach(el => hljs.highlightElement(el));
                 } else {
                     loaderArea.innerHTML = "<p>Blog not found.</p>";
                 }
@@ -556,8 +650,8 @@
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = document.getElementById("blogContent").innerHTML;
             
-            // Sanitization: Remove hidden editor UI
-            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions').forEach(el => el.remove());
+            // Sanitization: Remove hidden editor UI and code boxes (code sounds bad in TTS)
+            tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions, .code-box-wrap').forEach(el => el.remove());
 
             // Robust text extraction with forced newlines for blocks
             let text = "";
@@ -687,6 +781,25 @@
             const charDelay = 85;
             setTimeout(() => { ttsIndex++; speakNextChunk(); }, item.text.length * charDelay + 1000);
         }
+
+        // Global Copy Function for the code box
+        window.copyCodeFromBtn = (btn) => {
+            const wrap = btn.closest('.code-box-wrap');
+            const code = wrap.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg> Copied!
+                `;
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        };
     </script>
 </body>
 
