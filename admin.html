@@ -904,6 +904,7 @@
       width: 100%;
       height: 300px;
     }
+
     .clickable-row {
       cursor: pointer;
       transition: background 0.2s;
@@ -971,7 +972,8 @@
       <div class="nav-item" data-tab="landing">Landing Page</div>
       <div class="nav-item" data-tab="courses">Courses</div>
       <div class="nav-item" data-tab="organizations">Organizations</div>
-      <div class="nav-item" data-tab="universitys">Universitys</div>
+      <div class="nav-item" data-tab="universitys">Universities</div>
+      <div class="nav-item" data-tab="batch">Batch</div>
       <div class="nav-item" data-tab="staff">Staff Management</div>
       <div class="nav-item" data-tab="users">Users</div>
       <div class="nav-item" data-tab="allowed-emails">Allowed Emails</div>
@@ -996,15 +998,20 @@
     <!-- Tab 1: Dashboard Stats -->
     <div class="tab-content active" id="dashboardTab">
       <div class="stats-grid">
-        <div class="stat-card"><span class="stat-val" id="statUsers">0</span><span class="stat-label">Total Users</span></div>
-        <div class="stat-card"><span class="stat-val" id="statTodayTraffic">0</span><span class="stat-label">Traffic Today</span></div>
-        <div class="stat-card"><span class="stat-val" id="statActiveBatch">-</span><span class="stat-label">Top Batch</span></div>
-        <div class="stat-card"><span class="stat-val" id="statCourses">0</span><span class="stat-label">Courses</span></div>
-        <div class="stat-card"><span class="stat-val" id="statOrgs">0</span><span class="stat-label">Organizations</span></div>
+        <div class="stat-card"><span class="stat-val" id="statUsers">0</span><span class="stat-label">Total Users</span>
+        </div>
+        <div class="stat-card"><span class="stat-val" id="statTodayTraffic">0</span><span class="stat-label">Traffic
+            Today</span></div>
+        <div class="stat-card"><span class="stat-val" id="statActiveBatch">-</span><span class="stat-label">Top
+            Batch</span></div>
+        <div class="stat-card"><span class="stat-val" id="statCourses">0</span><span class="stat-label">Courses</span>
+        </div>
+        <div class="stat-card"><span class="stat-val" id="statOrgs">0</span><span
+            class="stat-label">Organizations</span></div>
       </div>
 
       <div class="chart-container">
-          <canvas id="trafficChart"></canvas>
+        <canvas id="trafficChart"></canvas>
       </div>
 
       <div class="admin-card" style="margin-top: 24px;">
@@ -1022,7 +1029,9 @@
               </tr>
             </thead>
             <tbody id="recentLoginsTableBody">
-              <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading activity...</td></tr>
+              <tr>
+                <td colspan="3" style="text-align:center; color:var(--text-muted);">Loading activity...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1195,8 +1204,9 @@
 
     <!-- Tab: Universitys -->
     <div class="tab-content" id="universitysTab">
-      <div class="grid-container" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; align-items: start;">
-        
+      <div class="grid-container"
+        style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; align-items: start;">
+
         <!-- Left: Universities List -->
         <div class="admin-card">
           <div class="section-header">
@@ -1229,7 +1239,8 @@
         </div>
 
         <!-- Right: Streams Management (Conditional) -->
-        <div id="streamsSection" class="admin-card" style="display: none; opacity: 0; transform: translateY(10px); transition: all 0.3s ease;">
+        <div id="streamsSection" class="admin-card"
+          style="display: none; opacity: 0; transform: translateY(10px); transition: all 0.3s ease;">
           <div class="section-header">
             <h2 id="selectedUniTitle">Streams</h2>
             <p style="font-size: 0.8rem; color: var(--text-muted);">Define department streams for this campus</p>
@@ -1257,15 +1268,19 @@
                 </tr>
               </thead>
               <tbody id="uniStreamsTableBody">
-                <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading streams...</td></tr>
+                <tr>
+                  <td colspan="3" style="text-align:center; color:var(--text-muted);">Loading streams...</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
 
         <!-- Placeholder when no uni selected -->
-        <div id="uniPlaceholder" class="admin-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 400px; border-style: dashed; opacity: 0.6;">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <div id="uniPlaceholder" class="admin-card"
+          style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 400px; border-style: dashed; opacity: 0.6;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 10v6M2 10v6M12 4L2 10l10 6 10-6-10-6z"></path>
             <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
           </svg>
@@ -1387,6 +1402,72 @@
       </div>
     </div>
 
+    <div class="tab-content" id="batchTab">
+      <div class="admin-card">
+        <div class="section-header">
+          <h2>Batch Representative Hub</h2>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Manage academic resources for specific batches</p>
+        </div>
+
+        <div class="grid-form" style="margin-bottom: 30px;">
+          <div class="form-group">
+            <label>University</label>
+            <select id="batchUniSelector" class="filter-select" onchange="loadStreamsForBatchTab()"></select>
+          </div>
+          <div class="form-group">
+            <label>Stream / Course</label>
+            <select id="batchStreamSelector" class="filter-select" onchange="loadBatchResources()"></select>
+          </div>
+          <div class="form-group">
+            <label>Batch</label>
+            <select id="batchSelector" class="filter-select" onchange="loadBatchResources()">
+              <option value="20">Batch 20 (Third Year)</option>
+              <option value="21">Batch 21 (Second Year)</option>
+              <option value="22">Batch 22 (First Year)</option>
+              <option value="23">Batch 23</option>
+              <option value="19">Batch 19 (Fourth Year)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-form">
+          <!-- Timetable Section -->
+          <div class="admin-card" style="background: rgba(255,255,255,0.02); padding: 24px;">
+            <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--accent-primary);">Timetable Management</h3>
+            <div class="form-group">
+              <label>Upload Timetable (Image/PDF)</label>
+              <input type="file" id="batchTimetableInput" accept="image/*,application/pdf">
+              <div id="timetablePreview" class="preview-box" style="height: 150px; margin-top: 10px;">
+                <span id="timetableStatus" style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button class="action-btn" id="updateTimetableBtn" style="flex: 1;">Update Timetable</button>
+              <a id="downloadTimetableLink" href="#" target="_blank" class="btn-dashboard"
+                style="margin-top: 0; padding: 10px; display: none; text-align: center; justify-content: center; font-size: 0.8rem;">Download</a>
+            </div>
+          </div>
+
+          <!-- Attendance Section -->
+          <div class="admin-card" style="background: rgba(255,255,255,0.02); padding: 24px;">
+            <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--accent-secondary);">Attendance Management
+            </h3>
+            <div class="form-group">
+              <label>Attendance Sheet Link (e.g. Google Sheets)</label>
+              <input type="url" id="attendanceLinkInput" placeholder="https://docs.google.com/spreadsheets/...">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button class="action-btn" id="updateAttendanceBtn"
+                style="flex: 1; background: var(--accent-secondary);">Update Link</button>
+              <a id="viewAttendanceBtn" href="#" target="_blank" class="btn-dashboard"
+                style="margin-top: 0; padding: 10px; display: none; text-align: center; justify-content: center; border-color: var(--accent-secondary); color: var(--accent-secondary); font-size: 0.8rem;">View
+                Sheet</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Role Modal -->
     <div id="roleModal" class="modal">
       <div class="modal-content">
@@ -1420,6 +1501,10 @@
           <div class="permission-item">
             <span>Manage Staff & Roles</span>
             <label class="switch"><input type="checkbox" id="roleStaff"><span class="slider"></span></label>
+          </div>
+          <div class="permission-item">
+            <span>Manage Batch Resources</span>
+            <label class="switch"><input type="checkbox" id="roleBatch"><span class="slider"></span></label>
           </div>
           <div class="permission-item">
             <span>Destructive Actions</span>
@@ -1617,7 +1702,7 @@
 
       // Ensure permissions are loaded BEFORE triggering initial tab load
       await enforcePermissions(userData);
-      
+
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
       if (tabParam) {
@@ -1644,6 +1729,7 @@
       if (tab === "allowed-emails") loadAllowedEmails();
       if (tab === "community") loadCommunityResources();
       if (tab === "universitys") loadUniversitys();
+      if (tab === "batch") loadBatchUniData();
     }
 
     async function loadSystemSettings() {
@@ -1697,6 +1783,7 @@
         "allowed-emails": perms.canManageUsers,
         universitys: perms.canManageUsers || userData.role === "owner",
         staff: perms.canManageStaff || userData.role === "owner",
+        batch: perms.canManageBatch || userData.role === "owner",
         community: true
       };
 
@@ -1729,13 +1816,13 @@
       // Modern Performance Tracking
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
+
       const qActivity = query(collection(db, "activity"), where("timestamp", ">=", sevenDaysAgo));
       const activitySnap = await getDocs(qActivity);
-      
-      const logs = activitySnap.docs.map(d => ({...d.data(), date: d.data().timestamp?.toDate()}));
+
+      const logs = activitySnap.docs.map(d => ({ ...d.data(), date: d.data().timestamp?.toDate() }));
       const now = new Date();
-      now.setHours(0,0,0,0);
+      now.setHours(0, 0, 0, 0);
 
       // 1. Traffic Today
       const todayLogs = logs.filter(l => l.date >= now);
@@ -1744,106 +1831,106 @@
       // 2. Most Active Batch
       const batchCounts = {};
       logs.forEach(l => {
-          if (!l.regNo || l.regNo === "N/A") return;
-          // Extract year from UWU/CST/20/001 format
-          const parts = l.regNo.split('/');
-          if (parts.length >= 3) {
-              const batch = parts[2]; // assuming the format
-              batchCounts[batch] = (batchCounts[batch] || 0) + 1;
-          }
+        if (!l.regNo || l.regNo === "N/A") return;
+        // Extract year from UWU/CST/20/001 format
+        const parts = l.regNo.split('/');
+        if (parts.length >= 3) {
+          const batch = parts[2]; // assuming the format
+          batchCounts[batch] = (batchCounts[batch] || 0) + 1;
+        }
       });
       const topBatch = Object.keys(batchCounts).reduce((a, b) => batchCounts[a] > batchCounts[b] ? a : b, "-");
       document.getElementById("statActiveBatch").textContent = topBatch !== "-" ? `20${topBatch}` : "-";
 
       // 3. Traffic Graph (Last 7 Days)
       const graphData = {};
-      for(let i=6; i>=0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const key = d.toLocaleDateString('en-US', { weekday: 'short' });
-          graphData[key] = 0;
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toLocaleDateString('en-US', { weekday: 'short' });
+        graphData[key] = 0;
       }
 
       logs.forEach(l => {
-          if (!l.date) return;
-          const key = l.date.toLocaleDateString('en-US', { weekday: 'short' });
-          if (graphData[key] !== undefined) graphData[key]++;
+        if (!l.date) return;
+        const key = l.date.toLocaleDateString('en-US', { weekday: 'short' });
+        if (graphData[key] !== undefined) graphData[key]++;
       });
 
       renderTrafficChart(Object.keys(graphData), Object.values(graphData));
 
       // 4. Recent Logins Table
       const recentBody = document.getElementById("recentLoginsTableBody");
-      const qRecent = query(collection(db, "activity"), 
-          where("type", "==", "login"),
-          orderBy("timestamp", "desc"),
-          limit(10)
+      const qRecent = query(collection(db, "activity"),
+        where("type", "==", "login"),
+        orderBy("timestamp", "desc"),
+        limit(10)
       );
-      
+
       const recentSnap = await getDocs(qRecent);
       recentBody.innerHTML = "";
-      
+
       if (recentSnap.empty) {
-          recentBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No login activity recorded</td></tr>';
+        recentBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No login activity recorded</td></tr>';
       } else {
-          recentSnap.forEach(doc => {
-              const d = doc.data();
-              const time = d.timestamp?.toDate() ? d.timestamp.toDate().toLocaleString('en-US', { 
-                  month: 'short', day: 'numeric', 
-                  hour: '2-digit', minute: '2-digit' 
-              }) : '---';
-              
-              const row = document.createElement("tr");
-              row.innerHTML = `
+        recentSnap.forEach(doc => {
+          const d = doc.data();
+          const time = d.timestamp?.toDate() ? d.timestamp.toDate().toLocaleString('en-US', {
+            month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          }) : '---';
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
                   <td>${d.userName || d.name || 'Anonymous'}<br><small style="color:var(--text-muted);">${d.regNo || d.registrationNumber || ''}</small></td>
                   <td>${d.userEmail || d.email || '---'}</td>
                   <td style="font-size:0.8rem;">${time}</td>
               `;
-              recentBody.appendChild(row);
-          });
+          recentBody.appendChild(row);
+        });
       }
     }
 
     let trafficChartInstance = null;
     function renderTrafficChart(labels, values) {
-        const ctx = document.getElementById('trafficChart').getContext('2d');
-        if (trafficChartInstance) trafficChartInstance.destroy();
+      const ctx = document.getElementById('trafficChart').getContext('2d');
+      if (trafficChartInstance) trafficChartInstance.destroy();
 
-        trafficChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'System Traffic',
-                    data: values,
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#6366f1'
-                }]
+      trafficChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'System Traffic',
+            data: values,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#6366f1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8', font: { size: 10 } }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8', font: { size: 10 } }
-                    }
-                }
+            x: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', font: { size: 10 } }
             }
-        });
+          }
+        }
+      });
     }
 
     // LANDING
@@ -2062,7 +2149,7 @@
         const row = document.createElement("tr");
         row.className = "clickable-row";
         if (activeSelectedUniId === d.id) row.style.background = "rgba(99, 102, 241, 0.15)";
-        
+
         row.innerHTML = `
           <td>${d.id}</td>
           <td>${data.name}</td>
@@ -2073,49 +2160,49 @@
         row.onclick = () => selectUniversity(d.id, data.name);
         domainBody.appendChild(row);
       });
-      
+
       if (!activeSelectedUniId) {
-          document.getElementById("streamsSection").style.display = "none";
-          document.getElementById("uniPlaceholder").style.display = "flex";
+        document.getElementById("streamsSection").style.display = "none";
+        document.getElementById("uniPlaceholder").style.display = "flex";
       }
     }
 
     window.selectUniversity = async (id, name) => {
-        activeSelectedUniId = id;
-        document.getElementById("selectedUniTitle").textContent = `Streams for ${name}`;
-        
-        const section = document.getElementById("streamsSection");
-        const placeholder = document.getElementById("uniPlaceholder");
-        
-        placeholder.style.display = "none";
-        section.style.display = "block";
-        setTimeout(() => {
-            section.style.opacity = "1";
-            section.style.transform = "translateY(0)";
-        }, 10);
+      activeSelectedUniId = id;
+      document.getElementById("selectedUniTitle").textContent = `Streams for ${name}`;
 
-        loadUniversitys(); 
-        loadStreams(id);
+      const section = document.getElementById("streamsSection");
+      const placeholder = document.getElementById("uniPlaceholder");
+
+      placeholder.style.display = "none";
+      section.style.display = "block";
+      setTimeout(() => {
+        section.style.opacity = "1";
+        section.style.transform = "translateY(0)";
+      }, 10);
+
+      loadUniversitys();
+      loadStreams(id);
     };
 
     async function loadStreams(uniId) {
-        const streamBody = document.getElementById("uniStreamsTableBody");
-        streamBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading streams...</td></tr>';
-        
-        const snap = await getDocs(collection(db, "universities", uniId, "streams"));
-        streamBody.innerHTML = "";
-        
-        if (snap.empty) {
-            streamBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No streams defined for this university</td></tr>';
-            return;
-        }
+      const streamBody = document.getElementById("uniStreamsTableBody");
+      streamBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading streams...</td></tr>';
 
-        snap.forEach(d => {
-            const data = d.data();
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td><button class="btn-delete" onclick="deleteStream('${d.id}')">Delete</button></td>`;
-            streamBody.appendChild(row);
-        });
+      const snap = await getDocs(collection(db, "universities", uniId, "streams"));
+      streamBody.innerHTML = "";
+
+      if (snap.empty) {
+        streamBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No streams defined for this university</td></tr>';
+        return;
+      }
+
+      snap.forEach(d => {
+        const data = d.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${d.id}</td><td>${data.name}</td><td><button class="btn-delete" onclick="deleteStream('${d.id}')">Delete</button></td>`;
+        streamBody.appendChild(row);
+      });
     }
 
     document.getElementById("uniDomainForm").onsubmit = async (e) => {
@@ -2130,9 +2217,9 @@
     window.deleteUniversity = async (id) => {
       if (!currentAdminPerms.isOwner) return alert("Only the owner can delete universities.");
       if (confirm("Delete university domain access? All its streams will also be effectively lost.")) {
-          await deleteDoc(doc(db, "universities", id));
-          if (activeSelectedUniId === id) activeSelectedUniId = null;
-          loadUniversitys();
+        await deleteDoc(doc(db, "universities", id));
+        if (activeSelectedUniId === id) activeSelectedUniId = null;
+        loadUniversitys();
       }
     };
 
@@ -2149,9 +2236,9 @@
     window.deleteStream = async (id) => {
       if (!activeSelectedUniId) return;
       if (!currentAdminPerms.isOwner) return alert("Only the owner can delete streams.");
-      if (confirm("Delete this academic stream for this university?")) { 
-          await deleteDoc(doc(db, "universities", activeSelectedUniId, "streams", id)); 
-          loadStreams(activeSelectedUniId); 
+      if (confirm("Delete this academic stream for this university?")) {
+        await deleteDoc(doc(db, "universities", activeSelectedUniId, "streams", id));
+        loadStreams(activeSelectedUniId);
       }
     };
 
@@ -2244,6 +2331,7 @@
         document.getElementById("roleCourses").checked = p.canManageCourses;
         document.getElementById("roleUsers").checked = p.canManageUsers;
         document.getElementById("roleStaff").checked = p.canManageStaff;
+        document.getElementById("roleBatch").checked = p.canManageBatch;
         document.getElementById("roleDelete").checked = p.canManageDelete;
         document.getElementById("roleAllowedCourses").value = (p.allowedCourses || []).join(', ');
         document.getElementById("roleAllowedOrgs").value = (p.allowedOrgs || []).join(', ');
@@ -2256,6 +2344,7 @@
         document.getElementById("roleCourses").checked = false;
         document.getElementById("roleUsers").checked = false;
         document.getElementById("roleStaff").checked = false;
+        document.getElementById("roleBatch").checked = false;
         document.getElementById("roleDelete").checked = false;
         document.getElementById("roleAllowedCourses").value = "";
         document.getElementById("roleAllowedOrgs").value = "";
@@ -2292,6 +2381,7 @@
         canManageCourses: document.getElementById("roleCourses").checked,
         canManageUsers: document.getElementById("roleUsers").checked,
         canManageStaff: document.getElementById("roleStaff").checked,
+        canManageBatch: document.getElementById("roleBatch").checked,
         canManageDelete: document.getElementById("roleDelete").checked,
         allowedYears: selectedRoleYears,
         allowedCourses: document.getElementById("roleAllowedCourses").value.split(',').map(s => s.trim()).filter(s => s),
@@ -2426,22 +2516,22 @@
       // Fetch last login from activity collection
       let lastLoginStr = "Never";
       try {
-          const qLogin = query(collection(db, "activity"), 
-              where("regNo", "==", user.registrationNumber),
-              where("type", "==", "login"),
-              orderBy("timestamp", "desc"),
-              limit(1)
-          );
-          const loginSnap = await getDocs(qLogin);
-          if (!loginSnap.empty) {
-              const loginDoc = loginSnap.docs[0].data();
-              if (loginDoc.timestamp?.toDate()) {
-                  lastLoginStr = loginDoc.timestamp.toDate().toLocaleString('en-US', {
-                      weekday: 'short', month: 'short', day: 'numeric', 
-                      hour: '2-digit', minute: '2-digit'
-                  });
-              }
+        const qLogin = query(collection(db, "activity"),
+          where("regNo", "==", user.registrationNumber),
+          where("type", "==", "login"),
+          orderBy("timestamp", "desc"),
+          limit(1)
+        );
+        const loginSnap = await getDocs(qLogin);
+        if (!loginSnap.empty) {
+          const loginDoc = loginSnap.docs[0].data();
+          if (loginDoc.timestamp?.toDate()) {
+            lastLoginStr = loginDoc.timestamp.toDate().toLocaleString('en-US', {
+              weekday: 'short', month: 'short', day: 'numeric',
+              hour: '2-digit', minute: '2-digit'
+            });
           }
+        }
       } catch (err) { console.error("Error fetching activity:", err); }
 
       const systemRole = user.role || "student";
@@ -2454,15 +2544,15 @@
       let streamFullName = user.stream || "---";
 
       if (user.universityId) {
-          try {
-              const uSnap = await getDoc(doc(db, "universities", user.universityId.toLowerCase()));
-              if (uSnap.exists()) uniFullName = uSnap.data().name;
-              
-              if (user.stream) {
-                  const sSnap = await getDoc(doc(db, "universities", user.universityId.toLowerCase(), "streams", user.stream.toUpperCase()));
-                  if (sSnap.exists()) streamFullName = sSnap.data().name;
-              }
-          } catch (e) { console.error("Error resolving names:", e); }
+        try {
+          const uSnap = await getDoc(doc(db, "universities", user.universityId.toLowerCase()));
+          if (uSnap.exists()) uniFullName = uSnap.data().name;
+
+          if (user.stream) {
+            const sSnap = await getDoc(doc(db, "universities", user.universityId.toLowerCase(), "streams", user.stream.toUpperCase()));
+            if (sSnap.exists()) streamFullName = sSnap.data().name;
+          }
+        } catch (e) { console.error("Error resolving names:", e); }
       }
 
       body.innerHTML = `
@@ -2859,6 +2949,157 @@
         alert("Failed to pin resource: " + e.message);
       } finally {
         btn.disabled = false; btn.textContent = "Pin Resource";
+      }
+    };
+
+    // BATCH MANAGEMENT
+    window.loadBatchResources = async () => {
+      const uni = document.getElementById("batchUniSelector").value;
+      const stream = document.getElementById("batchStreamSelector").value;
+      const batch = document.getElementById("batchSelector").value;
+      
+      if (!uni || !stream || !batch) return;
+      
+      const docId = `${uni}_${stream}_${batch}`;
+      const snap = await getDoc(doc(db, "batch_resources", docId));
+      
+      const timetableStatus = document.getElementById("timetableStatus");
+      const downloadBtn = document.getElementById("downloadTimetableLink");
+      const attendanceInput = document.getElementById("attendanceLinkInput");
+      const viewAttendanceBtn = document.getElementById("viewAttendanceBtn");
+      const previewBox = document.getElementById("timetablePreview");
+
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.timetableUrl) {
+          timetableStatus.textContent = "Current timetable is active";
+          downloadBtn.href = data.timetableUrl;
+          downloadBtn.style.display = "flex";
+          
+          if (data.timetableUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+            previewBox.innerHTML = `<img src="${data.timetableUrl}" alt="Timetable" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+          } else {
+            previewBox.innerHTML = `<span style="color:var(--accent-primary); font-weight:600;">PDF Document</span>`;
+          }
+        } else {
+          timetableStatus.textContent = "No timetable uploaded";
+          downloadBtn.style.display = "none";
+          previewBox.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>`;
+        }
+
+        attendanceInput.value = data.attendanceUrl || "";
+        if (data.attendanceUrl) {
+          viewAttendanceBtn.href = data.attendanceUrl;
+          viewAttendanceBtn.style.display = "flex";
+        } else {
+          viewAttendanceBtn.style.display = "none";
+        }
+      } else {
+        timetableStatus.textContent = "No data for this selection";
+        downloadBtn.style.display = "none";
+        attendanceInput.value = "";
+        viewAttendanceBtn.style.display = "none";
+        previewBox.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>`;
+      }
+    };
+
+    window.loadBatchUniData = async () => {
+      const uniSelect = document.getElementById("batchUniSelector");
+      const snap = await getDocs(collection(db, "universities"));
+      uniSelect.innerHTML = "";
+      if (snap.empty) {
+        uniSelect.innerHTML = "<option value=''>No Universities</option>";
+        return;
+      }
+      snap.forEach(d => {
+        uniSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+      });
+      loadStreamsForBatchTab();
+    };
+
+    window.loadStreamsForBatchTab = async () => {
+      const uniId = document.getElementById("batchUniSelector").value;
+      const streamSelect = document.getElementById("batchStreamSelector");
+      if (!uniId) {
+        streamSelect.innerHTML = "<option value=''>Select University First</option>";
+        return;
+      }
+      const snap = await getDocs(collection(db, "universities", uniId, "streams"));
+      streamSelect.innerHTML = "";
+      if (snap.empty) {
+        streamSelect.innerHTML = "<option value=''>No Streams</option>";
+      } else {
+        snap.forEach(d => {
+          streamSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+        });
+      }
+      loadBatchResources();
+    };
+
+    document.getElementById("updateTimetableBtn").onclick = async () => {
+      const file = document.getElementById("batchTimetableInput").files[0];
+      const uni = document.getElementById("batchUniSelector").value;
+      const stream = document.getElementById("batchStreamSelector").value;
+      const batch = document.getElementById("batchSelector").value;
+      const btn = document.getElementById("updateTimetableBtn");
+
+      if (!file) return alert("Please select a file first");
+      if (!uni || !stream || !batch) return alert("Selection incomplete");
+      
+      const docId = `${uni}_${stream}_${batch}`;
+      btn.disabled = true;
+      btn.textContent = "Uploading...";
+
+      try {
+        const url = await uploadToCloudinary(file, `batch/${docId}`);
+        await setDoc(doc(db, "batch_resources", docId), {
+          timetableUrl: url,
+          updatedAt: new Date(),
+          uniId: uni,
+          streamId: stream,
+          batch: batch
+        }, { merge: true });
+        
+        alert("Timetable updated successfully!");
+        loadBatchResources();
+      } catch (err) {
+        alert("Update failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Update Timetable";
+      }
+    };
+
+    document.getElementById("updateAttendanceBtn").onclick = async () => {
+      const url = document.getElementById("attendanceLinkInput").value.trim();
+      const uni = document.getElementById("batchUniSelector").value;
+      const stream = document.getElementById("batchStreamSelector").value;
+      const batch = document.getElementById("batchSelector").value;
+      const btn = document.getElementById("updateAttendanceBtn");
+
+      if (!url) return alert("Please enter a URL");
+      if (!uni || !stream || !batch) return alert("Selection incomplete");
+
+      const docId = `${uni}_${stream}_${batch}`;
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        await setDoc(doc(db, "batch_resources", docId), {
+          attendanceUrl: url,
+          updatedAt: new Date(),
+          uniId: uni,
+          streamId: stream,
+          batch: batch
+        }, { merge: true });
+        
+        alert("Attendance link updated!");
+        loadBatchResources();
+      } catch (err) {
+        alert("Update failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Update Link";
       }
     };
 

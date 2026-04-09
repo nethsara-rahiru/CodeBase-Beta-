@@ -1297,7 +1297,7 @@
           <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"></path>
           <circle cx="12" cy="12" r="10"></circle>
         </svg>
-        My GPA
+        Academic
       </div>
       <a href="about.html" class="nav-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1441,6 +1441,32 @@
           <div class="gpa-val" id="gpaScore">0.00</div>
           <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500;" id="gpaStatus">Start adding your results!</p>
         </div>
+
+        <!-- Attendance Section -->
+        <section class="org-section" id="attendanceSection" style="margin-top: 10px; display: none;">
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Live Students Attendance</h3>
+          <div class="results-table-wrap" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+            <div id="attendanceLoader" style="text-align: center; padding: 20px;">
+              <div class="loading-spinner" style="margin: 0 auto; width: 30px; height: 30px; border-top-color: var(--accent-success);"></div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Syncing with academic registry...</p>
+            </div>
+            <table class="results-table" id="attendanceTable" style="display: none;">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Code</th>
+                  <th>Course Name</th>
+                  <th style="width: 100px;">Attendance</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+            <div id="attendanceError" style="display: none; text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem;">
+              No active attendance data found for your batch.
+            </div>
+          </div>
+        </section>
 
         <!-- Results Table -->
         <section class="org-section">
@@ -1797,6 +1823,200 @@
       calculateGPA();
     };
 
+    window.loadAttendance = async (userData) => {
+      console.log("Attendance: Initializing fetch for", userData.registrationNumber);
+      const attendanceSection = document.getElementById("attendanceSection");
+      const table = document.getElementById("attendanceTable");
+      const tbody = document.getElementById("attendanceTableBody");
+      const loader = document.getElementById("attendanceLoader");
+      const errorDiv = document.getElementById("attendanceError");
+
+      if (!userData.universityId || !userData.stream || !userData.registrationNumber) {
+        console.warn("Attendance: Missing user metadata");
+        return;
+      }
+
+      attendanceSection.style.display = "block";
+      const parts = userData.registrationNumber.split("/");
+      
+      // Determine Batch Year
+      let batch = "";
+      if (parts.length >= 1 && parts[0].length === 4 && !isNaN(parts[0])) {
+        // Format: 2022/ICT/001 -> Take last 2 digits for "22"
+        batch = parts[0].substring(2);
+      } else if (parts.length >= 3) {
+        // Format: UWU/CST/22/001 -> Take "22"
+        batch = parts[2];
+      }
+      
+      if (!batch) {
+        console.error("Attendance: Could not determine batch from", userData.registrationNumber);
+        return;
+      }
+
+      const docId = `${userData.universityId.toLowerCase()}_${userData.stream.toUpperCase()}_${batch}`;
+      console.log("Attendance: Looking for resources under", docId);
+
+      try {
+        const snap = await getDoc(doc(db, "batch_resources", docId));
+        if (!snap.exists() || !snap.data().attendanceUrl) {
+          loader.style.display = "none";
+          errorDiv.innerHTML = `No attendance registry linked for <b>${docId}</b>.<br><small style="display:block; margin-top:5px; opacity:0.6;">(Admins must set this in the Batch tab)</small>`;
+          errorDiv.style.display = "block";
+          return;
+        }
+
+        let url = snap.data().attendanceUrl;
+        if (url.includes("/pubhtml")) {
+          url = url.replace("/pubhtml", "/pub") + (url.includes("?") ? "&" : "?") + "output=csv";
+        } else if (url.includes("/edit")) {
+          url = url.split("/edit")[0] + "/export?format=csv";
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Connection failed");
+        const csvText = await res.text();
+        
+        const parseCSV = (text) => {
+          const rows = [];
+          let row = [];
+          let col = "";
+          let inQuotes = false;
+          for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const next = text[i+1];
+            if (char === '"' && inQuotes && next === '"') { col += '"'; i++; }
+            else if (char === '"') { inQuotes = !inQuotes; }
+            else if (char === ',' && !inQuotes) { row.push(col.trim()); col = ""; }
+            else if ((char === '\r' || char === '\n') && !inQuotes) {
+              row.push(col.trim()); col = "";
+              rows.push(row);
+              row = [];
+              if (char === '\r' && next === '\n') i++;
+            } else { col += char; }
+          }
+          if (col || row.length > 0) { row.push(col.trim()); rows.push(row); }
+          return rows;
+        };
+
+        const rows = parseCSV(csvText);
+        const studentReg = userData.registrationNumber.toUpperCase();
+        
+        let studentRowIdx = -1;
+        for (let i = 0; i < rows.length; i++) {
+          if (rows[i].some(cell => cell.toUpperCase() === studentReg)) {
+            studentRowIdx = i;
+            break;
+          }
+        }
+
+        if (studentRowIdx === -1) {
+          loader.style.display = "none";
+          errorDiv.innerHTML = `Record for <b>${studentReg}</b> not found in the master sheet.`;
+          errorDiv.style.display = "block";
+          return;
+        }
+
+        // Find the nearest header row above the student row
+        let headers = [];
+        for (let i = studentRowIdx; i >= 0; i--) {
+          const looksLikeHeader = rows[i].some(cell => 
+            cell.toLowerCase().includes("reg. no") || 
+            cell.toLowerCase().includes("reg no")
+          );
+          if (looksLikeHeader) {
+            headers = rows[i];
+            break;
+          }
+        }
+
+        if (headers.length === 0) throw new Error("Header mapping not found");
+
+        const studentRow = rows[studentRowIdx];
+        tbody.innerHTML = "";
+        let foundAttendance = false;
+
+        headers.forEach((header, index) => {
+          const val = (studentRow[index] || "0%").trim();
+          // Match subject codes (2-4 letters + 4 digits) anywhere in the header
+          const codeMatch = header.match(/([A-Z]{2,4}\d{4})/i);
+          if (codeMatch) {
+            foundAttendance = true;
+            const fullCode = header.trim().toUpperCase();
+            const baseCode = codeMatch[1].toUpperCase();
+            
+            // Robust Resolution Name from allCoursesSnap
+            let courseName = "Unknown Subject";
+            if (allCoursesSnap) {
+                // Try exact match first
+                let cDoc = allCoursesSnap.docs.find(d => d.id.trim().toUpperCase() === baseCode);
+                
+                // Fallback: try if the header contains the ID or vice versa
+                if (!cDoc) {
+                    cDoc = allCoursesSnap.docs.find(d => 
+                        baseCode.includes(d.id.trim().toUpperCase()) || 
+                        d.id.trim().toUpperCase().includes(baseCode)
+                    );
+                }
+                
+                if (cDoc) courseName = cDoc.data().name;
+            }
+
+            // Strip existing (T), (P) or (Theory), (Practical) from DB name to avoid redundancy
+            courseName = courseName.replace(/\s*\([TP]\)\s*$/i, "")
+                                   .replace(/\s*\(Theory\)\s*$/i, "")
+                                   .replace(/\s*\(Practical\)\s*$/i, "")
+                                   .trim();
+
+            // Append standardized ( T ) or ( P ) based on header content
+            if (fullCode.includes("(T)")) courseName += " ( T )";
+            else if (fullCode.includes("(P)")) courseName += " ( P )";
+
+            // Attendance Color Logic
+            const numVal = parseFloat(val.replace("%", ""));
+            let statusColor = "var(--text-main)";
+            let statusBg = "rgba(255,255,255,0.05)";
+            
+            if (isNaN(numVal) || numVal < 80) {
+              statusColor = "#ff4d4d"; // Bright Red
+              statusBg = "rgba(239, 68, 68, 0.1)";
+            } else if (numVal >= 90) {
+              statusColor = "#10b981"; // Emerald Green
+              statusBg = "rgba(16, 185, 129, 0.1)";
+            } else {
+              statusColor = "#f59e0b"; // Amber/Orange
+              statusBg = "rgba(245, 158, 11, 0.1)";
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td style="font-weight: 600; color: var(--accent-success);">${fullCode}</td>
+              <td style="font-size: 0.9rem; font-weight: 500;">${courseName}</td>
+              <td>
+                <span style="display:inline-block; padding: 4px 12px; border-radius: 8px; font-weight: 700; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusColor}40;">
+                  ${val}
+                </span>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
+
+        loader.style.display = "none";
+        if (foundAttendance) {
+          table.style.display = "table";
+        } else {
+          errorDiv.textContent = "Attendance data columns (Subject Codes) were not detected.";
+          errorDiv.style.display = "block";
+        }
+
+      } catch (err) {
+        loader.style.display = "none";
+        errorDiv.innerHTML = `Registry sync error: ${err.message}`;
+        errorDiv.style.display = "block";
+      }
+    };
+
     async function updateUserUI(data, userAuth) {
       const photo = data.photoUrl || userAuth.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}`;
       document.getElementById("userPhoto").src = photo;
@@ -2099,6 +2319,7 @@
         localStorage.setItem("userData", JSON.stringify({ ...data, email: user.email, photoUrl: data.photoUrl || user.photoURL }));
 
         renderCourses(coursesSnap, data.level, data.semester);
+        loadAttendance(data);
 
         const slides = slideSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderSlideshow(slides);
