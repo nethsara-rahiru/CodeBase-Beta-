@@ -1433,15 +1433,18 @@
         <div class="grid-form">
           <!-- Timetable Section -->
           <div class="admin-card" style="background: rgba(255,255,255,0.02); padding: 24px;">
-            <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--accent-primary);">Live Timetable Hub</h3>
+            <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--accent-primary);">Timetable Management</h3>
             <div class="form-group">
-              <label>Timetable Google Sheet Link</label>
-              <input type="url" id="timetableLinkInput" placeholder="https://docs.google.com/spreadsheets/...">
+              <label>Upload Timetable (Image/PDF)</label>
+              <input type="file" id="batchTimetableInput" accept="image/*,application/pdf">
+              <div id="timetablePreview" class="preview-box" style="height: 150px; margin-top: 10px;">
+                <span id="timetableStatus" style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>
+              </div>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-              <button class="action-btn" id="updateTimetableBtn" style="flex: 1;">Update Link</button>
-              <a id="viewTimetableBtn" href="#" target="_blank" class="btn-dashboard"
-                style="margin-top: 0; padding: 10px; display: none; text-align: center; justify-content: center; font-size: 0.8rem;">View Sheet</a>
+              <button class="action-btn" id="updateTimetableBtn" style="flex: 1;">Update Timetable</button>
+              <a id="downloadTimetableLink" href="#" target="_blank" class="btn-dashboard"
+                style="margin-top: 0; padding: 10px; display: none; text-align: center; justify-content: center; font-size: 0.8rem;">Download</a>
             </div>
           </div>
 
@@ -1763,8 +1766,7 @@
           canManageOrgs: true,
           canManageCourses: true,
           canManageUsers: true,
-          canManageStaff: true,
-          canManageBatch: true
+          canManageStaff: true
         };
       } else {
         const roleSnap = await getDoc(doc(db, "roles", userData.customRoleId || "none"));
@@ -2961,20 +2963,28 @@
       const docId = `${uni}_${stream}_${batch}`;
       const snap = await getDoc(doc(db, "batch_resources", docId));
       
-      const timetableInput = document.getElementById("timetableLinkInput");
-      const viewTimetableBtn = document.getElementById("viewTimetableBtn");
+      const timetableStatus = document.getElementById("timetableStatus");
+      const downloadBtn = document.getElementById("downloadTimetableLink");
       const attendanceInput = document.getElementById("attendanceLinkInput");
       const viewAttendanceBtn = document.getElementById("viewAttendanceBtn");
+      const previewBox = document.getElementById("timetablePreview");
 
       if (snap.exists()) {
         const data = snap.data();
-        
-        timetableInput.value = data.timetableUrl || "";
         if (data.timetableUrl) {
-          viewTimetableBtn.href = data.timetableUrl;
-          viewTimetableBtn.style.display = "flex";
+          timetableStatus.textContent = "Current timetable is active";
+          downloadBtn.href = data.timetableUrl;
+          downloadBtn.style.display = "flex";
+          
+          if (data.timetableUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+            previewBox.innerHTML = `<img src="${data.timetableUrl}" alt="Timetable" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+          } else {
+            previewBox.innerHTML = `<span style="color:var(--accent-primary); font-weight:600;">PDF Document</span>`;
+          }
         } else {
-          viewTimetableBtn.style.display = "none";
+          timetableStatus.textContent = "No timetable uploaded";
+          downloadBtn.style.display = "none";
+          previewBox.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>`;
         }
 
         attendanceInput.value = data.attendanceUrl || "";
@@ -2985,10 +2995,11 @@
           viewAttendanceBtn.style.display = "none";
         }
       } else {
-        timetableInput.value = "";
-        viewTimetableBtn.style.display = "none";
+        timetableStatus.textContent = "No data for this selection";
+        downloadBtn.style.display = "none";
         attendanceInput.value = "";
         viewAttendanceBtn.style.display = "none";
+        previewBox.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>`;
       }
     };
 
@@ -3026,30 +3037,36 @@
     };
 
     document.getElementById("updateTimetableBtn").onclick = async () => {
-      const url = document.getElementById("timetableLinkInput").value;
+      const file = document.getElementById("batchTimetableInput").files[0];
       const uni = document.getElementById("batchUniSelector").value;
       const stream = document.getElementById("batchStreamSelector").value;
       const batch = document.getElementById("batchSelector").value;
       const btn = document.getElementById("updateTimetableBtn");
 
-      if (!url) return alert("Please enter a link first");
+      if (!file) return alert("Please select a file first");
       if (!uni || !stream || !batch) return alert("Selection incomplete");
       
       const docId = `${uni}_${stream}_${batch}`;
       btn.disabled = true;
-      btn.textContent = "Updating...";
+      btn.textContent = "Uploading...";
 
       try {
+        const url = await uploadToCloudinary(file, `batch/${docId}`);
         await setDoc(doc(db, "batch_resources", docId), {
-          timetableUrl: url
+          timetableUrl: url,
+          updatedAt: new Date(),
+          uniId: uni,
+          streamId: stream,
+          batch: batch
         }, { merge: true });
-        alert("Timetable link updated successfully!");
+        
+        alert("Timetable updated successfully!");
         loadBatchResources();
       } catch (err) {
         alert("Update failed: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = "Update Link";
+        btn.textContent = "Update Timetable";
       }
     };
 
