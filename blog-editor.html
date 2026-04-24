@@ -1817,15 +1817,35 @@
                 return;
             }
             currentUser = user;
-            const userSnap = await getDoc(doc(db, "users", user.uid));
+            const [userSnap, systemSnap] = await Promise.all([
+                getDoc(doc(db, "users", user.uid)),
+                getDoc(doc(db, "system", "settings"))
+            ]);
+
             if (userSnap.exists()) {
                 userData = userSnap.data();
+            }
+
+            const systemData = systemSnap.exists() ? systemSnap.data() : {};
+            const canUpload = systemData.communityUploads !== false;
+            const isOwner = userData?.role === "owner";
+
+            if (!canUpload && !isOwner && !isEditMode) {
+                alert("Community hub uploads are currently disabled by administrator.");
+                window.location.href = "resources.html";
+                return;
+            }
+
+            // Also disable publish button in edit mode if uploads are disabled
+            if (!canUpload && !isOwner && isEditMode) {
+                publishBtn.disabled = true;
+                publishBtn.style.opacity = "0.5";
+                publishBtn.title = "Uploads are currently disabled";
             }
 
             if (isEditMode) {
                 loadBlogData();
             } else {
-                // If create mode, but user is guest (somehow), check
                 if (!userData) {
                     window.location.href = "login.html";
                 }

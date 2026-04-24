@@ -902,12 +902,9 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
   <script type="module">
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-    import { app } from "./assets/js/firebase.js";
-
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { doc, getDoc, collection, getDocs, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { app, auth, db } from "./assets/js/firebase.js";
     const resourcesContainer = document.getElementById("itemsGrid");
     const categoryBar = document.getElementById("categoryBar");
     const userPhoto = document.getElementById("userPhoto");
@@ -915,6 +912,8 @@
     let currentTab = "course";
     let currentCategory = "all";
     let currentUserData = null;
+    let userData = null;
+    let canUploadGlobal = true;
     let cardCount = 0;
 
     const selectedCourseId = localStorage.getItem("selectedCourseId");
@@ -935,9 +934,9 @@
     let cachedUser = localStorage.getItem("userData");
     if (cachedUser) {
       try {
-        const data = JSON.parse(cachedUser);
-        document.getElementById("userName").textContent = `${data.name} (${data.registrationNumber})`;
-        if (userPhoto) userPhoto.src = data.photoURL || "assets/img/default.png";
+        userData = JSON.parse(cachedUser);
+        document.getElementById("userName").textContent = `${userData.name} (${userData.registrationNumber})`;
+        if (userPhoto) userPhoto.src = userData.photoURL || "assets/img/default.png";
       } catch (e) { }
     }
 
@@ -987,10 +986,11 @@
             resourcesContainer.innerHTML = "<p style='opacity:0.7;'>Checking permissions...</p>";
           }
 
-          // Parallelize User Doc and Content Fetch
-          const [userSnap, dataResults] = await Promise.all([
+          // Parallelize User Doc, Content Fetch, and System Settings
+          const [userSnap, dataResults, systemSnap] = await Promise.all([
             getDoc(doc(db, "users", user.uid)),
-            loadResourcesData()
+            loadResourcesData(),
+            getDoc(doc(db, "system", "settings"))
           ]);
 
           if (!userSnap.exists()) {
@@ -998,16 +998,21 @@
             return;
           }
 
-          const data = userSnap.data();
-          currentUserData = { uid: user.uid, ...data };
+          const systemData = systemSnap.exists() ? systemSnap.data() : {};
+          canUploadGlobal = systemData.communityUploads !== false;
+          
+          userData = userSnap.data();
+          updateFabVisibility();
+
+          currentUserData = { uid: user.uid, ...userData };
           const nameDisplay = document.getElementById("userName");
-          if (nameDisplay) nameDisplay.textContent = `${data.name} (${data.registrationNumber})`;
+          if (nameDisplay) nameDisplay.textContent = `${userData.name} (${userData.registrationNumber})`;
           if (userPhoto) userPhoto.src = user.photoURL || "assets/img/default.png";
 
           // Cache user info
           localStorage.setItem("userData", JSON.stringify({
-            name: data.name,
-            registrationNumber: data.registrationNumber,
+            name: userData.name,
+            registrationNumber: userData.registrationNumber,
             photoURL: user.photoURL
           }));
 
@@ -1049,16 +1054,23 @@
       });
     }
 
+
+    function updateFabVisibility() {
+      const communityFab = document.getElementById("communityFab");
+      if (!communityFab) return;
+
+      const isPrivileged = userData?.role === "owner" || userData?.role === "admin";
+      const shouldShow = currentTab === "community" && (canUploadGlobal || isPrivileged);
+      
+      communityFab.style.display = shouldShow ? "flex" : "none";
+    }
+
     function switchTab(tab) {
       currentTab = tab;
       document.getElementById("tabCourse").classList.toggle("active", tab === "course");
       document.getElementById("tabCommunity").classList.toggle("active", tab === "community");
       
-      const communityFab = document.getElementById("communityFab");
-      if (communityFab) {
-        communityFab.style.display = tab === "community" ? "flex" : "none";
-      }
-
+      updateFabVisibility();
       categoryBar.style.display = tab === "community" ? "flex" : "none";
       loadResources();
     }

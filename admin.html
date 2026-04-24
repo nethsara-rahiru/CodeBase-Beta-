@@ -1063,6 +1063,17 @@
             <span class="slider"></span>
           </label>
         </div>
+
+        <div class="control-card">
+          <div>
+            <h4 style="margin:0; font-size:1rem;">Community Hub Uploads</h4>
+            <p style="margin:4px 0 0; font-size:0.75rem; color:var(--text-muted);">Allow users to share content in Hub</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sysCommUploads" onchange="updateSystemSetting('communityUploads', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -1434,18 +1445,22 @@
           <!-- Timetable Section -->
           <div class="admin-card" style="background: rgba(255,255,255,0.02); padding: 24px;">
             <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: var(--accent-primary);">Timetable Management</h3>
-            <div class="form-group">
-              <label>Upload Timetable (Image/PDF)</label>
-              <input type="file" id="batchTimetableInput" accept="image/*,application/pdf">
-              <div id="timetablePreview" class="preview-box" style="height: 150px; margin-top: 10px;">
-                <span id="timetableStatus" style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>Timetable Link</label>
+                <input type="url" id="timetableLinkInput" placeholder="https://docs.google.com/spreadsheets/...">
+              </div>
+              <div class="form-group">
+                <label>Crop / Range (Optional)</label>
+                <input type="text" id="timetableRangeInput" placeholder="e.g. A1:G20">
               </div>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-              <button class="action-btn" id="updateTimetableBtn" style="flex: 1;">Update Timetable</button>
-              <a id="downloadTimetableLink" href="#" target="_blank" class="btn-dashboard"
-                style="margin-top: 0; padding: 10px; display: none; text-align: center; justify-content: center; font-size: 0.8rem;">Download</a>
+              <button class="action-btn" id="updateTimetableBtn" style="flex: 1;">Update Link</button>
+              <a id="viewTimetableBtn" href="#" target="_blank" class="btn-dashboard"
+                style="margin-top: 0; padding: 10px; display: none; text-align: center; justify-content: center; font-size: 0.8rem;">View Sheet</a>
             </div>
+
           </div>
 
           <!-- Attendance Section -->
@@ -1465,6 +1480,76 @@
             </div>
           </div>
         </div>
+
+        <!-- Preview Data (Out of card) -->
+        <div id="timetablePreviewSection" class="admin-card" style="display: none; margin-top: 30px;">
+          <h4 style="font-size: 1.1rem; color: var(--accent-primary); margin-bottom: 20px; font-weight: 700;">Live Timetable Preview</h4>
+          
+          <div style="display: flex; flex-direction: column; gap: 40px;">
+            <div>
+              <h5 style="color: var(--accent-secondary); margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em;">Parsed Application View</h5>
+              <div id="timetableLoader" style="text-align: center; padding: 30px;">
+                <div class="loading-spinner" style="margin: 0 auto; width: 30px; height: 30px; border-top-color: var(--accent-primary);"></div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Syncing with timetable...</p>
+              </div>
+              <div class="table-container" style="max-height: 500px; overflow-y: auto; background: var(--bg-dark); border-radius: 12px; border: 1px solid var(--glass-border);">
+                <table class="results-table timetable-view" id="timetableAdminTable" style="display: none; width: 100%; table-layout: fixed; margin: 0;">
+                  <thead id="timetableAdminHead"></thead>
+                  <tbody id="timetableAdminBody"></tbody>
+                </table>
+              </div>
+              <div id="timetableAdminError" style="display: none; text-align: center; color: var(--danger); font-size: 0.85rem; margin-top: 20px;"></div>
+            </div>
+
+            <div>
+              <h5 style="color: var(--text-muted); margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em;">Original Source Feed <span style="font-size: 0.75rem; color: var(--accent-secondary); float: right; cursor: pointer; text-transform: none;">(Click cells to define crop range)</span></h5>
+              <div class="table-container" style="height: 500px; border-radius: 12px; border: 1px solid var(--glass-border); overflow: auto; background: var(--bg-dark);">
+                <table class="results-table raw-view" id="timetableRawTable" style="display: none; width: max-content; margin: 0; border-collapse: separate; border-spacing: 0;">
+                  <thead id="timetableRawHead"></thead>
+                  <tbody id="timetableRawBody"></tbody>
+                </table>
+              </div>
+              <div id="streamCodesDisplay" style="display: none; margin-top: 16px; padding: 16px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px;">
+                 <h6 style="color: var(--accent-success); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em;">Preview Filters (Interactive)</h6>
+                 <div id="streamCodesList" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+              </div>
+            </div>
+          </div>
+
+          <style>
+            .stream-pill {
+               background: rgba(16, 185, 129, 0.1);
+               color: var(--accent-success);
+               padding: 6px 14px;
+               border-radius: 20px;
+               font-weight: 600;
+               border: 1px solid rgba(16, 185, 129, 0.3);
+               font-size: 0.75rem;
+               cursor: pointer;
+               user-select: none;
+               transition: all 0.2s ease;
+            }
+            .stream-pill:hover { background: rgba(16, 185, 129, 0.2); }
+            .stream-pill.active {
+               background: var(--accent-success);
+               color: #000;
+               border-color: var(--accent-success);
+            }
+
+            .timetable-view th { background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); text-align: center; border: 1px solid var(--glass-border); padding: 12px; font-size: 0.85rem;}
+            .timetable-view td { text-align: center; border: 1px solid var(--glass-border); padding: 12px; font-size: 0.8rem; word-wrap: break-word;}
+            .timetable-view td:first-child { font-weight: 700; color: var(--accent-secondary); background: rgba(255,255,255,0.02); }
+            
+            .raw-view th { position: sticky; top: 0; background: rgba(20,20,30,1); color: white; padding: 4px 8px; font-size: 0.75rem; text-align: center; border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 2; font-weight: normal; }
+            .raw-view td { padding: 4px 8px; font-size: 0.75rem; border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); cursor: crosshair; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+            .raw-view td:hover { background: rgba(255,255,255,0.1); }
+            .raw-view th:first-child { left: 0; z-index: 3; }
+            .raw-view td:first-child { position: sticky; left: 0; background: rgba(20,20,30,1); font-weight: bold; text-align: center; z-index: 1;}
+            .raw-view td.selected { background: rgba(16, 185, 129, 0.3); outline: 2px solid var(--accent-success); outline-offset: -2px; }
+          </style>
+          
+        </div>
+
       </div>
     </div>
 
@@ -1738,8 +1823,10 @@
         const data = snap.data();
         const regInput = document.getElementById("sysReg");
         const maintInput = document.getElementById("sysMaint");
+        const commUploadsInput = document.getElementById("sysCommUploads");
         if (regInput) regInput.checked = data.registration !== false;
         if (maintInput) maintInput.checked = data.maintenance || false;
+        if (commUploadsInput) commUploadsInput.checked = data.communityUploads !== false;
       }
     }
 
@@ -2963,28 +3050,284 @@
       const docId = `${uni}_${stream}_${batch}`;
       const snap = await getDoc(doc(db, "batch_resources", docId));
       
-      const timetableStatus = document.getElementById("timetableStatus");
-      const downloadBtn = document.getElementById("downloadTimetableLink");
+      const timetableInput = document.getElementById("timetableLinkInput");
+      const timetableRangeInput = document.getElementById("timetableRangeInput");
+      const viewTimetableBtn = document.getElementById("viewTimetableBtn");
       const attendanceInput = document.getElementById("attendanceLinkInput");
       const viewAttendanceBtn = document.getElementById("viewAttendanceBtn");
-      const previewBox = document.getElementById("timetablePreview");
+      
+      const previewSection = document.getElementById("timetablePreviewSection");
+      const previewLoader = document.getElementById("timetableLoader");
+      const previewTable = document.getElementById("timetableAdminTable");
+      const previewHead = document.getElementById("timetableAdminHead");
+      const previewBody = document.getElementById("timetableAdminBody");
+      const previewError = document.getElementById("timetableAdminError");
 
       if (snap.exists()) {
         const data = snap.data();
+        
+        timetableInput.value = data.timetableUrl || "";
+        timetableRangeInput.value = data.timetableRange || "";
         if (data.timetableUrl) {
-          timetableStatus.textContent = "Current timetable is active";
-          downloadBtn.href = data.timetableUrl;
-          downloadBtn.style.display = "flex";
+          viewTimetableBtn.href = data.timetableUrl;
+          viewTimetableBtn.style.display = "flex";
           
-          if (data.timetableUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-            previewBox.innerHTML = `<img src="${data.timetableUrl}" alt="Timetable" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
-          } else {
-            previewBox.innerHTML = `<span style="color:var(--accent-primary); font-weight:600;">PDF Document</span>`;
+          // Render Live Preview
+          previewSection.style.display = "block";
+          previewLoader.style.display = "block";
+          previewTable.style.display = "none";
+          previewError.style.display = "none";
+          
+          try {
+            let tUrl = data.timetableUrl;
+
+            if (tUrl.includes("/pubhtml")) tUrl = tUrl.replace("/pubhtml", "/pub") + (tUrl.includes("?") ? "&" : "?") + "output=csv";
+            else if (tUrl.includes("/edit")) tUrl = tUrl.split("/edit")[0] + "/export?format=csv";
+
+            // ------------- Raw Feed For interactive Crop -------------
+            fetch(tUrl).then(res => res.text()).then(rawCsv => {
+              const parseCSV = (text) => {
+                const rows = []; let row = []; let col = ""; let inQuotes = false;
+                for (let i = 0; i < text.length; i++) {
+                  const char = text[i]; const next = text[i+1];
+                  if (char === '"' && inQuotes && next === '"') { col += '"'; i++; }
+                  else if (char === '"') { inQuotes = !inQuotes; }
+                  else if (char === ',' && !inQuotes) { row.push(col.trim()); col = ""; }
+                  else if ((char === '\r' || char === '\n') && !inQuotes) {
+                    row.push(col.trim()); col = ""; rows.push(row); row = [];
+                    if (char === '\r' && next === '\n') i++;
+                  } else { col += char; }
+                }
+                if (col || row.length > 0) { row.push(col.trim()); rows.push(row); }
+                return rows;
+              };
+              let rawRows = parseCSV(rawCsv);
+              
+              const rawHead = document.getElementById("timetableRawHead");
+              const rawBody = document.getElementById("timetableRawBody");
+              document.getElementById("timetableRawTable").style.display = "table";
+              rawHead.innerHTML = ""; rawBody.innerHTML = "";
+
+              const colIndexToA1 = (ci) => {
+                 let letter = ''; let temp = ci + 1;
+                 while (temp > 0) {
+                    let mod = (temp - 1) % 26;
+                    letter = String.fromCharCode(65 + mod) + letter;
+                    temp = Math.floor((temp - mod) / 26);
+                 }
+                 return letter;
+              };
+
+              if (rawRows.length > 0) {
+                const maxC = Math.max(...rawRows.map(r => r.length));
+                // Header (A, B, C...)
+                let trH = document.createElement("tr");
+                trH.innerHTML = `<th>#</th>`;
+                for(let c=0; c<maxC; c++) {
+                   trH.innerHTML += `<th>${colIndexToA1(c)}</th>`;
+                }
+                rawHead.appendChild(trH);
+                
+                let selectionState = { start: null, end: null };
+                
+                rawRows.forEach((row, rI) => {
+                  let tr = document.createElement("tr");
+                  tr.innerHTML = `<td>${rI + 1}</td>`;
+                  for(let c=0; c<maxC; c++) {
+                     let cellVal = row[c] || "";
+
+                     let td = document.createElement("td");
+                     td.innerHTML = cellVal.replace(/\n/g, " ").substring(0,25) + (cellVal.length > 25 ? "..." : "");
+                     td.dataset.col = colIndexToA1(c);
+                     td.dataset.row = rI + 1;
+                     
+                     td.onclick = function() {
+                        if (!selectionState.start || (selectionState.start && selectionState.end)) {
+                           // Start new range
+                           selectionState.start = `${this.dataset.col}${this.dataset.row}`;
+                           selectionState.end = null;
+                           document.getElementById("timetableRangeInput").value = selectionState.start;
+                           document.querySelectorAll(".raw-view td.selected").forEach(el => el.classList.remove("selected"));
+                           this.classList.add("selected");
+                        } else {
+                           // Complete range
+                           selectionState.end = `${this.dataset.col}${this.dataset.row}`;
+                           document.getElementById("timetableRangeInput").value = `${selectionState.start}:${selectionState.end}`;
+                           this.classList.add("selected");
+                        }
+                     };
+                     tr.appendChild(td);
+                  }
+                  rawBody.appendChild(tr);
+                });
+              }
+            });
+            // ----------------------------------------------------
+
+            let croppedUrl = tUrl;
+            if (data.timetableRange) {
+              croppedUrl += (croppedUrl.includes("?") ? "&" : "?") + `range=${data.timetableRange}`;
+            }
+
+            fetch(croppedUrl).then(res => res.text()).then(csvText => {
+              const parseCSV = (text) => {
+                const rows = []; let row = []; let col = ""; let inQuotes = false;
+                for (let i = 0; i < text.length; i++) {
+                  const char = text[i]; const next = text[i+1];
+                  if (char === '"' && inQuotes && next === '"') { col += '"'; i++; }
+                  else if (char === '"') { inQuotes = !inQuotes; }
+                  else if (char === ',' && !inQuotes) { row.push(col.trim()); col = ""; }
+                  else if ((char === '\r' || char === '\n') && !inQuotes) {
+                    row.push(col.trim()); col = ""; rows.push(row); row = [];
+                    if (char === '\r' && next === '\n') i++;
+                  } else { col += char; }
+                }
+                if (col || row.length > 0) { row.push(col.trim()); rows.push(row); }
+                return rows;
+              };
+
+              let tRows = parseCSV(csvText);
+              previewHead.innerHTML = ""; previewBody.innerHTML = "";
+              tRows = tRows.filter(row => !row.every(c => !c || !c.trim()));
+              
+              if (tRows.length > 0) {
+                const numCols = Math.max(...tRows.map(r => r.length));
+                const colsToKeep = [];
+                for (let c = 0; c < numCols; c++) {
+                    let hasData = false;
+                    for (let r = 0; r < tRows.length; r++) {
+                        if (tRows[r][c] && tRows[r][c].trim() !== "") { hasData = true; break; }
+                    }
+                    if (hasData) colsToKeep.push(c);
+                }
+                tRows = tRows.map(row => colsToKeep.map(c => (row[c] || "").trim()));
+
+                let headerIdx = 0;
+                for (let r = 0; r < tRows.length; r++) {
+                    if (tRows[r].filter(c => c !== "").length >= 2) { headerIdx = r; break; }
+                }
+
+                const headRow = tRows[headerIdx];
+                const bodyRows = tRows.slice(headerIdx + 1);
+
+                const streamCodesSet = new Set();
+                bodyRows.forEach(row => {
+                  row.forEach(cell => {
+                    const match = cell.match(/\b([A-Za-z]{2,4})\d{3,4}\b/);
+                    if (match) streamCodesSet.add(match[1].toUpperCase());
+                  });
+                });
+
+                const streamCodesDisplay = document.getElementById("streamCodesDisplay");
+                const streamCodesList = document.getElementById("streamCodesList");
+                let activeStreams = new Set(["ALL"]);
+
+                if (streamCodesSet.size > 0 && streamCodesDisplay) {
+                   streamCodesList.innerHTML = `<div class="stream-pill active" data-val="ALL">All Streams</div>`;
+                   Array.from(streamCodesSet).sort().forEach(code => {
+                      streamCodesList.innerHTML += `<div class="stream-pill" data-val="${code}">${code}</div>`;
+                   });
+                   streamCodesDisplay.style.display = "block";
+
+                   const pills = streamCodesList.querySelectorAll('.stream-pill');
+                   pills.forEach(pill => {
+                      pill.onclick = () => {
+                         const val = pill.getAttribute('data-val');
+                         if (val === "ALL") {
+                            activeStreams.clear();
+                            activeStreams.add("ALL");
+                            pills.forEach(p => p.classList.remove('active'));
+                            pill.classList.add('active');
+                         } else {
+                            activeStreams.delete("ALL");
+                            streamCodesList.querySelector('[data-val="ALL"]').classList.remove('active');
+
+                            if (activeStreams.has(val)) {
+                               activeStreams.delete(val);
+                               pill.classList.remove('active');
+                            } else {
+                               activeStreams.add(val);
+                               pill.classList.add('active');
+                            }
+                            
+                            if (activeStreams.size === 0) {
+                               activeStreams.add("ALL");
+                               streamCodesList.querySelector('[data-val="ALL"]').classList.add('active');
+                            }
+                         }
+                         renderTable();
+                      };
+                   });
+                } else if(streamCodesDisplay) {
+                   streamCodesDisplay.style.display = "none";
+                }
+
+                const renderTable = () => {
+                  previewHead.innerHTML = "";
+                  previewBody.innerHTML = "";
+
+                  let trHead = document.createElement("tr");
+                  headRow.forEach(cell => { trHead.innerHTML += `<th>${cell}</th>`; });
+                  previewHead.appendChild(trHead);
+                  
+                  let previousTimeTD = null; let previousTimeText = null;
+                  bodyRows.forEach((row) => {
+                    let tr = document.createElement("tr");
+                    row.forEach((cell, cellIndex) => {
+                      let displayCell = cell;
+                      if (!activeStreams.has("ALL") && cellIndex > 0 && displayCell.trim() !== "") {
+                          const hasCode = displayCell.match(/\b([A-Za-z]{2,4})\d{3,4}\b/);
+                          if (hasCode) {
+                             if (!activeStreams.has(hasCode[1].toUpperCase())) {
+                                 displayCell = "";
+                             }
+                          }
+                      }
+
+                      let parts = displayCell.split('\n');
+                      let formattedCell = parts[0];
+                      if(parts.length > 1) {
+                         const metadata = parts.slice(1).join('<br>');
+                         formattedCell += `<br><span style="opacity: 0.6; font-size: 0.85em; font-weight: normal;">${metadata}</span>`;
+                      }
+                      if(formattedCell === "") formattedCell = "-";
+
+                      if (cellIndex === 0) {
+                        const rawTime = cell.trim();
+                        if (previousTimeTD && (rawTime === previousTimeText || rawTime === "")) {
+                            let currentSpan = parseInt(previousTimeTD.getAttribute("rowspan") || "1");
+                            previousTimeTD.setAttribute("rowspan", currentSpan + 1);
+                        } else {
+                            let td = document.createElement("td");
+                            td.innerHTML = formattedCell === "-" && rawTime === "" ? "-" : formattedCell;
+                            previousTimeTD = td; previousTimeText = rawTime;
+                            tr.appendChild(td);
+                        }
+                      } else {
+                        let td = document.createElement("td");
+                        td.innerHTML = formattedCell;
+                        tr.appendChild(td);
+                      }
+                    });
+                    previewBody.appendChild(tr);
+                  });
+                }; // Close renderTable
+                
+                renderTable();
+              }
+              previewLoader.style.display = "none";
+              previewTable.style.display = "table";
+            }).catch(e => {
+               previewLoader.style.display = "none";
+               previewError.textContent = "Error parsing preview: " + e.message;
+               previewError.style.display = "block";
+            });
+          } catch (err) {
+             console.error(err);
           }
         } else {
-          timetableStatus.textContent = "No timetable uploaded";
-          downloadBtn.style.display = "none";
-          previewBox.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>`;
+          viewTimetableBtn.style.display = "none";
+          previewSection.style.display = "none";
         }
 
         attendanceInput.value = data.attendanceUrl || "";
@@ -2995,11 +3338,12 @@
           viewAttendanceBtn.style.display = "none";
         }
       } else {
-        timetableStatus.textContent = "No data for this selection";
-        downloadBtn.style.display = "none";
+        timetableInput.value = "";
+        timetableRangeInput.value = "";
+        viewTimetableBtn.style.display = "none";
+        previewSection.style.display = "none";
         attendanceInput.value = "";
         viewAttendanceBtn.style.display = "none";
-        previewBox.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">No file uploaded</span>`;
       }
     };
 
@@ -3037,36 +3381,37 @@
     };
 
     document.getElementById("updateTimetableBtn").onclick = async () => {
-      const file = document.getElementById("batchTimetableInput").files[0];
+      const url = document.getElementById("timetableLinkInput").value.trim();
+      const tRange = document.getElementById("timetableRangeInput").value.trim();
       const uni = document.getElementById("batchUniSelector").value;
       const stream = document.getElementById("batchStreamSelector").value;
       const batch = document.getElementById("batchSelector").value;
       const btn = document.getElementById("updateTimetableBtn");
 
-      if (!file) return alert("Please select a file first");
+      if (!url) return alert("Please enter a URL");
       if (!uni || !stream || !batch) return alert("Selection incomplete");
       
       const docId = `${uni}_${stream}_${batch}`;
       btn.disabled = true;
-      btn.textContent = "Uploading...";
+      btn.textContent = "Saving...";
 
       try {
-        const url = await uploadToCloudinary(file, `batch/${docId}`);
         await setDoc(doc(db, "batch_resources", docId), {
           timetableUrl: url,
+          timetableRange: tRange,
           updatedAt: new Date(),
           uniId: uni,
           streamId: stream,
           batch: batch
         }, { merge: true });
         
-        alert("Timetable updated successfully!");
+        alert("Timetable link updated successfully!");
         loadBatchResources();
       } catch (err) {
         alert("Update failed: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = "Update Timetable";
+        btn.textContent = "Update Link";
       }
     };
 
