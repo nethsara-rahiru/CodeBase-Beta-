@@ -1723,7 +1723,7 @@
 
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, addDoc, collectionGroup, limit } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { app } from "./assets/js/firebase.js";
 
     const auth = getAuth(app);
@@ -2838,7 +2838,10 @@
           <td>${d.ownerReg || d.uploadedBy || 'Unknown'}</td>
           <td>${upvotes}</td>
           <td>
-            <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(245,158,11,0.1); color:#f59e0b;" onclick="openPinResourceModal('${d.id}')">Pin</button>
+            ${d.isPinned ? 
+              `<button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2);" onclick="unpinResource('${d.id}')">Unpin</button>` :
+              `<button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(245,158,11,0.1); color:#f59e0b;" onclick="openPinResourceModal('${d.id}')">Pin</button>`
+            }
             <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(255,255,255,0.1);" onclick="openCommEditModal('${d.id}')">Edit</button>
             <button class="btn-delete" onclick="deleteCommunityResource('${d.id}')">Delete</button>
           </td>
@@ -3025,6 +3028,7 @@
           ownerReg: item.ownerReg || "",
           isOriginal: item.isOriginal || false,
           isPinned: true,
+          communityId: activePinCommId,
           uploadedBy: item.uploadedBy || "Admin",
           uploadedAt: new Date().toISOString()
         });
@@ -3036,6 +3040,18 @@
         alert("Failed to pin resource: " + e.message);
       } finally {
         btn.disabled = false; btn.textContent = "Pin Resource";
+      }
+    };
+
+    window.unpinResource = async (id) => {
+      if (!confirm("Are you sure you want to unpin this resource?")) return;
+      try {
+        await updateDoc(doc(db, "community_resources", id), { isPinned: false });
+        alert("Resource unpinned successfully!");
+        loadCommunityResources();
+      } catch (e) {
+        console.error("Unpin failed:", e);
+        alert("Failed to unpin: " + e.message);
       }
     };
 

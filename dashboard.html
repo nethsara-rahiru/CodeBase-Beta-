@@ -1563,7 +1563,7 @@
           <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500;" id="gpaStatus">Start adding your results!</p>
         </div>
 
-        <!-- Timetable Section -->
+        <!-- Timetable Section
         <section class="org-section" id="timetableSection" style="margin-top: 24px; display: none;">
           <h3 style="font-size: 1.25rem; font-weight: 700;">Live Batch Timetable</h3>
           <div class="results-table-wrap"
@@ -1610,6 +1610,7 @@
             </div>
           </div>
         </section>
+        -->
 
         <!-- Attendance Section -->
         <section class="org-section" id="attendanceSection" style="margin-top: 24px; display: none;">
@@ -2047,7 +2048,7 @@
         const snap = await getDoc(doc(db, "batch_resources", docId));
 
         const timetableSection = document.getElementById("timetableSection");
-        if (snap.exists() && snap.data().timetableUrl) {
+        if (snap.exists() && snap.data().timetableUrl && timetableSection) {
           timetableSection.style.display = "block";
 
           try {
@@ -2088,11 +2089,11 @@
               let tRows = parseCSV(csvText);
               const tHead = document.getElementById("timetableHead");
               const tBody = document.getElementById("timetableBody");
-              const loader = document.getElementById("timetableLoader");
-              const table = document.getElementById("timetableTable");
+              const timetableLoader = document.getElementById("timetableLoader");
+              const timetableTable = document.getElementById("timetableTable");
 
-              tHead.innerHTML = "";
-              tBody.innerHTML = "";
+              if (tHead) tHead.innerHTML = "";
+              if (tBody) tBody.innerHTML = "";
 
               // 1. Remove completely empty rows
               tRows = tRows.filter(row => !row.every(c => !c || !c.trim()));
@@ -2133,7 +2134,7 @@
                 headRow.forEach(cell => {
                   trHead.innerHTML += `<th>${cell}</th>`;
                 });
-                tHead.appendChild(trHead);
+                if (tHead) tHead.appendChild(trHead);
 
                 // Render body
                 let previousTimeTD = null;
@@ -2144,11 +2145,11 @@
                   row.forEach((cell, cellIndex) => {
                     let parts = cell.split('\n');
                     let formattedCell = parts[0];
-                    if(parts.length > 1) {
-                       const metadata = parts.slice(1).join('<br>');
-                       formattedCell += `<br><span style="opacity: 0.6; font-size: 0.85em; font-weight: normal;">${metadata}</span>`;
+                    if (parts.length > 1) {
+                      const metadata = parts.slice(1).join('<br>');
+                      formattedCell += `<br><span style="opacity: 0.6; font-size: 0.85em; font-weight: normal;">${metadata}</span>`;
                     }
-                    if(formattedCell === "") formattedCell = "-";
+                    if (formattedCell === "") formattedCell = "-";
 
                     if (cellIndex === 0) {
                       const rawTime = cell.trim();
@@ -2169,17 +2170,17 @@
                       tr.appendChild(td);
                     }
                   });
-                  tBody.appendChild(tr);
+                  if (tBody) tBody.appendChild(tr);
                 });
               }
 
-              const timetableLoader = document.getElementById("timetableLoader");
-              const timetableTable = document.getElementById("timetableTable");
               if (timetableLoader) timetableLoader.style.display = "none";
               if (timetableTable) timetableTable.style.display = "table";
             }).catch(e => {
-              document.getElementById("timetableLoader").style.display = "none";
-              document.getElementById("timetableError").style.display = "block";
+              const loader = document.getElementById("timetableLoader");
+              const errDiv = document.getElementById("timetableError");
+              if (loader) loader.style.display = "none";
+              if (errDiv) errDiv.style.display = "block";
             });
           } catch (err) {
             console.error(err);
@@ -2380,8 +2381,9 @@
       const hour = new Date().getHours();
       document.getElementById("welcomeText").textContent = `${hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening'}, ${data.name.split(' ')[0]}!`;
 
-      if (["owner", "admin", "editor"].includes(data.role)) {
-        document.getElementById("navAdmin").style.display = "flex";
+      const navAdmin = document.getElementById("navAdmin");
+      if (data.role === "admin" || data.role === "owner") {
+        if (navAdmin) navAdmin.style.display = "flex";
       }
 
       document.getElementById("editName").value = data.name;
@@ -2572,7 +2574,8 @@
 
       try {
         // Show loading bar
-        document.getElementById("courseLoadingBar").style.display = "block";
+        const loadingBar = document.getElementById("courseLoadingBar");
+        if (loadingBar) loadingBar.style.display = "block";
 
         // Parallel fetch all essential data
         const [userSnap, coursesSnap, slideSnap, orgSnap, sysSnap] = await Promise.all([
@@ -2661,10 +2664,11 @@
 
         // 🧪 Initialize Peer Directory Search
         const searchInput = document.getElementById("userDirectorySearch");
-        const flyout = document.getElementById("userSearchResults");
 
         searchInput.oninput = async (e) => {
           const query = e.target.value.trim().toLowerCase();
+          const flyout = document.getElementById("userSearchResults");
+          if (!flyout) return;
           if (query.length < 2) { flyout.style.display = "none"; return; }
 
           // Local directory search (from all users) - Note: In enterprise use specialized indexes
@@ -2735,7 +2739,8 @@
       document.getElementById("statCourses").textContent = count;
 
       // Hide loading bar
-      document.getElementById("courseLoadingBar").style.display = "none";
+      const loadingBar = document.getElementById("courseLoadingBar");
+      if (loadingBar) loadingBar.style.display = "none";
     }
 
     function renderSlideshow(slides) {

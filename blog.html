@@ -8,7 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <!-- Code Highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
@@ -160,8 +161,9 @@
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             overflow: hidden;
-            box-shadow: 0 12px 40px -10px rgba(0,0,0,0.7);
+            box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.7);
         }
+
         .code-box-header {
             display: flex;
             justify-content: space-between;
@@ -171,6 +173,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
         }
+
         .code-lang-select {
             background: rgba(99, 102, 241, 0.1);
             border: 1px solid rgba(99, 102, 241, 0.2);
@@ -181,9 +184,11 @@
             padding: 4px 10px;
             border-radius: 6px;
             text-transform: uppercase;
-            pointer-events: none; /* Viewers can't change it */
+            pointer-events: none;
+            /* Viewers can't change it */
             appearance: none;
         }
+
         .code-copy-btn {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -198,22 +203,26 @@
             align-items: center;
             gap: 6px;
         }
+
         .code-copy-btn:hover {
             background: rgba(255, 255, 255, 0.05);
             color: white;
             border-color: rgba(255, 255, 255, 0.2);
         }
+
         .code-copy-btn.copied {
             background: #10b981;
             border-color: #10b981;
             color: white;
         }
+
         .code-box-content {
             padding: 24px;
             padding-left: 20px;
             overflow-x: auto;
             background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.03), transparent 200px);
         }
+
         .code-box-content pre {
             margin: 0;
             font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -222,6 +231,7 @@
             tab-size: 4;
             white-space: pre-wrap !important;
         }
+
         .code-box-content code {
             display: block;
             white-space: pre-wrap !important;
@@ -303,7 +313,28 @@
             color: var(--text-main);
         }
 
-        /* Loading Bar Logic */
+        /* Page Loading Bar */
+        .page-loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+            display: none;
+            transition: opacity 0.5s;
+        }
+
+        .page-loading-bar .progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            box-shadow: 0 0 15px var(--accent-primary);
+            transition: width 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+        }
+
+        /* TTS Loading Bar */
         .loading-bar {
             position: absolute;
             bottom: 0;
@@ -328,6 +359,51 @@
             100% {
                 transform: translateX(100%);
             }
+        }
+
+        /* Premium Spinner */
+        .premium-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 60px 0;
+        }
+
+        .spinner-circle {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .spinner-circle::before,
+        .spinner-circle::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
+
+        .spinner-circle::before {
+            border-top-color: var(--accent-primary);
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            filter: drop-shadow(0 0 10px var(--accent-primary));
+        }
+
+        .spinner-circle::after {
+            border-bottom-color: var(--accent-secondary);
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+            filter: drop-shadow(0 0 10px var(--accent-secondary));
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes fadeIn {
@@ -395,6 +471,9 @@
 </head>
 
 <body>
+    <div id="pageLoadingBar" class="page-loading-bar">
+        <div class="progress" id="loadingProgress"></div>
+    </div>
     <header>
         <div class="brand-area">
             <a href="resources.html" class="back-btn">
@@ -432,17 +511,20 @@
     <main class="main-container">
         <div class="blog-card" id="blogCard">
             <!-- Shimmer/Loading state could go here -->
-            <div id="loaderArea" style="text-align: center; padding: 40px;">
-                <p style="color:var(--text-muted);">Loading your blog...</p>
+            <div id="loaderArea" class="premium-loader">
+                <div class="spinner-circle"></div>
+                <p style="color:var(--text-muted); font-weight: 500; font-size: 0.9rem; letter-spacing: 0.05em;">SECURELY FETCHING POST...</p>
             </div>
 
             <div id="displayArea" style="display:none;">
+                <!--
                 <div class="lang-switcher">
                     <button class="lang-btn active" id="lang_en"
                         onclick="window.translateContent('en')">English</button>
                     <button class="lang-btn" id="lang_si" onclick="window.translateContent('si')">සිංහල</button>
                     <button class="lang-btn" id="lang_ta" onclick="window.translateContent('ta')">தமிழ்</button>
                 </div>
+                -->
                 <article class="blog-header">
                     <h1 class="blog-title" id="blogTitle"></h1>
                     <div class="author-meta">
@@ -487,7 +569,7 @@
         window.translateContent = async (targetLang) => {
             document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
             document.getElementById("lang_" + targetLang).classList.add("active");
-            
+
             const contentDiv = document.getElementById("blogContent");
             if (targetLang === 'en') {
                 contentDiv.innerHTML = originalBlogHtml;
@@ -505,7 +587,7 @@
 
                 const textNodes = [];
                 const walk = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, {
-                    acceptNode: function(node) {
+                    acceptNode: function (node) {
                         // Skip if node is inside a code box
                         if (node.parentElement.closest('.code-box-wrap')) {
                             return NodeFilter.FILTER_REJECT;
@@ -514,7 +596,7 @@
                     }
                 }, false);
                 let node;
-                while(node = walk.nextNode()) {
+                while (node = walk.nextNode()) {
                     if (node.textContent.trim().length > 0) {
                         textNodes.push(node);
                     }
@@ -549,9 +631,9 @@
                         await batchTranslate(textNodes.slice(i, i + 10));
                     }
                 }
-                
+
                 contentDiv.innerHTML = clone.innerHTML;
-                
+
                 // Re-highlight codes after injection
                 contentDiv.querySelectorAll('code').forEach(el => hljs.highlightElement(el));
             } catch (e) {
@@ -585,10 +667,20 @@
         }
 
         async function loadBlog() {
+            const loadingBar = document.getElementById("pageLoadingBar");
+            const progress = document.getElementById("loadingProgress");
+            loadingBar.style.display = "block";
+            
             try {
+                // Step 1: Initialization
+                progress.style.width = "30%";
+                
                 const blogSnap = await getDoc(doc(db, "community_resources", currentBlogId));
+                progress.style.width = "60%";
+
                 if (blogSnap.exists()) {
                     blogData = blogSnap.data();
+                    progress.style.width = "80%";
 
                     // Render Data
                     originalBlogHtml = blogData.content;
@@ -610,17 +702,30 @@
                     // Show TTS
                     ttsBtn.style.display = "flex";
 
-                    loaderArea.style.display = "none";
-                    displayArea.style.display = "block";
+                    progress.style.width = "100%";
                     
-                    // Highlight all code blocks
-                    document.querySelectorAll('#blogContent code').forEach(el => hljs.highlightElement(el));
+                    setTimeout(() => {
+                        loaderArea.style.display = "none";
+                        displayArea.style.display = "block";
+                        
+                        // Highlight all code blocks
+                        document.querySelectorAll('#blogContent code').forEach(el => hljs.highlightElement(el));
+                        
+                        loadingBar.style.opacity = "0";
+                        setTimeout(() => {
+                            loadingBar.style.display = "none";
+                            loadingBar.style.opacity = "1";
+                            progress.style.width = "0%";
+                        }, 500);
+                    }, 400);
                 } else {
                     loaderArea.innerHTML = "<p>Blog not found.</p>";
+                    loadingBar.style.display = "none";
                 }
             } catch (err) {
                 console.error("Error loading blog:", err);
                 loaderArea.innerHTML = "<p>Error loading blog content.</p>";
+                loadingBar.style.display = "none";
             }
         }
 
@@ -649,7 +754,7 @@
 
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = document.getElementById("blogContent").innerHTML;
-            
+
             // Sanitization: Remove hidden editor UI and code boxes (code sounds bad in TTS)
             tempDiv.querySelectorAll('.img-drag-handle, .img-resize-handle, .img-actions, .code-box-wrap').forEach(el => el.remove());
 
@@ -669,7 +774,7 @@
             };
             walk(tempDiv);
             text = text.replace(/[ ]+/g, ' ').replace(/[\n\r]{2,}/g, '\n\n').trim();
-            
+
             if (!text) return;
 
             window.speechSynthesis.cancel();
@@ -690,7 +795,7 @@
                 // Detect languages within this line
                 let currentLang = 'en';
                 let currentText = '';
-                
+
                 for (let char of trimmed) {
                     const code = char.charCodeAt(0);
                     let charLang = 'en';
@@ -708,7 +813,7 @@
                     currentText += char;
                 }
                 if (currentText.trim()) processedQueue.push({ text: currentText.trim(), lang: currentLang === 'en' ? 'en-US' : (currentLang === 'si' ? 'si-LK' : 'ta-IN') });
-                
+
                 // End of a line = mandatory pause
                 processedQueue.push({ pause: 600 });
             });
@@ -743,7 +848,7 @@
             }
 
             const item = ttsQueue[ttsIndex];
-            
+
             // Handle explicit pauses
             if (item.pause) {
                 setTimeout(() => {
