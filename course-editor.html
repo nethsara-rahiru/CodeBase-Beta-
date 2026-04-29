@@ -457,6 +457,7 @@
                         <option value="link">Link</option>
                         <option value="pdf">PDF (Drive)</option>
                         <option value="video">Video</option>
+                        <option value="coder">Coder</option>
                     </select>
                 </div>
                 <div class="form-group"><label>URL</label><input type="url" id="resLink-${m.id}" placeholder="https://..." required></div>
@@ -521,7 +522,7 @@
             </div>
           </div>
           <div style="display:flex; gap:8px; align-items:center;">
-            <button class="action-btn secondary" style="padding:8px 14px; font-size:0.75rem; border-radius: 10px;" onclick="openEditResource('${moduleId}', '${r.id}')">Edit</button>
+            <button class="action-btn secondary" style="padding:8px 14px; font-size:0.75rem; border-radius: 10px;" onclick="handleEditResource('${moduleId}', '${r.id}', '${r.type}')">Edit</button>
             <button class="action-btn secondary" style="padding:8px 14px; font-size:0.75rem; border-radius: 10px; color: ${r.isPinned ? '#f59e0b' : 'inherit'}" onclick="togglePin('${moduleId}', '${r.id}', ${r.isPinned || false})">
                 ${r.isPinned ? 'Unpin' : 'Pin'}
             </button>
@@ -565,6 +566,11 @@
             const ownerReg = document.getElementById(`resOwnerReg-${moduleId}`).value;
             const isOriginal = document.getElementById(`resOriginal-${moduleId}`).checked;
             const isPinned = document.getElementById(`resPinned-${moduleId}`).checked;
+
+            if (type === "coder") {
+                window.location.href = `coder-editor.html?courseId=${courseId}&moduleId=${moduleId}&title=${encodeURIComponent(title)}`;
+                return;
+            }
 
             await addDoc(collection(db, "courses", courseId, "content", moduleId, "resources"), {
                 title: title,
@@ -624,6 +630,14 @@
                 isPinned: !currentStatus
             });
             loadResources(moduleId);
+        };
+
+        window.handleEditResource = (moduleId, resId, type) => {
+            if (type === "coder") {
+                window.location.href = `coder-editor.html?id=${resId}`;
+            } else {
+                openEditResource(moduleId, resId);
+            }
         };
 
         let activeEditResModuleId = null;

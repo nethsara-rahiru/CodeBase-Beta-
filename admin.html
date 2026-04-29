@@ -1116,6 +1116,7 @@
       <div class="admin-card">
         <div class="section-header">
           <h2>Course Management</h2>
+          <button class="action-btn" onclick="window.location.href='coder-editor.html'">+ Create Coder</button>
         </div>
         <form id="courseForm" class="grid-form">
           <div class="form-group"><label>Course ID (e.g., CST101)</label><input type="text" id="newCourseId" required>
@@ -1417,6 +1418,7 @@
       <div class="admin-card">
         <div class="section-header">
           <h2>Batch Representative Hub</h2>
+        </div>
           <p style="font-size: 0.8rem; color: var(--text-muted);">Manage academic resources for specific batches</p>
         </div>
 
@@ -2842,7 +2844,7 @@
               `<button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2);" onclick="unpinResource('${d.id}')">Unpin</button>` :
               `<button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(245,158,11,0.1); color:#f59e0b;" onclick="openPinResourceModal('${d.id}')">Pin</button>`
             }
-            <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(255,255,255,0.1);" onclick="openCommEditModal('${d.id}')">Edit</button>
+            <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; margin-right: 5px; background:rgba(255,255,255,0.1);" onclick="handleEditResource('${d.id}', '${d.type}')">Edit</button>
             <button class="btn-delete" onclick="deleteCommunityResource('${d.id}')">Delete</button>
           </td>
         `;
@@ -2855,6 +2857,14 @@
 
     const filterCommType = document.getElementById("filterCommunityType");
     if (filterCommType) filterCommType.addEventListener("change", renderCommunityResources);
+
+    window.handleEditResource = (id, type) => {
+      if (type === 'coder') {
+        window.location.href = `coder-editor.html?id=${id}`;
+      } else {
+        openCommEditModal(id);
+      }
+    };
 
     let activeEditCommId = null;
     window.openCommEditModal = async (id) => {

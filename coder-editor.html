@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coder Editor | CodeBase</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 40px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      padding: 8px 16px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .main-container {
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .editor-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: white;
+      font-family: inherit;
+    }
+
+    textarea {
+      font-family: 'Fira Code', monospace;
+      min-height: 300px;
+      resize: vertical;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .save-btn {
+      padding: 12px 32px;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .save-btn:hover {
+      transform: scale(1.02);
+      filter: brightness(1.1);
+    }
+
+    .save-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="#" class="back-btn" onclick="history.back(); return false;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back
+    </a>
+    <h1 id="pageTitle">Create New Coder</h1>
+    <div></div>
+  </header>
+
+  <main class="main-container">
+    <div class="editor-card">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="coderTitle" placeholder="e.g. JavaScript Loops Practice">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-group">
+          <label>Course</label>
+          <select id="coderCourse" onchange="loadModules(this.value)">
+            <option value="">-- Select Course --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Module</label>
+          <select id="coderModule">
+            <option value="">-- Select Module --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Code to Practice</label>
+        <textarea id="coderContent" placeholder="// Write the code students should practice typing here..."></textarea>
+      </div>
+
+      <script>
+        const editor = document.getElementById('coderContent');
+        const pairs = { '{': '}', '[': ']', '(': ')', '"': '"', "'": "'" };
+        const closingChars = Object.values(pairs);
+
+        editor.addEventListener('keydown', (e) => {
+          const start = editor.selectionStart;
+          const end = editor.selectionEnd;
+          const value = editor.value;
+          const charBefore = value[start - 1];
+          const charAfter = value[start];
+
+          // Handle Tab
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            document.execCommand('insertText', false, "    ");
+            return;
+          }
+
+          // Handle Backspace (Delete matching pairs)
+          if (e.key === 'Backspace' && start === end) {
+            if (pairs[charBefore] === charAfter) {
+              e.preventDefault();
+              // Delete both chars
+              editor.value = value.substring(0, start - 1) + value.substring(start + 1);
+              editor.selectionStart = editor.selectionEnd = start - 1;
+              return;
+            }
+          }
+
+          // Handle Overtyping closing characters
+          if (closingChars.includes(e.key) && start === end && e.key === charAfter) {
+            e.preventDefault();
+            editor.selectionStart = editor.selectionEnd = start + 1;
+            return;
+          }
+
+          // Handle Enter (Auto-indent)
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const lines = value.substring(0, start).split('\n');
+            const lastLine = lines[lines.length - 1];
+            const indent = lastLine.match(/^\s*/)[0];
+            const trimmed = lastLine.trim();
+            const lastChar = trimmed.slice(-1);
+            
+            let extraIndent = "";
+            if (['{', '[', '('].includes(lastChar)) {
+              extraIndent = "    ";
+            }
+            
+            // If we are between { and }, add a double newline with indentation
+            if (lastChar === '{' && charAfter === '}') {
+                const midLine = "\n" + indent + extraIndent;
+                const endLine = "\n" + indent;
+                document.execCommand('insertText', false, midLine + endLine);
+                editor.selectionStart = editor.selectionEnd = start + midLine.length;
+            } else {
+                document.execCommand('insertText', false, "\n" + indent + extraIndent);
+            }
+            return;
+          }
+
+          // Auto-balance Brackets & Quotes
+          if (pairs[e.key]) {
+            e.preventDefault();
+            const char = e.key;
+            const closing = pairs[char];
+            // Only auto-close if not already inside a word or something
+            document.execCommand('insertText', false, char + closing);
+            editor.selectionStart = editor.selectionEnd = start + 1;
+          }
+        });
+      </script>
+
+      <div class="btn-group">
+        <button id="saveBtn" class="save-btn">Save Coder Resource</button>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, collection, addDoc, updateDoc, serverTimestamp, query, where, collectionGroup } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { app } from "./assets/js/firebase.js";
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let coderId = new URLSearchParams(window.location.search).get('id');
+    let urlCourseId = new URLSearchParams(window.location.search).get('courseId');
+    let urlModuleId = new URLSearchParams(window.location.search).get('moduleId');
+    let urlTitle = new URLSearchParams(window.location.search).get('title');
+    let currentResourcePath = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "login.html"; return; }
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (!snap.exists() || !["owner", "admin", "editor"].includes(snap.data().role)) {
+        window.location.href = "access-denied.html"; return;
+      }
+      currentUser = snap.data();
+      init();
+    });
+
+    async function loadCourses() {
+      const courseSelect = document.getElementById('coderCourse');
+      const snap = await getDocs(collection(db, "courses"));
+      snap.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = `${d.data().name} (${d.id})`;
+        courseSelect.appendChild(opt);
+      });
+    }
+
+    async function init() {
+      await loadCourses();
+      console.log("Init - urlCourseId:", urlCourseId, "urlModuleId:", urlModuleId);
+      
+      if (coderId) {
+        document.getElementById('pageTitle').textContent = "Edit Coder Resource";
+        await loadCoderData();
+      } else if (urlCourseId) {
+        const courseSelect = document.getElementById('coderCourse');
+        // Try exact match then case-insensitive match
+        let targetCourseId = urlCourseId;
+        const options = Array.from(courseSelect.options);
+        const match = options.find(o => o.value === urlCourseId) || 
+                      options.find(o => o.value.toLowerCase() === urlCourseId.toLowerCase());
+        
+        if (match) {
+          targetCourseId = match.value;
+          courseSelect.value = targetCourseId;
+          await loadModules(targetCourseId);
+          
+          const modSelect = document.getElementById('coderModule');
+          if (urlModuleId) {
+            const modOptions = Array.from(modSelect.options);
+            const modMatch = modOptions.find(o => o.value === urlModuleId) ||
+                             modOptions.find(o => o.value.toLowerCase() === urlModuleId.toLowerCase());
+            if (modMatch) {
+              console.log("Setting module value to:", modMatch.value);
+              modSelect.value = modMatch.value;
+            }
+          }
+        }
+        if (urlTitle) document.getElementById('coderTitle').value = urlTitle;
+      }
+    }
+
+    async function loadModules(courseId) {
+      const moduleSelect = document.getElementById('coderModule');
+      moduleSelect.innerHTML = '<option value="">-- Select Module --</option>';
+      if (!courseId) return;
+
+      const snap = await getDocs(collection(db, "courses", courseId, "content"));
+      const mods = [];
+      snap.forEach(d => mods.push({ id: d.id, ...d.data() }));
+      mods.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+      mods.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.title || "Untitled";
+        moduleSelect.appendChild(opt);
+      });
+    }
+    window.loadModules = loadModules;
+
+    async function loadCoderData() {
+      // First try community_resources (legacy)
+      let snap = await getDoc(doc(db, "community_resources", coderId));
+      if (snap.exists()) {
+        currentResourcePath = `community_resources/${coderId}`;
+      } else {
+        // Search in course subcollections
+        const q = query(collectionGroup(db, "resources"), where("type", "==", "coder"));
+        const groupSnap = await getDocs(q);
+        const match = groupSnap.docs.find(d => d.id === coderId);
+        if (match) {
+          snap = match;
+          currentResourcePath = match.ref.path;
+        }
+      }
+
+      if (snap && snap.exists()) {
+        const data = snap.data();
+        document.getElementById('coderTitle').value = data.title;
+        document.getElementById('coderContent').value = data.code || "";
+        document.getElementById('coderCourse').value = data.courseId || "";
+        if (data.courseId) {
+          await loadModules(data.courseId);
+          document.getElementById('coderModule').value = data.moduleId || "";
+        }
+      }
+    }
+
+    document.getElementById('saveBtn').onclick = async () => {
+      const title = document.getElementById('coderTitle').value.trim();
+      const code = document.getElementById('coderContent').value.trim();
+      const courseId = document.getElementById('coderCourse').value;
+      const moduleId = document.getElementById('coderModule').value;
+
+      if (!title || !code || !courseId || !moduleId) { 
+        alert("Please fill in all required fields (Title, Course, Module, and Code)!"); 
+        return; 
+      }
+
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      const resourceData = {
+        title,
+        code,
+        courseId,
+        moduleId,
+        type: "coder",
+        link: "#coder", // Placeholder link
+        updatedAt: serverTimestamp()
+      };
+
+      try {
+        if (coderId && currentResourcePath) {
+          await updateDoc(doc(db, currentResourcePath), resourceData);
+        } else {
+          // Always save to course content now
+          await addDoc(collection(db, "courses", courseId, "content", moduleId, "resources"), {
+            ...resourceData,
+            uploadedBy: currentUser.registrationNumber || "Admin",
+            uploadedAt: serverTimestamp(),
+            isPinned: false
+          });
+        }
+        alert("Coder resource saved successfully!");
+        if (window.history.length > 1) {
+          history.back();
+        } else {
+          window.location.href = "admin.html?tab=courses";
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error saving coder: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save Coder Resource";
+      }
+    }
+  </script>
+</body>
+
+</html>
