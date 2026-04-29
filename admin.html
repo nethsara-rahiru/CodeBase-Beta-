@@ -2874,7 +2874,7 @@
 
       for (const cb of selected) {
         const id = cb.dataset.id;
-        const email = cb.dataset.email;
+        const email = cb.dataset.email.toLowerCase();
         const regNo = cb.dataset.reg;
         try {
           await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email, regNo });
@@ -2894,8 +2894,9 @@
       if (!confirm(`Approve registration for ${email}?`)) return;
       
       try {
+        const lowerEmail = email.toLowerCase();
         // 1. Add to allowed emails
-        await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email, regNo });
+        await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email: lowerEmail, regNo });
         
         // 2. Update status in pending_registrations
         await updateDoc(doc(db, "pending_registrations", id), { status: 'approved' });

@@ -136,10 +136,57 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: all 0.5s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top: 4px solid var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .loading-text {
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+      color: var(--text-main);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
 <body>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading Editor...</div>
+  </div>
+
   <header>
     <a href="#" class="back-btn" onclick="history.back(); return false;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -298,37 +345,44 @@
     }
 
     async function init() {
-      await loadCourses();
-      console.log("Init - urlCourseId:", urlCourseId, "urlModuleId:", urlModuleId);
-      
-      if (coderId) {
-        document.getElementById('pageTitle').textContent = "Edit Coder Resource";
-        await loadCoderData();
-      } else if (urlCourseId) {
-        const courseSelect = document.getElementById('coderCourse');
-        // Try exact match then case-insensitive match
-        let targetCourseId = urlCourseId;
-        const options = Array.from(courseSelect.options);
-        const match = options.find(o => o.value === urlCourseId) || 
-                      options.find(o => o.value.toLowerCase() === urlCourseId.toLowerCase());
+      try {
+        await loadCourses();
+        console.log("Init - urlCourseId:", urlCourseId, "urlModuleId:", urlModuleId);
         
-        if (match) {
-          targetCourseId = match.value;
-          courseSelect.value = targetCourseId;
-          await loadModules(targetCourseId);
+        if (coderId) {
+          document.getElementById('pageTitle').textContent = "Edit Coder Resource";
+          await loadCoderData();
+        } else if (urlCourseId) {
+          const courseSelect = document.getElementById('coderCourse');
+          // Try exact match then case-insensitive match
+          let targetCourseId = urlCourseId;
+          const options = Array.from(courseSelect.options);
+          const match = options.find(o => o.value === urlCourseId) || 
+                        options.find(o => o.value.toLowerCase() === urlCourseId.toLowerCase());
           
-          const modSelect = document.getElementById('coderModule');
-          if (urlModuleId) {
-            const modOptions = Array.from(modSelect.options);
-            const modMatch = modOptions.find(o => o.value === urlModuleId) ||
-                             modOptions.find(o => o.value.toLowerCase() === urlModuleId.toLowerCase());
-            if (modMatch) {
-              console.log("Setting module value to:", modMatch.value);
-              modSelect.value = modMatch.value;
+          if (match) {
+            targetCourseId = match.value;
+            courseSelect.value = targetCourseId;
+            await loadModules(targetCourseId);
+            
+            const modSelect = document.getElementById('coderModule');
+            if (urlModuleId) {
+              const modOptions = Array.from(modSelect.options);
+              const modMatch = modOptions.find(o => o.value === urlModuleId) ||
+                               modOptions.find(o => o.value.toLowerCase() === urlModuleId.toLowerCase());
+              if (modMatch) {
+                console.log("Setting module value to:", modMatch.value);
+                modSelect.value = modMatch.value;
+              }
             }
           }
+          if (urlTitle) document.getElementById('coderTitle').value = urlTitle;
         }
-        if (urlTitle) document.getElementById('coderTitle').value = urlTitle;
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        // Hide loading overlay once done
+        document.getElementById('loadingOverlay').classList.add('hidden');
       }
     }
 
@@ -351,12 +405,31 @@
     window.loadModules = loadModules;
 
     async function loadCoderData() {
-      // First try community_resources (legacy)
-      let snap = await getDoc(doc(db, "community_resources", coderId));
-      if (snap.exists()) {
-        currentResourcePath = `community_resources/${coderId}`;
-      } else {
-        // Search in course subcollections
+      let snap = null;
+
+      // 1. Try direct path if courseId and moduleId are provided (most efficient)
+      if (urlCourseId && urlModuleId) {
+        try {
+          const directRef = doc(db, "courses", urlCourseId, "content", urlModuleId, "resources", coderId);
+          snap = await getDoc(directRef);
+          if (snap.exists()) {
+            currentResourcePath = directRef.path;
+          }
+        } catch (e) {
+          console.log("Direct path fetch failed, trying fallbacks...");
+        }
+      }
+
+      // 2. Try community_resources (legacy/community)
+      if (!snap || !snap.exists()) {
+        snap = await getDoc(doc(db, "community_resources", coderId));
+        if (snap.exists()) {
+          currentResourcePath = `community_resources/${coderId}`;
+        }
+      }
+      
+      // 3. Fallback: Search in course subcollections (slow but reliable)
+      if (!snap || !snap.exists()) {
         const q = query(collectionGroup(db, "resources"), where("type", "==", "coder"));
         const groupSnap = await getDocs(q);
         const match = groupSnap.docs.find(d => d.id === coderId);
@@ -368,13 +441,21 @@
 
       if (snap && snap.exists()) {
         const data = snap.data();
-        document.getElementById('coderTitle').value = data.title;
+        document.getElementById('coderTitle').value = data.title || "";
         document.getElementById('coderContent').value = data.code || "";
-        document.getElementById('coderCourse').value = data.courseId || "";
-        if (data.courseId) {
-          await loadModules(data.courseId);
-          document.getElementById('coderModule').value = data.moduleId || "";
+        
+        const courseId = data.courseId || urlCourseId || "";
+        const moduleId = data.moduleId || urlModuleId || "";
+
+        if (courseId) {
+          document.getElementById('coderCourse').value = courseId;
+          await loadModules(courseId);
+          if (moduleId) {
+            document.getElementById('coderModule').value = moduleId;
+          }
         }
+      } else {
+        console.warn("Could not find coder resource with ID:", coderId);
       }
     }
 

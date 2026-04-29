@@ -465,7 +465,7 @@
       Back
     </a>
     <h1 id="coderTitle">Practice Coding</h1>
-    <div></div>
+    <div id="headerActions"></div>
   </header>
 
   <main class="main-container">
@@ -553,10 +553,15 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = "login.html"; return; }
       if (!resourceId) { window.location.href = "resources.html"; return; }
-      loadResource();
+      
+      // Get user profile for ownership check
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const userData = userSnap.exists() ? userSnap.data() : null;
+      
+      loadResource(userData);
     });
 
-    async function loadResource() {
+    async function loadResource(userData) {
       try {
         let snap = null;
 
@@ -579,10 +584,29 @@
         }
 
         if (snap && snap.exists()) {
-        const data = snap.data();
-        targetCode = data.code || "";
-        document.getElementById('practiceTitle').textContent = data.title;
-        renderCode();
+          const data = snap.data();
+          targetCode = data.code || "";
+          document.getElementById('practiceTitle').textContent = data.title;
+          renderCode();
+
+          // Check if user is creator or admin/owner
+          const isCreator = userData && (data.uploadedBy === userData.registrationNumber || userData.role === "admin" || userData.role === "owner");
+          if (isCreator) {
+            const headerActions = document.getElementById('headerActions');
+            const editBtn = document.createElement('a');
+            editBtn.href = `coder-editor.html?id=${resourceId}${courseId ? '&courseId=' + courseId : ''}${moduleId ? '&moduleId=' + moduleId : ''}`;
+            editBtn.className = 'back-btn';
+            editBtn.style.background = 'var(--accent-primary)';
+            editBtn.style.borderColor = 'var(--accent-primary)';
+            editBtn.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              Edit Content
+            `;
+            headerActions.appendChild(editBtn);
+          }
         } else {
           alert("Resource not found!");
           window.location.href = "resources.html";
@@ -772,8 +796,24 @@
             }
 
             if (prev) {
-                if (prev.nodeName === 'BR') prev.remove();
-                else prev.remove();
+                if (prev.nodeName === 'BR') {
+                    // Find which line we are removing
+                    const allNodes = Array.from(codeDisplay.childNodes);
+                    const prevIdx = allNodes.indexOf(prev);
+                    const brsBefore = allNodes.slice(0, prevIdx).filter(n => n.nodeName === 'BR').length;
+                    
+                    // User is merging line (brsBefore + 1) into line (brsBefore)
+                    // Only remove from reference if the line being left is empty
+                    const targetLines = targetCode.split('\n');
+                    const lineBeingLeft = targetLines[brsBefore + 1] || "";
+                    
+                    if (lineBeingLeft.trim() === "") {
+                        removeBlankLineFromReference(brsBefore);
+                    }
+                    prev.remove();
+                } else {
+                    prev.remove();
+                }
                 updateActiveLine();
                 e.preventDefault();
             }
@@ -938,10 +978,11 @@
     function updateLineNumbers() {
         const lineNumbers = document.getElementById('lineNumbers');
         if (!lineNumbers) return;
-        const lineHeight = 28.8; 
-        const padding = 64; 
-        const contentHeight = codeDisplay.scrollHeight - padding;
-        const totalLines = Math.max(targetCode.split('\n').length, Math.round(contentHeight / lineHeight));
+        
+        // Count actual line breaks in the typing area
+        const brCount = codeDisplay.querySelectorAll('br').length;
+        // Total lines is brCount + 1 (for the current line)
+        const totalLines = Math.max(targetCode.split('\n').length, brCount + 1);
         
         const currentLineCount = lineNumbers.children.length;
         if (totalLines > currentLineCount) {
@@ -950,7 +991,7 @@
                 div.textContent = i;
                 lineNumbers.appendChild(div);
             }
-        } else if (totalLines < currentLineCount && totalLines >= targetCode.split('\n').length) {
+        } else if (totalLines < currentLineCount) {
             while (lineNumbers.children.length > totalLines) {
                 lineNumbers.lastElementChild.remove();
             }
@@ -1086,9 +1127,9 @@
       let message = "";
       let buttonsHtml = "";
 
-      if (finalAccuracy === 100 && finalWpm >= 10) {
+      if (finalAccuracy === 100 && finalWpm >= 15) {
           if (currentLevel < 3) {
-              title = "Level Cleared!";
+              title = "Level Clear!";
               message = `Excellent! You completed the practice with ${finalAccuracy}% accuracy and ${finalWpm} WPM. Ready for the next level?`;
               buttonsHtml = `
                   <button class="action-btn" onclick="window.nextLevel()">Next Level</button>
@@ -1103,7 +1144,7 @@
           }
       } else {
           title = "Keep Practicing!";
-          message = `You got ${finalAccuracy}% accuracy and ${finalWpm} WPM. You need 100% accuracy and at least 10 WPM to advance to the next level.`;
+          message = `You got ${finalAccuracy}% accuracy and ${finalWpm} WPM. You need 100% accuracy and at least 15 WPM to advance to the next level.`;
           buttonsHtml = `
               <button class="action-btn" onclick="window.retryLevel()">Retry Level</button>
               <button class="action-btn" style="background: var(--glass-bg); border: 1px solid var(--glass-border); margin-left: 10px;" onclick="window.location.href='resources.html'">Finish</button>
@@ -1132,36 +1173,41 @@
         const refDisplay = document.getElementById('referenceDisplay');
         if (!refDisplay) return;
 
-        // Walk all text nodes, counting \n characters until we reach afterLineIndex
-        const walker = document.createTreeWalker(refDisplay, NodeFilter.SHOW_TEXT, null);
-        let linesSeen = 0;
-        let targetTextNode = null;
-        let insertOffset = 0;
+        // Handle insertion at the very beginning (before line 0)
+        if (afterLineIndex === -1) {
+            refDisplay.insertBefore(document.createTextNode('\n'), refDisplay.firstChild);
+        } else {
+            // Walk all text nodes, counting \n characters until we reach afterLineIndex
+            const walker = document.createTreeWalker(refDisplay, NodeFilter.SHOW_TEXT, null);
+            let linesSeen = 0;
+            let targetTextNode = null;
+            let insertOffset = 0;
 
-        let node;
-        while ((node = walker.nextNode())) {
-            const text = node.textContent;
-            for (let i = 0; i < text.length; i++) {
-                if (text[i] === '\n') {
-                    linesSeen++;
-                    if (linesSeen === afterLineIndex + 1) {
-                        // Insert a blank line right after this \n
-                        targetTextNode = node;
-                        insertOffset = i + 1;
-                        break;
+            let node;
+            while ((node = walker.nextNode())) {
+                const text = node.textContent;
+                for (let i = 0; i < text.length; i++) {
+                    if (text[i] === '\n') {
+                        linesSeen++;
+                        if (linesSeen === afterLineIndex + 1) {
+                            // Insert a blank line right after this \n
+                            targetTextNode = node;
+                            insertOffset = i + 1;
+                            break;
+                        }
                     }
                 }
+                if (targetTextNode) break;
             }
-            if (targetTextNode) break;
-        }
 
-        if (targetTextNode) {
-            // Split the text node at insertOffset and insert \n between the two parts
-            const after = targetTextNode.splitText(insertOffset);
-            targetTextNode.parentNode.insertBefore(document.createTextNode('\n'), after);
-        } else {
-            // Append at the end (cursor is at the last line)
-            refDisplay.appendChild(document.createTextNode('\n'));
+            if (targetTextNode) {
+                // Split the text node at insertOffset and insert \n between the two parts
+                const after = targetTextNode.splitText(insertOffset);
+                targetTextNode.parentNode.insertBefore(document.createTextNode('\n'), after);
+            } else {
+                // Append at the end (cursor is at the last line)
+                refDisplay.appendChild(document.createTextNode('\n'));
+            }
         }
 
         // Also add a line number entry
@@ -1170,6 +1216,42 @@
             const div = document.createElement('div');
             div.textContent = lineNumbers.children.length + 1;
             lineNumbers.appendChild(div);
+        }
+    }
+
+    function removeBlankLineFromReference(lineIndex) {
+        const linesArr = targetCode.split('\n');
+        if (linesArr.length <= 1) return;
+        
+        // Remove the line from targetCode to keep validation in sync
+        linesArr.splice(lineIndex, 1);
+        targetCode = linesArr.join('\n');
+
+        const refDisplay = document.getElementById('referenceDisplay');
+        if (!refDisplay) return;
+
+        // Walk all text nodes, counting \n characters to find the one to remove
+        const walker = document.createTreeWalker(refDisplay, NodeFilter.SHOW_TEXT, null);
+        let linesSeen = 0;
+        let node;
+        while ((node = walker.nextNode())) {
+            const text = node.textContent;
+            for (let i = 0; i < text.length; i++) {
+                if (text[i] === '\n') {
+                    if (linesSeen === lineIndex) {
+                        // Remove this specific newline character
+                        node.textContent = text.substring(0, i) + text.substring(i + 1);
+                        
+                        // Update line numbers display
+                        const lineNumbers = document.getElementById('lineNumbers');
+                        if (lineNumbers && lineNumbers.lastElementChild) {
+                            lineNumbers.lastElementChild.remove();
+                        }
+                        return;
+                    }
+                    linesSeen++;
+                }
+            }
         }
     }
 
@@ -1213,8 +1295,12 @@
 
         // If the line is empty (user just pressed Enter for a blank line), allow it freely
         if (nodesInLine.length === 0) {
-            if (true) {
-                insertBlankLineInReference(brsBefore - 1);
+            if (isEnter) {
+                // If the reference already has an empty line here, don't shift/insert a new one
+                const expectedNextLine = targetLines[brsBefore + 1] || "";
+                if (expectedNextLine.trim() !== "") {
+                    insertBlankLineInReference(brsBefore);
+                }
             }
             updateStats();
             return;

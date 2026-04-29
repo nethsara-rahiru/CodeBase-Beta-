@@ -100,8 +100,9 @@ window.handleUserAuth = async function (user) {
     // ---------------------------
     // FIRESTORE CHECK → targeted queries (Fast & Efficient)
     // ---------------------------
+    const userEmail = user.email.toLowerCase();
     const allowedRef = collection(db, "login_control", "access", "allowedEmails");
-    const allowedQuery = query(allowedRef, where("email", "==", user.email));
+    const allowedQuery = query(allowedRef, where("email", "==", userEmail));
     
     const bannedRef = collection(db, "login_control", "access", "bannedReg");
     const sysRef = doc(db, "system", "settings");
