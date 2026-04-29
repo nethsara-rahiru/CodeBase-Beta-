@@ -450,7 +450,7 @@
 
   <script type="module">
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { app } from "./assets/js/firebase.js";
 
     const auth = getAuth(app);
@@ -483,7 +483,7 @@
       document.getElementById("emailCard").textContent = user.email;
       document.getElementById("name").value = user.displayName || "";
 
-      // Autofill RegNo
+      // Autofill RegNo and other details from pending approved registrations if any
       const emailPrefix = user.email.split("@")[0];
       const allowedUserDetails = JSON.parse(localStorage.getItem("allowedUserDetails"));
       
@@ -494,6 +494,32 @@
         autoReg = formatRegNo(emailPrefix);
       }
       regnoInput.value = autoReg;
+
+      // Try to fetch deeper details from pending_registrations
+      try {
+          const q = query(collection(db, "pending_registrations"), 
+                          where("email", "==", user.email.toLowerCase()),
+                          where("status", "==", "approved"));
+          const pendingSnap = await getDocs(q);
+          
+          if (!pendingSnap.empty) {
+              const data = pendingSnap.docs[0].data();
+              document.getElementById("name").value = data.fullName || user.displayName || "";
+              regnoInput.value = data.regNumber || autoReg;
+              document.getElementById("phone").value = data.phone || "";
+              document.getElementById("level").value = data.year || "";
+              document.getElementById("semester").value = data.semester || "";
+              
+              // Set stream based on fetched reg number
+              const parts = (data.regNumber || "").split("/");
+              if (parts[1]) currentStream = parts[1];
+              
+              // Trigger visual validation for phone
+              if (data.phone) phoneInput.dispatchEvent(new Event('input'));
+          }
+      } catch (err) {
+          console.error("Error fetching pending data:", err);
+      }
 
       // HIDE LOADING, SHOW FORM WITH TRANSITION
       document.getElementById("loadingState").style.display = "none";

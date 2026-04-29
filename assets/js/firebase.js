@@ -20,7 +20,10 @@ import {
   serverTimestamp,
   addDoc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 // Firebase config
@@ -37,9 +40,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// Initialize Firestore with modern persistence settings
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
+// Initialize Firestore with modern persistence settings
 const db = initializeFirestore(app, {
   cache: persistentLocalCache({
     tabManager: persistentMultipleTabManager()
