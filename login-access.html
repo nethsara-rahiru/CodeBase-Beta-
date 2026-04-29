@@ -193,7 +193,7 @@ bulkAddBtn.onclick = async () => {
         const [email, regNo] = line.split(/\s+/);
 
         if (email && regNo) {
-            await addDoc(allowedRef, { email, regNo });
+            await addDoc(allowedRef, { email: email.toLowerCase(), regNo });
         }
     }
 
@@ -207,7 +207,7 @@ singleAddBtn.onclick = async () => {
 
     if (!email || !regNo) return toast("Fill both fields!");
 
-    await addDoc(allowedRef, { email, regNo });
+    await addDoc(allowedRef, { email: email.toLowerCase(), regNo });
     toast("Added!");
 };
 

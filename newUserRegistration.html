@@ -758,8 +758,9 @@
                 for (const key in fields) {
                     const field = fields[key];
                     // Trim values before validation
-                    const val = field.element.value.trim();
-                    field.element.value = val; // Apply trim back to input
+                    let val = field.element.value.trim();
+                    if (key === 'email') val = val.toLowerCase();
+                    field.element.value = val; // Apply trim (and lowercase for email) back to input
                     formData[key] = val;
 
                     if (!field.validate(val)) {
