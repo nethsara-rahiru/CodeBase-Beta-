@@ -282,6 +282,11 @@
 
         <div id="loading">Establishing secure connection...</div>
 
+        <div style="margin-top: 24px; font-size: 0.85rem; color: var(--text-muted);">
+            Don't have a university email? <br>
+            <a href="newUserRegistration.html" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">Request Access Here</a>
+        </div>
+
         <p class="footer">
             Designed for University Students — Non-commercial Project<br>
             <a href="privacy.html"
@@ -294,24 +299,39 @@
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
         import { app } from "./assets/js/firebase.js";
-
+        // Import the auth handlers from firebase.js
+        // Note: we'll use the window objects as they are already attached in firebase.js
+        // But we need to ensure firebase.js is loaded first.
+        
         const auth = getAuth(app);
         const btn = document.getElementById("googleBtn");
         const loading = document.getElementById("loading");
+
+        // We wait for window.handleUserAuth to be defined
+        function waitForAuthHandlers(callback) {
+            if (window.handleUserAuth && window.googleLogin) {
+                callback();
+            } else {
+                setTimeout(() => waitForAuthHandlers(callback), 100);
+            }
+        }
 
         // FAST REDIRECT IF SESSION EXISTS
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 loading.style.display = "block";
                 loading.textContent = "Verifying account... Please wait";
-                try {
-                    await window.handleUserAuth(user);
-                } catch (error) {
-                    console.error("Auth check failed:", error);
-                    loading.style.display = "none";
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                }
+                
+                waitForAuthHandlers(async () => {
+                    try {
+                        await window.handleUserAuth(user);
+                    } catch (error) {
+                        console.error("Auth check failed:", error);
+                        loading.style.display = "none";
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                    }
+                });
             }
         });
 
@@ -321,21 +341,20 @@
             loading.style.display = "block";
             loading.textContent = "Establishing secure connection...";
 
-            try {
-                // calls window.googleLogin defined in firebase.js
-                await window.googleLogin();
-            } catch (error) {
-                console.error("Login error:", error);
-                alert("Authentication failed: " + (error.message || "Please check your connection."));
-                btn.disabled = false;
-                btn.style.opacity = "1";
-                loading.style.display = "none";
-            }
+            waitForAuthHandlers(async () => {
+                try {
+                    await window.googleLogin();
+                } catch (error) {
+                    console.error("Login error:", error);
+                    alert("Authentication failed: " + (error.message || "Please check your connection."));
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    loading.style.display = "none";
+                }
+            });
         };
     </script>
-
     <script type="module" src="assets/js/firebase.js"></script>
-
 </body>
 
 </html>
