@@ -18,7 +18,9 @@ import {
   query,
   where,
   serverTimestamp,
-  addDoc
+  addDoc,
+  updateDoc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 // Firebase config
@@ -58,14 +60,14 @@ let isAuthProcessing = false;
 getRedirectResult(auth)
   .then((result) => {
     if (result) {
-      window.handleUserAuth(result.user);
+      handleUserAuth(result.user);
     }
   })
   .catch((error) => {
     console.error("Redirect login failed:", error);
   });
 
-window.googleLogin = async function () {
+export const googleLogin = async function () {
   try {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
@@ -75,15 +77,16 @@ window.googleLogin = async function () {
     } else {
       // Stick to popup for desktop
       const result = await signInWithPopup(auth, provider);
-      await window.handleUserAuth(result.user);
+      await handleUserAuth(result.user);
     }
   } catch (err) {
     console.error("Login failed:", err);
     throw err;
   }
 };
+window.googleLogin = googleLogin;
 
-window.handleUserAuth = async function (user) {
+export const handleUserAuth = async function (user) {
   if (!user || isAuthProcessing) return;
   isAuthProcessing = true;
 
@@ -127,11 +130,12 @@ window.handleUserAuth = async function (user) {
       }));
     }
 
-    const domainAllowed = ALLOWED_DOMAINS.some(d => user.email.endsWith(d));
+    const domainAllowed = ALLOWED_DOMAINS.some(d => user.email.toLowerCase().endsWith(d.toLowerCase()));
     const emailAllowed = !!allowedUser;
 
     if (!domainAllowed && !emailAllowed) {
-      alert("Access denied. Only approved university emails or whitelisted accounts allowed.");
+      console.log("Access Denied for:", user.email, "Domain:", domainAllowed, "Whitelist:", emailAllowed);
+      alert(`Access Denied!\n\nEmail: ${user.email}\nReason: Not a university email AND not found in the whitelist.\n\nPlease register through the "Request Access" link if you haven't already.`);
       await signOut(auth);
       localStorage.clear();
       const path = window.location.pathname.toLowerCase();
@@ -202,10 +206,12 @@ window.handleUserAuth = async function (user) {
     }
   } catch (error) {
     console.error("Auth process error:", error);
+    alert("Verification Error: " + error.message + "\n\nThis might be a permission or connection issue. Please contact support.");
   } finally {
     isAuthProcessing = false;
   }
 };
+window.handleUserAuth = handleUserAuth;
 
 // ------------------------------------------------------------------------------------------
 // ROLE REDIRECTION
