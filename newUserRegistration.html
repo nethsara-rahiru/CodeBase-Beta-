@@ -512,7 +512,7 @@
 
     <script type="module">
         import { db } from "./assets/js/firebase.js";
-        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('registrationForm');
@@ -625,7 +625,7 @@
                 }
             }
 
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 if (isSubmitting) return; // Anti rapid submission
@@ -655,23 +655,34 @@
                     submitBtn.disabled = true;
                     submitBtn.classList.add('submitting');
                     
-                    console.log("Form Data to Save:", formData);
+                    try {
+                        // Save to Firestore
+                        await addDoc(collection(db, "pending_registrations"), {
+                            ...formData,
+                            status: 'pending',
+                            requestedAt: serverTimestamp()
+                        });
 
-                    // Simulate API network request (Anti-gravity smooth UX)
-                    setTimeout(() => {
                         submitBtn.classList.remove('submitting');
                         submitBtn.style.display = 'none';
+                        successMessage.textContent = "Registration request sent! Please wait for admin approval.";
                         successMessage.style.display = 'block';
 
-                        // Reset form after 3 seconds showing success
+                        // Reset form after 5 seconds showing success
                         setTimeout(() => {
                             form.reset();
                             submitBtn.style.display = 'block';
                             submitBtn.disabled = false;
                             isSubmitting = false;
                             successMessage.style.display = 'none';
-                        }, 3000);
-                    }, 1500);
+                        }, 5000);
+                    } catch (err) {
+                        console.error("Error saving registration:", err);
+                        alert("Something went wrong. Please try again later.");
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('submitting');
+                        isSubmitting = false;
+                    }
                 } else {
                     // Shake effect on error
                     const card = document.querySelector('.glass-card');

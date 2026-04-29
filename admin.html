@@ -976,6 +976,7 @@
       <div class="nav-item" data-tab="batch">Batch</div>
       <div class="nav-item" data-tab="staff">Staff Management</div>
       <div class="nav-item" data-tab="users">Users</div>
+      <div class="nav-item" data-tab="pending-registrations">Registration Requests</div>
       <div class="nav-item" data-tab="allowed-emails">Allowed Emails</div>
       <div class="nav-item" data-tab="community">Community Resources</div>
     </nav>
@@ -1347,6 +1348,38 @@
     </div>
 
     <!-- Tab 8: Allowed Emails -->
+    <div class="tab-content" id="pending-registrationsTab">
+      <div class="admin-card">
+        <div class="section-header">
+          <div>
+            <h2>External Registration Requests</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Review and approve users who registered without university emails</p>
+          </div>
+          <button class="action-btn" style="background: var(--success); display: none;" id="approveSelectedBtn">Approve Selected</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" id="selectAllPending"></th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Reg No</th>
+                <th>University</th>
+                <th>Year/Sem</th>
+                <th>Phone</th>
+                <th>Requested At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="pendingRegistrationsTableBody">
+              <tr><td colspan="9" style="text-align:center;">Loading requests...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div class="tab-content" id="allowed-emailsTab">
       <div class="admin-card">
         <div class="section-header">
@@ -1725,7 +1758,7 @@
 
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, addDoc, collectionGroup, limit } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, onSnapshot, addDoc, collectionGroup, limit, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { app } from "./assets/js/firebase.js";
 
     const auth = getAuth(app);
@@ -1813,6 +1846,7 @@
       if (tab === "organizations") loadOrgs();
       if (tab === "staff") loadStaff();
       if (tab === "users") { loadUsers(); loadBannedUsers(); }
+      if (tab === "pending-registrations") loadPendingRegistrations();
       if (tab === "allowed-emails") loadAllowedEmails();
       if (tab === "community") loadCommunityResources();
       if (tab === "universitys") loadUniversitys();
@@ -1869,6 +1903,7 @@
         organizations: perms.canManageOrgs,
         courses: perms.canManageCourses,
         users: perms.canManageUsers,
+        "pending-registrations": perms.canManageUsers,
         "allowed-emails": perms.canManageUsers,
         universitys: perms.canManageUsers || userData.role === "owner",
         staff: perms.canManageStaff || userData.role === "owner",
@@ -2764,6 +2799,125 @@
           bannedAt: new Date().toISOString()
         });
         alert("User banned.");
+      }
+    };
+
+    // PENDING REGISTRATIONS
+    async function loadPendingRegistrations() {
+      if (!currentAdminPerms.isOwner && !currentAdminPerms.canManageUsers) return;
+      const snap = await getDocs(query(collection(db, "pending_registrations"), orderBy("requestedAt", "desc")));
+      const body = document.getElementById("pendingRegistrationsTableBody");
+      const selectAll = document.getElementById("selectAllPending");
+      const approveBtn = document.getElementById("approveSelectedBtn");
+      
+      body.innerHTML = "";
+      if (selectAll) selectAll.checked = false;
+      if (approveBtn) approveBtn.style.display = "none";
+      
+      let count = 0;
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.status !== 'pending') return;
+        count++;
+        const row = document.createElement("tr");
+        const date = data.requestedAt?.toDate() ? data.requestedAt.toDate().toLocaleString() : "N/A";
+        row.innerHTML = `
+          <td><input type="checkbox" class="pending-checkbox" data-id="${d.id}" data-email="${data.email}" data-reg="${data.regNumber}"></td>
+          <td>${data.fullName}</td>
+          <td>${data.email}</td>
+          <td>${data.regNumber}</td>
+          <td>${data.university}</td>
+          <td>Year ${data.year} / Sem ${data.semester}</td>
+          <td>${data.phone}</td>
+          <td>${date}</td>
+          <td>
+            <button class="action-btn" style="padding:4px 8px; font-size:0.75rem; background:var(--success); margin-right:5px;" onclick="approveRegistration('${d.id}', '${data.email}', '${data.regNumber}')">Approve</button>
+            <button class="btn-delete" style="font-size:0.75rem;" onclick="rejectRegistration('${d.id}')">Reject</button>
+          </td>
+        `;
+        body.appendChild(row);
+      });
+      
+      if (count === 0) {
+        body.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-muted);">No pending requests</td></tr>';
+      }
+
+      // Selection logic
+      if (selectAll) {
+        selectAll.onclick = () => {
+          document.querySelectorAll('.pending-checkbox').forEach(cb => cb.checked = selectAll.checked);
+          updateApproveBtnVisibility();
+        };
+      }
+
+      body.onclick = (e) => {
+        if (e.target.classList.contains('pending-checkbox')) {
+          updateApproveBtnVisibility();
+        }
+      };
+    }
+
+    function updateApproveBtnVisibility() {
+      const selected = document.querySelectorAll('.pending-checkbox:checked').length;
+      const approveBtn = document.getElementById("approveSelectedBtn");
+      if (approveBtn) approveBtn.style.display = selected > 0 ? "block" : "none";
+    }
+
+    document.getElementById("approveSelectedBtn").onclick = async () => {
+      const selected = document.querySelectorAll('.pending-checkbox:checked');
+      if (selected.length === 0) return;
+      if (!confirm(`Approve all ${selected.length} selected requests?`)) return;
+
+      const btn = document.getElementById("approveSelectedBtn");
+      btn.disabled = true;
+      btn.textContent = "Processing...";
+
+      for (const cb of selected) {
+        const id = cb.dataset.id;
+        const email = cb.dataset.email;
+        const regNo = cb.dataset.reg;
+        try {
+          await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email, regNo });
+          await updateDoc(doc(db, "pending_registrations", id), { status: 'approved' });
+        } catch (err) {
+          console.error(`Failed to approve ${email}:`, err);
+        }
+      }
+
+      alert("Selected registrations approved.");
+      btn.disabled = false;
+      btn.textContent = "Approve Selected";
+      loadPendingRegistrations();
+    };
+
+    window.approveRegistration = async (id, email, regNo) => {
+      if (!confirm(`Approve registration for ${email}?`)) return;
+      
+      try {
+        // 1. Add to allowed emails
+        await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email, regNo });
+        
+        // 2. Update status in pending_registrations
+        await updateDoc(doc(db, "pending_registrations", id), { status: 'approved' });
+        
+        alert("Registration approved and email whitelisted.");
+        loadPendingRegistrations();
+      } catch (err) {
+        console.error("Approval failed:", err);
+        alert("Failed to approve: " + err.message);
+      }
+    };
+
+    window.rejectRegistration = async (id) => {
+      if (!confirm("Reject and delete this registration request?")) return;
+      
+      try {
+        await deleteDoc(doc(db, "pending_registrations", id));
+        alert("Request rejected.");
+        loadPendingRegistrations();
+      } catch (err) {
+        console.error("Rejection failed:", err);
+        alert("Failed to reject: " + err.message);
       }
     };
 
