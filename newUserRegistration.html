@@ -397,6 +397,114 @@
         .submitting .btn-text { opacity: 0; }
         .submitting .spinner { display: block; }
 
+        /* Success Overlay & Animation */
+        .glass-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            z-index: 100;
+            animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .success-content h2 {
+            font-size: 1.8rem;
+            margin: 20px 0 10px;
+            background: linear-gradient(to right, var(--accent-success), #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .success-content p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .checkmark-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+        .checkmark-svg {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: var(--accent-success);
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--accent-success);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: var(--accent-success);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+
+        @keyframes fill {
+            100% { box-shadow: inset 0px 0px 0px 50px rgba(16, 185, 129, 0.1); }
+        }
+
+        .done-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .done-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 600px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -505,8 +613,22 @@
                     <span class="btn-text">Register Now</span>
                     <div class="spinner"></div>
                 </button>
-                <div class="success-message" id="successMessage">Registration Successful! Redirecting...</div>
             </form>
+
+            <!-- Success Overlay -->
+            <div class="success-overlay" id="successOverlay">
+                <div class="success-content">
+                    <div class="checkmark-wrapper">
+                        <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                    </div>
+                    <h2>Registration Pending!</h2>
+                    <p>Your request has been sent successfully. Please wait for admin approval to access the system.</p>
+                    <button class="done-btn" onclick="window.location.href='index.html'">Go to Home</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -517,7 +639,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('registrationForm');
             const submitBtn = document.getElementById('submitBtn');
-            const successMessage = document.getElementById('successMessage');
             const uniSelect = document.getElementById('university');
 
             // Fetch universities from Firestore
@@ -663,19 +784,10 @@
                             requestedAt: serverTimestamp()
                         });
 
-                        submitBtn.classList.remove('submitting');
-                        submitBtn.style.display = 'none';
-                        successMessage.textContent = "Registration request sent! Please wait for admin approval.";
-                        successMessage.style.display = 'block';
-
-                        // Reset form after 5 seconds showing success
-                        setTimeout(() => {
-                            form.reset();
-                            submitBtn.style.display = 'block';
-                            submitBtn.disabled = false;
-                            isSubmitting = false;
-                            successMessage.style.display = 'none';
-                        }, 5000);
+                        // Show Success Overlay
+                        const overlay = document.getElementById('successOverlay');
+                        overlay.style.display = 'flex';
+                        
                     } catch (err) {
                         console.error("Error saving registration:", err);
                         alert("Something went wrong. Please try again later.");
