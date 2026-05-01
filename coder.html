@@ -1296,10 +1296,11 @@
         // If the line is empty (user just pressed Enter for a blank line), allow it freely
         if (nodesInLine.length === 0) {
             if (isEnter) {
-                // If the reference already has an empty line here, don't shift/insert a new one
-                const expectedNextLine = targetLines[brsBefore + 1] || "";
-                if (expectedNextLine.trim() !== "") {
-                    insertBlankLineInReference(brsBefore);
+                // If the current expected line in reference was already empty, 
+                // it means the user just "matched" it. No shift needed.
+                const expectedLine = targetLines[brsBefore] || "";
+                if (expectedLine.trim() !== "") {
+                    insertBlankLineInReference(brsBefore - 1);
                 }
             }
             updateStats();
