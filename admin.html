@@ -993,6 +993,7 @@
       <div class="nav-item" data-tab="pending-registrations">Registration Requests</div>
       <div class="nav-item" data-tab="allowed-emails">Allowed Emails</div>
       <div class="nav-item" data-tab="community">Community Resources</div>
+      <div class="nav-item" data-tab="feedback">User Feedback</div>
     </nav>
     <a href="dashboard.html" class="btn-dashboard">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1768,6 +1769,32 @@
       </div>
     </div>
     </div>
+    <div class="tab-content" id="feedbackTab">
+      <div class="admin-card">
+        <div class="section-header">
+          <h2>User Feedback</h2>
+          <button class="action-btn" onclick="loadFeedback()">Refresh Feedback</button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Review feedback submitted by users from the feedback page.</p>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>User</th>
+                <th>Type & Rating</th>
+                <th>Message</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="feedbackTableBody">
+              <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Loading feedback...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script type="module">
@@ -1865,6 +1892,7 @@
       if (tab === "community") loadCommunityResources();
       if (tab === "universitys") loadUniversitys();
       if (tab === "batch") loadBatchUniData();
+      if (tab === "feedback") loadFeedback();
     }
 
     async function loadSystemSettings() {
@@ -1922,7 +1950,8 @@
         universitys: perms.canManageUsers || userData.role === "owner",
         staff: perms.canManageStaff || userData.role === "owner",
         batch: perms.canManageBatch || userData.role === "owner",
-        community: true
+        community: true,
+        feedback: true
       };
 
       document.querySelectorAll('.nav-item').forEach(item => {
@@ -1999,29 +2028,32 @@
 
       // 4. Recent Logins Table
       const recentBody = document.getElementById("recentLoginsTableBody");
-      const qRecent = query(collection(db, "activity"),
-        where("type", "==", "login"),
-        orderBy("timestamp", "desc"),
-        limit(10)
-      );
+      
+      const recentLogins = logs
+         .filter(l => l.type === "login")
+         .sort((a, b) => b.date - a.date)
+         .slice(0, 10);
 
-      const recentSnap = await getDocs(qRecent);
       recentBody.innerHTML = "";
 
-      if (recentSnap.empty) {
+      if (recentLogins.length === 0) {
         recentBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No login activity recorded</td></tr>';
       } else {
-        recentSnap.forEach(doc => {
-          const d = doc.data();
-          const time = d.timestamp?.toDate() ? d.timestamp.toDate().toLocaleString('en-US', {
+        recentLogins.forEach(d => {
+          const time = d.date ? d.date.toLocaleString('en-US', {
             month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
           }) : '---';
 
+          const u = users.get(d.uid) || {};
+          const name = d.userName || d.name || u.name || 'Anonymous';
+          const email = d.userEmail || d.email || u.email || '---';
+          const regNo = d.regNo || d.registrationNumber || u.registrationNumber || '';
+
           const row = document.createElement("tr");
           row.innerHTML = `
-                  <td>${d.userName || d.name || 'Anonymous'}<br><small style="color:var(--text-muted);">${d.regNo || d.registrationNumber || ''}</small></td>
-                  <td>${d.userEmail || d.email || '---'}</td>
+                  <td>${name}<br><small style="color:var(--text-muted);">${regNo}</small></td>
+                  <td>${email}</td>
                   <td style="font-size:0.8rem;">${time}</td>
               `;
           recentBody.appendChild(row);
@@ -3670,6 +3702,64 @@
         if (window.innerWidth <= 1024) closeSidebar();
       });
     });
+    // ------------------------------------------------------------------------------------------
+    // FEEDBACK MANAGEMENT
+    // ------------------------------------------------------------------------------------------
+    window.loadFeedback = async () => {
+      const tbody = document.getElementById("feedbackTableBody");
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Loading feedback...</td></tr>';
+      
+      try {
+        const q = query(collection(db, "feedback"), orderBy("timestamp", "desc"));
+        const snap = await getDocs(q);
+        
+        tbody.innerHTML = "";
+        
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No feedback found.</td></tr>';
+          return;
+        }
+
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "Unknown Date";
+          const ratingStars = "⭐".repeat(data.rating || 0);
+          
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${date}</td>
+            <td>
+              <div style="font-weight: 600;">${data.userName || "Unknown"}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">${data.userEmail || ""}</div>
+            </td>
+            <td>
+              <span class="role-badge" style="background: rgba(99,102,241,0.1); color: var(--accent-primary);">${data.type || "General"}</span>
+              <div style="margin-top: 5px; font-size: 0.8rem;">${ratingStars} (${data.rating}/5)</div>
+            </td>
+            <td style="max-width: 300px; white-space: pre-wrap; font-size: 0.9rem;">${data.message || ""}</td>
+            <td>
+              <button class="btn-delete" onclick="deleteFeedback('${docSnap.id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error("Error loading feedback:", error);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger);">Error loading feedback.</td></tr>';
+      }
+    };
+
+    window.deleteFeedback = async (id) => {
+      if (!confirm("Are you sure you want to delete this feedback?")) return;
+      try {
+        await deleteDoc(doc(db, "feedback", id));
+        loadFeedback();
+      } catch (error) {
+        console.error("Error deleting feedback:", error);
+        alert("Failed to delete feedback.");
+      }
+    };
   </script>
 </body>
 
