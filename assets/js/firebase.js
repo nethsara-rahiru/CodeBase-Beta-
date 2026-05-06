@@ -41,12 +41,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Initialize Firestore with modern persistence settings
-const db = initializeFirestore(app, {
-  cache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
+let db;
+try {
+  // Try to initialize with modern persistence settings
+  db = initializeFirestore(app, {
+    cache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+} catch (e) {
+  console.warn("Firestore persistence failed (likely private mode or WebView), falling back to default:", e);
+  db = getFirestore(app);
+}
 
 const provider = new GoogleAuthProvider();
 
@@ -73,13 +79,19 @@ export const googleLogin = async function () {
   try {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (isMobile) {
-      // Use redirect mode for mobile to ensure compatibility with WebViews
-      await signInWithRedirect(auth, provider);
-    } else {
-      // Stick to popup for desktop
+    try {
+      // Try popup first. This is required if testing locally on mobile (e.g. 192.168.x.x without HTTPS)
+      // because signInWithRedirect requires HTTPS on non-localhost domains.
       const result = await signInWithPopup(auth, provider);
       await handleUserAuth(result.user);
+    } catch (popupErr) {
+      console.warn("Popup login failed, attempting redirect...", popupErr);
+      // If popup is blocked, closed by user, or fails due to mobile restrictions, fallback to redirect
+      if (popupErr.code === 'auth/popup-blocked' || isMobile) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        throw popupErr;
+      }
     }
   } catch (err) {
     console.error("Login failed:", err);

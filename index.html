@@ -314,31 +314,39 @@
     // -------------------------------------------------
     // Auth State Monitor
     // -------------------------------------------------
+    let isRedirecting = false;
+
     onAuthStateChanged(auth, (user) => {
+      if (isRedirecting) return;
+      isRedirecting = true;
+
+      // Give Firebase a moment to process any getRedirectResult before deciding
       setTimeout(() => {
         clearInterval(msgTimer);
-        // Final fade out before redirect
         document.querySelector('.container').style.opacity = 0;
         document.querySelector('.container').style.transition = 'opacity 0.8s ease-in-out';
         
         setTimeout(() => {
-          if (user) {
+          // Use auth.currentUser to get the freshest state
+          if (auth.currentUser) {
             window.location.href = "dashboard.html";
           } else {
-            const hasLegacySession = localStorage.getItem("appCode") === "App" && 
-                                     localStorage.getItem("uid");
+            let hasLegacySession = false;
+            try {
+              hasLegacySession = localStorage.getItem("appCode") === "App" && 
+                                 localStorage.getItem("uid");
+            } catch (e) {
+              console.warn("localStorage access blocked", e);
+            }
             
             if (hasLegacySession) {
-              setTimeout(() => {
-                 if (!auth.currentUser) window.location.href = "login.html";
-                 else window.location.href = "dashboard.html";
-              }, 1000);
+              window.location.href = "login.html"; // They need to re-auth
             } else {
               window.location.href = "login.html";
             }
           }
         }, 800);
-      }, 3000);
+      }, 2500); // Wait 2.5 seconds to show loading animation and let redirect result settle
     });
 
     setTimeout(() => {
