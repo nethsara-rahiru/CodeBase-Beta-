@@ -78,15 +78,20 @@ getRedirectResult(auth)
 export const googleLogin = async function () {
   try {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isLocalDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168.");
     
+    // On mobile production, use redirect immediately to prevent double account selection.
+    // Popups often fail to communicate back to the main window on mobile browsers.
+    if (isMobile && !isLocalDev) {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+
     try {
-      // Try popup first. This is required if testing locally on mobile (e.g. 192.168.x.x without HTTPS)
-      // because signInWithRedirect requires HTTPS on non-localhost domains.
       const result = await signInWithPopup(auth, provider);
       await handleUserAuth(result.user);
     } catch (popupErr) {
       console.warn("Popup login failed, attempting redirect...", popupErr);
-      // If popup is blocked, closed by user, or fails due to mobile restrictions, fallback to redirect
       if (popupErr.code === 'auth/popup-blocked' || isMobile) {
         await signInWithRedirect(auth, provider);
       } else {
