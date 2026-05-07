@@ -313,6 +313,8 @@
                     await handleUserAuth(user);
                 } catch (error) {
                     console.error("Auth check failed:", error);
+                    alert("Authentication error. Please try again.");
+                } finally {
                     loading.style.display = "none";
                     btn.disabled = false;
                     btn.style.opacity = "1";

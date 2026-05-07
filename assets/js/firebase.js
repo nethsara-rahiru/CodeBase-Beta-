@@ -56,7 +56,7 @@ try {
 
 const provider = new GoogleAuthProvider();
 
-const ALLOWED_DOMAINS = ["@std.uwu.ac.lk", "@stu.vau.ac.lk"];
+const ALLOWED_DOMAINS = ["@std.uwu.ac.lk", "@uwu.ac.lk", "@stu.vau.ac.lk", "@vau.ac.lk", "@univ.jfn.ac.lk"];
 
 // ------------------------------------------------------------------------------------------
 // GOOGLE LOGIN
@@ -68,6 +68,7 @@ let isAuthProcessing = false;
 getRedirectResult(auth)
   .then((result) => {
     if (result) {
+      console.log("Redirect result picked up for:", result.user.email);
       handleUserAuth(result.user);
     }
   })
@@ -80,8 +81,9 @@ export const googleLogin = async function () {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isLocalDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168.");
     
+    console.log("Login attempt - Mobile:", isMobile, "LocalDev:", isLocalDev);
+
     // On mobile production, use redirect immediately to prevent double account selection.
-    // Popups often fail to communicate back to the main window on mobile browsers.
     if (isMobile && !isLocalDev) {
       await signInWithRedirect(auth, provider);
       return;
@@ -99,15 +101,20 @@ export const googleLogin = async function () {
       }
     }
   } catch (err) {
-    console.error("Login failed:", err);
+    console.error("Login initiation failed:", err);
     throw err;
   }
 };
 window.googleLogin = googleLogin;
 
 export const handleUserAuth = async function (user) {
-  if (!user || isAuthProcessing) return;
+  if (!user) return;
+  if (isAuthProcessing) {
+      console.log("Auth already in progress, skipping call for:", user.email);
+      return;
+  }
   isAuthProcessing = true;
+  console.log("Starting auth verification for:", user.email);
 
   try {
     // 1. Quick Local Check for session persistence
@@ -153,7 +160,7 @@ export const handleUserAuth = async function (user) {
     const emailAllowed = !!allowedUser;
 
     if (!domainAllowed && !emailAllowed) {
-      console.log("Access Denied for:", user.email, "Domain:", domainAllowed, "Whitelist:", emailAllowed);
+      console.log("Access Denied for:", user.email, "Domain Check:", domainAllowed, "Whitelist Check:", emailAllowed);
       alert(`Access Denied!\n\nEmail: ${user.email}\nReason: Not a university email AND not found in the whitelist.\n\nPlease register through the "Request Access" link if you haven't already.`);
       await signOut(auth);
       localStorage.clear();
@@ -161,7 +168,6 @@ export const handleUserAuth = async function (user) {
       if (!path.includes("login.html") && path !== "/" && !path.endsWith("/") && path.includes(".html")) {
           window.location.href = "login.html"; 
       }
-      isAuthProcessing = false;
       return;
     }
 

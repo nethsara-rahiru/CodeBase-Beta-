@@ -2993,7 +2993,7 @@
       if (!email) return;
 
       try {
-        await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email, regNo });
+        await addDoc(collection(db, "login_control", "access", "allowedEmails"), { email: email.toLowerCase(), regNo });
         e.target.reset();
         loadAllowedEmails();
       } catch (err) {
