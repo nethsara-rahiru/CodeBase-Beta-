@@ -93,20 +93,17 @@ export const googleLogin = async function () {
   console.log("Login clicked. Mobile:", isMobile, "LocalDev:", isLocalDev);
 
   try {
-    // Force redirect on mobile to avoid popup issues entirely
-    if (isMobile && !isLocalDev) {
-      console.log("Forcing signInWithRedirect for mobile production...");
-      await signInWithRedirect(auth, provider);
-      return;
-    }
-
+    // We used to force redirect on mobile, but it's causing issues.
+    // Instead, we now try Popup first (even on mobile) and only use Redirect as a fallback.
     try {
       console.log("Attempting signInWithPopup...");
       const result = await signInWithPopup(auth, provider);
+      console.log("Popup success for:", result.user.email);
       await handleUserAuth(result.user);
     } catch (popupErr) {
-      console.warn("signInWithPopup failed:", popupErr.code, popupErr.message);
-      // Fallback to redirect for ANY error on mobile or if blocked
+      console.warn("signInWithPopup failed or blocked:", popupErr.code);
+      
+      // If it's a mobile device OR the popup was specifically blocked, use Redirect.
       if (isMobile || popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request') {
         console.log("Falling back to signInWithRedirect...");
         await signInWithRedirect(auth, provider);
