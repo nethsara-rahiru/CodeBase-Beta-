@@ -93,8 +93,11 @@ export const googleLogin = async function () {
   console.log("Login clicked. Mobile:", isMobile, "LocalDev:", isLocalDev);
 
   try {
-    // We used to force redirect on mobile, but it's causing issues.
-    // Instead, we now try Popup first (even on mobile) and only use Redirect as a fallback.
+    // IMPORTANT DEVELOPER NOTE: 
+    // We prefer signInWithPopup even on mobile. 
+    // DO NOT force signInWithRedirect for mobile devices. 
+    // Some mobile browsers (Normal Mode) lose the redirect result due to strict privacy/cookie rules, 
+    // leading to an infinite login loop. Popups are more stable as they maintain the page state.
     try {
       console.log("Attempting signInWithPopup...");
       const result = await signInWithPopup(auth, provider);
