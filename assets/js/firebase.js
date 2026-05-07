@@ -43,14 +43,22 @@ const auth = getAuth(app);
 
 let db;
 try {
-  // Try to initialize with modern persistence settings
-  db = initializeFirestore(app, {
-    cache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager()
-    })
-  });
+  // Mobile browsers can be flaky with multi-tab persistence, so we use a simpler approach for mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    db = getFirestore(app);
+    console.log("Firestore initialized in standard mode (Mobile optimization)");
+  } else {
+    db = initializeFirestore(app, {
+      cache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+    console.log("Firestore initialized with multi-tab persistence (Desktop)");
+  }
 } catch (e) {
-  console.warn("Firestore persistence failed (likely private mode or WebView), falling back to default:", e);
+  console.warn("Firestore initialization fallback:", e);
   db = getFirestore(app);
 }
 
@@ -68,41 +76,47 @@ let isAuthProcessing = false;
 getRedirectResult(auth)
   .then((result) => {
     if (result) {
-      console.log("Redirect result picked up for:", result.user.email);
+      console.log(">>> Redirect result found for:", result.user.email);
       handleUserAuth(result.user);
+    } else {
+      console.log("getRedirectResult returned null (Normal load)");
     }
   })
   .catch((error) => {
-    console.error("Redirect login failed:", error);
+    console.error("getRedirectResult error:", error);
   });
 
 export const googleLogin = async function () {
-  try {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isLocalDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168.");
-    
-    console.log("Login attempt - Mobile:", isMobile, "LocalDev:", isLocalDev);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isLocalDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168.");
+  
+  console.log("Login clicked. Mobile:", isMobile, "LocalDev:", isLocalDev);
 
-    // On mobile production, use redirect immediately to prevent double account selection.
+  try {
+    // Force redirect on mobile to avoid popup issues entirely
     if (isMobile && !isLocalDev) {
+      console.log("Forcing signInWithRedirect for mobile production...");
       await signInWithRedirect(auth, provider);
       return;
     }
 
     try {
+      console.log("Attempting signInWithPopup...");
       const result = await signInWithPopup(auth, provider);
       await handleUserAuth(result.user);
     } catch (popupErr) {
-      console.warn("Popup login failed, attempting redirect...", popupErr);
-      if (popupErr.code === 'auth/popup-blocked' || isMobile) {
+      console.warn("signInWithPopup failed:", popupErr.code, popupErr.message);
+      // Fallback to redirect for ANY error on mobile or if blocked
+      if (isMobile || popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request') {
+        console.log("Falling back to signInWithRedirect...");
         await signInWithRedirect(auth, provider);
       } else {
         throw popupErr;
       }
     }
   } catch (err) {
-    console.error("Login initiation failed:", err);
-    throw err;
+    console.error("Auth Initiation Error:", err);
+    alert("Login failed to start: " + err.message);
   }
 };
 window.googleLogin = googleLogin;

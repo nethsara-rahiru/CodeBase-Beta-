@@ -280,6 +280,12 @@
             Continue with Google
         </button>
 
+        <div id="troubleshoot" style="display: none; margin-top: 20px; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2);">
+            <p style="color: #f87171; font-size: 0.85rem; margin-bottom: 10px;">Verification taking longer than usual...</p>
+            <button onclick="window.location.reload()" style="background: var(--accent-primary); border: none; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px;">Retry Login</button>
+            <p style="color: var(--text-muted); font-size: 0.75rem;">Tip: If you're in Private/Incognito mode, try a normal tab. Ensure your browser allows popups/redirects.</p>
+        </div>
+        
         <div id="loading">Establishing secure connection...</div>
 
         <div style="margin-top: 24px; font-size: 0.85rem; color: var(--text-muted);">
@@ -309,13 +315,21 @@
             if (user) {
                 loading.style.display = "block";
                 loading.textContent = "Verifying account... Please wait";
+                
+                // Show troubleshoot after 12s
+                const tTimer = setTimeout(() => {
+                    document.getElementById("troubleshoot").style.display = "block";
+                }, 12000);
+
                 try {
                     await handleUserAuth(user);
                 } catch (error) {
                     console.error("Auth check failed:", error);
                     alert("Authentication error. Please try again.");
                 } finally {
+                    clearTimeout(tTimer);
                     loading.style.display = "none";
+                    document.getElementById("troubleshoot").style.display = "none";
                     btn.disabled = false;
                     btn.style.opacity = "1";
                 }
