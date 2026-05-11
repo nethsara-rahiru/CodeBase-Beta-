@@ -75,11 +75,15 @@
         .hero {
             height: 240px;
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             position: relative;
             display: flex;
             align-items: flex-end;
             padding: 40px;
             overflow: hidden;
+            transition: background 0.5s ease, background-image 0.5s ease;
             border-top-left-radius: 31px; /* Match container */
             border-top-right-radius: 31px;
         }
@@ -115,10 +119,10 @@
         }
 
         .org-logo-wrap img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 12px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
         }
 
         .content {
@@ -263,31 +267,115 @@
             transform: scale(1.1) rotate(5deg);
         }
 
-        /* Editor Overlay */
-        .editor-overlay {
+        /* Inline Edit Styles */
+        .edit-input, .edit-textarea, .edit-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            color: white;
+            padding: 8px 12px;
+            font-family: inherit;
             display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
         }
 
-        .editor-card {
-            background: #1e293b;
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            border-radius: 32px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-            max-height: 90vh;
-            overflow-y: auto;
+        .edit-input-name {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 12px;
         }
+
+        .edit-textarea-desc {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            min-height: 150px;
+            margin: 24px 0;
+            resize: vertical;
+        }
+
+        body.edit-mode-active .view-element { display: none; }
+        body.edit-mode-active .edit-element,
+        body.edit-mode-active .edit-input,
+        body.edit-mode-active .edit-textarea,
+        body.edit-mode-active .edit-select { display: block; }
+
+        .edit-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 16px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        body.edit-mode-active .edit-controls { display: flex; }
+
+        .logo-edit-btn {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 40px;
+            height: 40px;
+            background: var(--accent-primary);
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid #1e293b;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        body.edit-mode-active .logo-edit-btn { display: flex; }
+
+        .color-picker-wrap {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        body.edit-mode-active .color-picker-wrap { display: flex; }
+
+        .cover-edit-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .cover-edit-btn:hover {
+            background: var(--accent-primary);
+        }
+
+        body.edit-mode-active .cover-edit-btn { display: flex; }
 
         .back-btn {
             position: fixed;
@@ -340,10 +428,24 @@
         Back to Dashboard
     </a>
 
-    <div class="container">
-        <div class="hero" id="orgHero"></div>
+    <div class="container" id="mainContainer">
+        <div class="hero" id="orgHero">
+            <div class="color-picker-wrap">
+                <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:white;">Theme Color</span>
+                <input type="color" id="editColor" style="width:30px; height:30px; border:none; background:none; cursor:pointer;">
+            </div>
+            <label for="editCoverInput" class="cover-edit-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Change Cover Photo
+            </label>
+            <input type="file" id="editCoverInput" accept="image/*" style="display:none;">
+        </div>
         <div class="org-logo-wrap">
             <img id="orgLogo" src="" alt="Org Logo">
+            <label for="editLogoInput" class="logo-edit-btn" title="Change Logo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </label>
+            <input type="file" id="editLogoInput" accept="image/*" style="display:none;">
         </div>
         <div class="content">
             <div id="mainLoading" style="position: absolute; inset: 0; background: #0f172a; z-index: 50; display: flex; align-items: center; justify-content: center; border-radius: 32px; transition: opacity 0.4s ease;">
@@ -351,92 +453,69 @@
             </div>
 
             <div class="header-row">
-                <div>
-                    <p class="org-category" id="orgCategory">Loading...</p>
-                    <h1 class="org-name" id="orgName">---</h1>
+                <div style="flex: 1;">
+                    <p class="org-category view-element" id="orgCategory">Loading...</p>
+                    <select id="editCategory" class="edit-select edit-element" style="margin-bottom: 8px;">
+                        <option value="Faculty">Faculty</option>
+                        <option value="University">University</option>
+                        <option value="National">National</option>
+                        <option value="International">International</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Religious">Religious</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <h1 class="org-name view-element" id="orgName">---</h1>
+                    <input type="text" id="editName" class="edit-input edit-input-name edit-element" placeholder="Organization Name">
                 </div>
-                <div class="action-bar">
+                <div class="action-bar view-element">
                     <button class="btn btn-primary" id="joinBtn">Join Now</button>
                 </div>
             </div>
             
-            <p class="org-description" id="orgDesc">Loading organization details...</p>
+            <p class="org-description view-element" id="orgDesc">Loading organization details...</p>
+            <textarea id="editDescription" class="edit-textarea edit-textarea-desc edit-element" placeholder="Describe your organization..."></textarea>
 
-            <div class="social-links" id="socialLinks"></div>
+            <div class="social-links view-element" id="socialLinks"></div>
+            
+            <div class="edit-element" style="margin-bottom: 32px;">
+                <h5 style="font-size:0.65rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.15em; margin-bottom:12px; font-weight:800;">Social & External Links</h5>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group"><label>Facebook</label><input type="url" id="editFb" class="edit-input" placeholder="Facebook URL"></div>
+                    <div class="form-group"><label>YouTube</label><input type="url" id="editYt" class="edit-input" placeholder="YouTube URL"></div>
+                    <div class="form-group">
+                        <label>External Join Link (Google Form/WhatsApp)</label>
+                        <input type="url" id="editJoinLink" class="edit-input" placeholder="https://...">
+                        <button type="button" class="btn btn-outline" style="margin-top: 8px; font-size: 0.7rem; padding: 6px 12px; width: fit-content;" onclick="document.getElementById('editJoinLink').value = ''">Close Registration</button>
+                    </div>
+                </div>
+            </div>
 
             <div class="info-grid">
                 <div class="info-item">
                     <h5>Website</h5>
-                    <p id="orgWebsite">---</p>
+                    <p id="orgWebsite" class="view-element">---</p>
+                    <input type="url" id="editWebsite" class="edit-input edit-element" placeholder="Website URL">
                 </div>
                 <div class="info-item">
                     <h5>Contact Email</h5>
-                    <p id="orgEmail">---</p>
+                    <p id="orgEmail" class="view-element">---</p>
+                    <input type="email" id="editContactEmail" class="edit-input edit-element" placeholder="Email Address">
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="edit-fab" id="editBtn" onclick="toggleEditor()">
+    <div class="edit-controls" id="editControls">
+        <button class="btn btn-primary" id="saveBtn" onclick="saveChanges()">Save Changes</button>
+        <button class="btn btn-outline" onclick="toggleEditMode(false)">Cancel</button>
+    </div>
+
+    <div class="edit-fab" id="editBtn" onclick="toggleEditMode(true)">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
         </svg>
-    </div>
-
-    <div class="editor-overlay" id="editorOverlay">
-        <div class="editor-card">
-            <h3>Edit Organization</h3>
-            <div class="form-group">
-                <label>Name</label>
-                <input type="text" id="editName">
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="editDescription" rows="4"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Category</label>
-                <select id="editCategory"
-                    style="width:100%; padding:12px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:12px; color:white;">
-                    <option value="Faculty">Faculty</option>
-                    <option value="University">University</option>
-                    <option value="National">National</option>
-                    <option value="International">International</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Religious">Religious</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div class="form-group">
-                    <label>Facebook Link</label>
-                    <input type="text" id="editFb">
-                </div>
-                <div class="form-group">
-                    <label>YouTube Link</label>
-                    <input type="text" id="editYt">
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div class="form-group">
-                    <label>Website</label>
-                    <input type="text" id="editWebsite">
-                </div>
-                <div class="form-group">
-                    <label>Contact Email</label>
-                    <input type="email" id="editContactEmail">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Theme Color</label>
-                <input type="color" id="editColor" style="height: 50px;">
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="saveChanges()">Save Changes</button>
-                <button class="btn btn-outline" onclick="toggleEditor()">Cancel</button>
-            </div>
-        </div>
     </div>
 
     <script type="module">
@@ -449,9 +528,41 @@
         const urlParams = new URLSearchParams(window.location.search);
         const orgId = urlParams.get("id");
 
+        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dbnvewztc/image/upload";
+        const UPLOAD_PRESET = "CodeBase";
+
         if (!orgId) window.location.href = "dashboard.html";
 
         let currentOrgData = null;
+
+        // Pic Preview Handlers
+        document.getElementById("editLogoInput").onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (re) => { document.getElementById("orgLogo").src = re.target.result; };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        document.getElementById("editCoverInput").onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (re) => { 
+                    document.getElementById("orgHero").style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), url('${re.target.result}')`; 
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        document.getElementById("editColor").oninput = (e) => {
+            const color = e.target.value;
+            const hero = document.getElementById("orgHero");
+            if (!document.getElementById("editCoverInput").files[0] && !currentOrgData.coverUrl) {
+                hero.style.background = `linear-gradient(135deg, ${color}, var(--accent-secondary))`;
+            }
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = "login.html"; return; }
@@ -474,7 +585,12 @@
             document.getElementById("orgDesc").textContent = data.description || "No description available.";
             document.getElementById("orgCategory").textContent = data.category || "University Organization";
             document.getElementById("orgLogo").src = data.icon || "";
-            document.getElementById("orgHero").style.background = `linear-gradient(135deg, ${data.color || '#4f46e5'}, var(--accent-secondary))`;
+            
+            if (data.coverUrl) {
+                document.getElementById("orgHero").style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), url('${data.coverUrl}')`;
+            } else {
+                document.getElementById("orgHero").style.background = `linear-gradient(135deg, ${data.color || '#4f46e5'}, var(--accent-secondary))`;
+            }
 
             document.getElementById("editName").value = data.name;
             document.getElementById("editDescription").value = data.description || "";
@@ -484,6 +600,7 @@
             document.getElementById("editYt").value = data.yt || "";
             document.getElementById("editWebsite").value = data.website || "";
             document.getElementById("editContactEmail").value = data.contactEmail || "";
+            document.getElementById("editJoinLink").value = data.joinLink || "";
 
             // Dynamic Social Icons
             const socialHost = document.getElementById("socialLinks");
@@ -497,13 +614,17 @@
 
             // Update Join Btn
             const joinBtn = document.getElementById("joinBtn");
-            if (data.joinLink) {
+            if (data.joinLink && data.joinLink.trim() !== "") {
+                joinBtn.textContent = "Join Now";
+                joinBtn.disabled = false;
+                joinBtn.style.opacity = "1";
                 joinBtn.onclick = () => window.open(data.joinLink, "_blank");
             } else {
-                const joined = JSON.parse(localStorage.getItem("joinedOrgs") || "[]");
-                joinBtn.textContent = joined.includes(orgId) ? "Leave Organization" : "Join Now";
-                joinBtn.classList.toggle("btn-outline", joined.includes(orgId));
-                joinBtn.onclick = () => toggleJoin(joinBtn);
+                joinBtn.textContent = "Registration Closed";
+                joinBtn.disabled = true;
+                joinBtn.style.opacity = "0.5";
+                joinBtn.style.cursor = "not-allowed";
+                joinBtn.onclick = null;
             }
 
             // Final polished exit for loading
@@ -531,26 +652,78 @@
             }
         }
 
-        window.toggleEditor = () => {
-            const overlay = document.getElementById("editorOverlay");
-            overlay.style.display = overlay.style.display === "flex" ? "none" : "flex";
+        window.toggleEditMode = (active) => {
+            const fab = document.getElementById("editBtn");
+            
+            if (active) {
+                document.body.classList.add("edit-mode-active");
+                fab.style.display = "none";
+            } else {
+                document.body.classList.remove("edit-mode-active");
+                fab.style.display = "flex";
+                loadOrgDetails(); // Reset to current data
+            }
         };
 
-        window.saveChanges = async () => {
-            const updates = {
-                name: document.getElementById("editName").value,
-                description: document.getElementById("editDescription").value,
-                category: document.getElementById("editCategory").value,
-                color: document.getElementById("editColor").value,
-                fb: document.getElementById("editFb").value,
-                yt: document.getElementById("editYt").value,
-                website: document.getElementById("editWebsite").value,
-                contactEmail: document.getElementById("editContactEmail").value
-            };
+        async function uploadToCloudinary(file, folder = "organizations") {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+            formData.append("folder", folder);
 
-            await updateDoc(doc(db, "organizations", orgId), updates);
-            toggleEditor();
-            loadOrgDetails();
+            const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || "Upload failed");
+            return data.secure_url;
+        }
+
+        window.saveChanges = async () => {
+            const saveBtn = document.getElementById("saveBtn");
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = "Saving...";
+
+            try {
+                let logoUrl = currentOrgData.icon || currentOrgData.logo;
+                let coverUrl = currentOrgData.coverUrl || null;
+                const logoFile = document.getElementById("editLogoInput").files[0];
+                const coverFile = document.getElementById("editCoverInput").files[0];
+                
+                if (logoFile) {
+                    saveBtn.textContent = "Uploading Logo...";
+                    logoUrl = await uploadToCloudinary(logoFile, "organizations");
+                }
+
+                if (coverFile) {
+                    saveBtn.textContent = "Uploading Cover...";
+                    coverUrl = await uploadToCloudinary(coverFile, "org_covers");
+                }
+
+                const updates = {
+                    name: document.getElementById("editName").value,
+                    description: document.getElementById("editDescription").value,
+                    category: document.getElementById("editCategory").value,
+                    color: document.getElementById("editColor").value,
+                    fb: document.getElementById("editFb").value,
+                    yt: document.getElementById("editYt").value,
+                    website: document.getElementById("editWebsite").value,
+                    contactEmail: document.getElementById("editContactEmail").value,
+                    joinLink: document.getElementById("editJoinLink").value,
+                    icon: logoUrl,
+                    logo: logoUrl,
+                    coverUrl: coverUrl
+                };
+
+                await updateDoc(doc(db, "organizations", orgId), updates);
+                toggleEditMode(false);
+                loadOrgDetails();
+                alert("Changes saved successfully!");
+            } catch (err) {
+                alert("Error saving changes: " + err.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
         };
 
         function toggleJoin(btn) {

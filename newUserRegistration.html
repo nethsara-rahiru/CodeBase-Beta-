@@ -719,8 +719,14 @@
             // Real-time validation handlers
             for (const key in fields) {
                 fields[key].element.addEventListener('input', () => {
-                    const val = fields[key].element.value.trim();
+                    const val = fields[key].element.value.trim().toLowerCase();
                     if (val !== "") {
+                        // Check for Uni Email (ac.lk)
+                        if (key === 'email' && val.includes('.ac.lk')) {
+                            alert("University email detected! Please login directly using your university credentials instead of registering.");
+                            window.location.href = "login.html";
+                            return;
+                        }
                         showError(key, !fields[key].validate(val));
                     }
                 });

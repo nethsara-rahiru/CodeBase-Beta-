@@ -6,15 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feedback | CodeBase</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --bg-dark: #0f172a;
       --glass-bg: rgba(255, 255, 255, 0.03);
       --glass-border: rgba(255, 255, 255, 0.08);
-      --accent-primary: #4f46e5;
-      --accent-secondary: #818cf8;
+      --accent-primary: #6366f1;
+      --accent-secondary: #ec4899;
       --accent-success: #10b981;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
@@ -23,112 +24,248 @@
     * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
     body {
-      margin: 0; font-family: 'Inter', sans-serif;
+      margin: 0; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg-dark);
-      background-image: radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.15) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.1) 0%, transparent 50%);
-      color: var(--text-main); min-height: 100vh; display: flex;
+      background-image: 
+        radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), 
+        radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+      color: var(--text-main); 
+      min-height: 100vh; 
+      display: flex;
     }
 
-    /* Sidebar Styling */
-    .sidebar { width: 300px; height: 100vh; position: sticky; top: 0; background: var(--glass-bg); backdrop-filter: blur(20px); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; padding: 40px 24px; z-index: 100; overflow-y: auto; }
-    .sidebar::-webkit-scrollbar { display: none; }
-    .sidebar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Main Content */
+    .main-content { 
+        flex: 1; 
+        padding: 60px 20px; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center;
+        gap: 40px; 
+        animation: fadeIn 0.8s ease-out;
+    }
 
-    .profile-avatar-wrap { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); }
-    .profile-avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--bg-dark); }
-    .profile-info { text-align: center; }
-    .profile-info h2 { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 700; margin: 0 0 4px; }
-    .profile-info p { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-    .nav-links { flex: 1; display: flex; flex-direction: column; gap: 8px; margin-top: 30px; }
-    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: all 0.2s ease; cursor: pointer; }
-    .nav-item:hover, .nav-item.active { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
-    .nav-item.active { background: var(--accent-primary); box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3); }
+    .header-section { max-width: 750px; width: 100%; text-align: center; }
+    .header-section h1 { 
+        font-family: 'Poppins', sans-serif; 
+        font-size: 2.8rem; 
+        font-weight: 800; 
+        margin: 0 0 16px; 
+        background: linear-gradient(to right, #fff, var(--text-muted)); 
+        -webkit-background-clip: text; 
+        background-clip: text; 
+        -webkit-text-fill-color: transparent; 
+        letter-spacing: -0.04em;
+    }
+    .header-section p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; }
 
-    .main-content { flex: 1; height: 100vh; overflow-y: auto; padding: 40px 60px; display: flex; flex-direction: column; gap: 32px; }
-    header.main-header h1 { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; margin: 0; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    /* Form Container */
+    .feedback-card { 
+        background: var(--glass-bg); 
+        border: 1px solid var(--glass-border); 
+        border-radius: 32px; 
+        padding: 48px; 
+        max-width: 750px; 
+        width: 100%;
+        backdrop-filter: blur(24px); 
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
 
-    /* Form Styling */
-    .form-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px; max-width: 600px; backdrop-filter: blur(10px); }
-    .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 1rem; transition: all 0.2s; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent-primary); background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+    .form-group { margin-bottom: 32px; }
+    .form-group label { display: block; margin-bottom: 12px; font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
     
-    .submit-btn { width: 100%; padding: 14px; background: var(--accent-primary); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .submit-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3); }
-    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .input-field { 
+        width: 100%; 
+        padding: 16px 20px; 
+        background: rgba(255, 255, 255, 0.03); 
+        border: 1px solid var(--glass-border); 
+        border-radius: 16px; 
+        color: var(--text-main); 
+        font-family: inherit; 
+        font-size: 1rem; 
+        transition: all 0.3s ease; 
+        outline: none;
+    }
+    .input-field:focus { 
+        border-color: var(--accent-primary); 
+        background: rgba(255, 255, 255, 0.07); 
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.15); 
+    }
+
+    /* Rating Component */
+    .rating-container {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .rating-option {
+        flex: 1;
+        min-width: 100px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .rating-option .emoji { font-size: 1.5rem; }
+    .rating-option span { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    
+    .rating-option:hover { background: rgba(255, 255, 255, 0.07); border-color: var(--accent-primary); transform: translateY(-3px); }
+    .rating-option.selected { 
+        background: var(--accent-primary); 
+        border-color: var(--accent-primary); 
+        color: white; 
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+    .rating-option.selected span { color: rgba(255,255,255,0.8); }
+
+    .submit-btn { 
+        width: 100%; 
+        padding: 18px; 
+        background: linear-gradient(135deg, var(--accent-primary), #4f46e5); 
+        color: white; 
+        border: none; 
+        border-radius: 18px; 
+        font-weight: 800; 
+        font-size: 1rem; 
+        cursor: pointer; 
+        transition: all 0.3s; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 12px; 
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 20px;
+    }
+    .submit-btn:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); 
+        filter: brightness(1.1);
+    }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Success Overlay */
+    .success-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(20px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.4s ease-out;
+    }
+    .success-modal {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 32px;
+        padding: 48px;
+        max-width: 450px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+    }
+    .success-icon {
+        width: 80px; height: 80px;
+        background: var(--accent-success);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        color: white;
+        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+    }
+
+    .logout-btn-wrap { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+    .logout-btn { 
+        width: 100%; padding: 14px; 
+        background: rgba(239, 68, 68, 0.1); 
+        border: 1px solid rgba(239, 68, 68, 0.15); 
+        border-radius: 12px; color: #ef4444; 
+        font-weight: 700; cursor: pointer; 
+        transition: all 0.2s ease; 
+    }
+    .logout-btn:hover { background: #ef4444; color: white; transform: translateY(-2px); }
 
     /* Mobile adjustments */
     @media (max-width: 1024px) {
-      .sidebar { display: none; } /* hide sidebar on mobile for simplicity */
-      .main-content { padding: 40px 20px; }
-      body { flex-direction: column; }
+        .sidebar { display: none; }
+        .main-content { padding: 40px 24px; }
+        .header-section h1 { font-size: 2rem; }
+        .feedback-card { padding: 30px 24px; }
     }
 
-    .breadcrumbs { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
-    .breadcrumbs a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-    .breadcrumbs a:hover { color: var(--accent-primary); }
-
-    .loading-spinner { width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .logout-btn-wrap { margin-top: auto; padding-top: 20px; }
-    .logout-btn { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; color: #ef4444; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-    .logout-btn:hover { background: #ef4444; color: white; }
+    .spinner {
+        width: 20px; height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+        display: none;
+    }
+    .back-btn {
+        position: fixed;
+        top: 30px;
+        left: 40px;
+        z-index: 100;
+        text-decoration: none;
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
+    }
+    .back-btn:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(-5px);
+    }
   </style>
 </head>
 
 <body>
-  <aside class="sidebar">
-    <div class="profile-section">
-      <div class="profile-avatar-wrap">
-        <img id="userPhoto" src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" alt="Avatar">
-      </div>
-      <div class="profile-info">
-        <h2 id="userName">Loading...</h2>
-        <p id="userEmail">...</p>
-      </div>
-    </div>
-
-    <nav class="nav-links">
-      <a href="dashboard.html" class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
-        </svg> Dashboard
-      </a>
-      <a href="feedback.html" class="nav-item active">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-        </svg> Feedback
-      </a>
-      <a href="about.html" class="nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg> About Us
-      </a>
-    </nav>
-    <div class="logout-btn-wrap">
-      <button class="logout-btn" id="logoutBtn">Logout</button>
-    </div>
-  </aside>
-
+  <a href="dashboard.html" class="back-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    Back to Dashboard
+  </a>
   <main class="main-content">
-    <header class="main-header">
-      <div class="breadcrumbs">
-        <a href="dashboard.html">Home</a> &gt; <span>Feedback</span>
-      </div>
-      <h1>Submit Feedback</h1>
-    </header>
+    <div class="header-section">
+      <h1>We Value Your Feedback</h1>
+      <p>Your insights help us shape the future of CodeBase. Whether it's a suggestion, a bug, or just a thought, we're listening.</p>
+    </div>
 
-    <div class="form-container">
-      <p style="color: var(--text-muted); margin-bottom: 24px;">We'd love to hear your thoughts, suggestions, or any issues you've encountered. Your feedback helps us improve CodeBase!</p>
-      
+    <div class="feedback-card">
       <form id="feedbackForm">
         <div class="form-group">
-          <label for="feedbackType">Feedback Type</label>
-          <select id="feedbackType" required>
-            <option value="" disabled selected>Select an option</option>
+          <label>What's on your mind?</label>
+          <select id="feedbackType" class="input-field" required>
+            <option value="" disabled selected>Choose a category</option>
             <option value="General Feedback">General Feedback</option>
             <option value="Feature Request">Feature Request</option>
             <option value="Bug Report">Bug Report</option>
@@ -137,28 +274,58 @@
         </div>
 
         <div class="form-group">
-          <label for="feedbackRating">Rate Your Experience (1-5)</label>
-          <select id="feedbackRating" required>
-            <option value="5">⭐⭐⭐⭐⭐ (5) - Excellent</option>
-            <option value="4">⭐⭐⭐⭐ (4) - Good</option>
-            <option value="3">⭐⭐⭐ (3) - Average</option>
-            <option value="2">⭐⭐ (2) - Poor</option>
-            <option value="1">⭐ (1) - Terrible</option>
-          </select>
+          <label>How would you rate your experience?</label>
+          <div class="rating-container">
+            <div class="rating-option" data-value="1">
+              <span class="emoji">😫</span>
+              <span>Poor</span>
+            </div>
+            <div class="rating-option" data-value="2">
+              <span class="emoji">😕</span>
+              <span>Fair</span>
+            </div>
+            <div class="rating-option" data-value="3">
+              <span class="emoji">😐</span>
+              <span>Good</span>
+            </div>
+            <div class="rating-option" data-value="4">
+              <span class="emoji">😊</span>
+              <span>Very Good</span>
+            </div>
+            <div class="rating-option" data-value="5">
+              <span class="emoji">🤩</span>
+              <span>Excellent</span>
+            </div>
+          </div>
+          <input type="hidden" id="feedbackRating" value="5">
         </div>
 
         <div class="form-group">
-          <label for="feedbackMessage">Message</label>
-          <textarea id="feedbackMessage" rows="5" placeholder="Please provide details here..." required></textarea>
+          <label>Tell us more</label>
+          <textarea id="feedbackMessage" class="input-field" rows="6" placeholder="Share your details or describe the issue here..." required style="resize: none;"></textarea>
         </div>
 
         <button type="submit" class="submit-btn" id="submitBtn">
           <span>Submit Feedback</span>
-          <div class="loading-spinner" id="submitSpinner"></div>
+          <div class="spinner" id="submitSpinner"></div>
         </button>
       </form>
     </div>
   </main>
+
+  <!-- Success Overlay -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-modal">
+      <div class="success-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2 style="font-size: 1.8rem; margin-bottom: 12px; font-weight: 800;">Thank You!</h2>
+      <p style="color: var(--text-muted); margin-bottom: 32px; line-height: 1.6;">Your feedback has been received. We appreciate you taking the time to help us grow.</p>
+      <button class="submit-btn" onclick="window.location.href='dashboard.html'" style="margin-top: 0;">Back to Dashboard</button>
+    </div>
+  </div>
 
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
@@ -169,6 +336,21 @@
     const db = getFirestore(app);
 
     let currentUser = null;
+
+    // Rating Selection Logic
+    const ratingOptions = document.querySelectorAll('.rating-option');
+    const ratingInput = document.getElementById('feedbackRating');
+
+    ratingOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            ratingOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            ratingInput.value = option.dataset.value;
+        });
+    });
+
+    // Default select
+    document.querySelector('.rating-option[data-value="5"]').classList.add('selected');
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -201,7 +383,7 @@
       if (!currentUser) return;
 
       const type = document.getElementById('feedbackType').value;
-      const rating = document.getElementById('feedbackRating').value;
+      const rating = ratingInput.value;
       const message = document.getElementById('feedbackMessage').value;
       
       const submitBtn = document.getElementById('submitBtn');
@@ -221,7 +403,7 @@
           timestamp: serverTimestamp()
         });
         
-        alert("Thank you! Your feedback has been submitted successfully.");
+        document.getElementById('successOverlay').style.display = 'flex';
         document.getElementById('feedbackForm').reset();
       } catch (error) {
         console.error("Error submitting feedback: ", error);

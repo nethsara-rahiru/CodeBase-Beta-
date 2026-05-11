@@ -636,6 +636,12 @@
       font-size: 0.85rem;
       color: var(--text-muted);
       line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 2.55em; /* Ensure consistent height for 2 lines */
     }
 
     .org-action {
@@ -1720,11 +1726,19 @@
         <div class="settings-container">
           <form id="profileForm">
             <div class="pic-upload-wrap">
-              <img id="formPicPreview" src="https://ui-avatars.com/api/?name=User" class="pic-preview">
-              <div class="upload-controls">
-                <label for="profilePicInput" class="upload-btn-label">Choose New Photo</label>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                <img id="formPicPreview" src="https://ui-avatars.com/api/?name=User" class="pic-preview">
+                <label for="profilePicInput" class="upload-btn-label">Profile Photo</label>
                 <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Max size 2MB (JPG, PNG)</p>
+              </div>
+              
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                <div id="formCoverPreview" style="width: 100%; height: 80px; border-radius: 12px; background: var(--accent-primary); background-size: cover; background-position: center; border: 1px solid var(--glass-border);"></div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <label for="coverPhotoInput" class="upload-btn-label" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">Change Cover</label>
+                  <input type="file" id="coverPhotoInput" accept="image/*" style="display: none;">
+                  <p style="font-size: 0.7rem; color: var(--text-muted);">Recommended: 1200x400px</p>
+                </div>
               </div>
             </div>
 
@@ -1800,6 +1814,7 @@
 
     let currentUser = null;
     let selectedFile = null;
+    let selectedCoverFile = null;
     let allCoursesSnap = null; // Global storage for snap
 
     // FAST LOAD USING LOCALSTORAGE
@@ -2369,6 +2384,12 @@
       document.getElementById("formPicPreview").src = photo;
       document.getElementById("profileTabPic").src = photo;
 
+      if (data.coverUrl) {
+        const coverStyle = `url('${data.coverUrl}') center/cover no-repeat`;
+        document.getElementById("profileCover").style.background = coverStyle;
+        document.getElementById("formCoverPreview").style.background = coverStyle;
+      }
+
       document.getElementById("userName").textContent = data.name;
       document.getElementById("profileTabName").textContent = data.name;
 
@@ -2795,6 +2816,7 @@
           ? `<img src="${data.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`
           : (data.icon || data.id[0]);
 
+        const hasLink = data.joinLink && data.joinLink.trim() !== "";
         card.innerHTML = `
           <div class="org-header">
             <div class="org-icon" style="background: ${data.color || 'var(--accent-primary)'}">${iconContent}</div>
@@ -2805,8 +2827,10 @@
           </div>
           <p class="org-desc">${data.description}</p>
           <div class="org-action">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Join to see members</span>
-            <button class="join-btn" onclick="toggleOrg(this, '${data.id}', '${data.joinLink || ''}')">Join</button>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">${hasLink ? 'Join to see members' : 'Registration Closed'}</span>
+            <button class="join-btn" ${hasLink ? '' : 'disabled style="opacity:0.5; cursor:not-allowed;"'} onclick="toggleOrg(this, '${data.id}', '${data.joinLink || ''}')">
+              ${hasLink ? 'Join' : 'Closed'}
+            </button>
           </div>` ;
         host.appendChild(card);
       });
@@ -2870,11 +2894,23 @@
       }
     };
 
-    async function uploadToCloudinary(file) {
+    document.getElementById("coverPhotoInput").onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        selectedCoverFile = file;
+        const reader = new FileReader();
+        reader.onload = (re) => { 
+          document.getElementById("formCoverPreview").style.background = `url('${re.target.result}') center/cover no-repeat`; 
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    async function uploadToCloudinary(file, folder = "profile_pics") {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", "CodeBase");
-      formData.append("folder", "profile_pics");
+      formData.append("folder", folder);
 
       const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
       const data = await res.json();
@@ -2896,7 +2932,13 @@
         let photoUrl = currentUser.photoURL;
         if (selectedFile) {
           btnText.textContent = "Uploading Image...";
-          photoUrl = await uploadToCloudinary(selectedFile);
+          photoUrl = await uploadToCloudinary(selectedFile, "profile_pics");
+        }
+
+        let coverUrl = null;
+        if (selectedCoverFile) {
+          btnText.textContent = "Uploading Cover...";
+          coverUrl = await uploadToCloudinary(selectedCoverFile, "cover_photos");
         }
 
         btnText.textContent = "Updating Profile...";
@@ -2907,6 +2949,7 @@
           bio: document.getElementById("editBio").value
         };
         if (photoUrl) updates.photoUrl = photoUrl;
+        if (coverUrl) updates.coverUrl = coverUrl;
 
         await updateDoc(doc(db, "users", currentUser.uid), updates);
         if (photoUrl) await updateProfile(auth.currentUser, { photoURL: photoUrl });
@@ -2954,6 +2997,7 @@
         const orgCard = btn.closest(".org-card");
         if (!orgCard) return;
         const orgId = orgCard.dataset.org;
+        if (btn.disabled) return;
         btn.textContent = joined.includes(orgId) ? "Leave" : "Join";
         btn.classList.toggle("joined", joined.includes(orgId));
       });
