@@ -841,6 +841,7 @@
             if (type === 'video') groups.video.push(resource);
             else if (type === 'pdf' || type === 'docs') groups.docs.push(resource);
             else if (type === 'blog') groups.blog.push(resource);
+            else if (type === 'notebooklm') groups.code.push(resource);
             else if (type === 'github' || type === 'code') groups.code.push(resource);
             else {
                 if (resource.src.includes('drive.google.com')) groups.docs.push(resource);
@@ -889,7 +890,7 @@
         // Update Iframe Function
         function updateIframe(src, title, type, resId) {
             // Links and Code repositories generally block iframes, so we open them directly
-            if (type === 'github' || type === 'link' || type === 'code' || type === 'external') {
+            if (type === 'github' || type === 'link' || type === 'code' || type === 'external' || type === 'notebooklm') {
                 window.open(src, "_blank");
                 return;
             }

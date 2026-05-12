@@ -352,7 +352,7 @@
                 list.innerHTML = "";
                 allHits.forEach(item => {
                     const isBlog = item.type === 'blog' || item.type === 'article';
-                    const icon = isBlog ? 'fa-feather-alt' : (item.type === 'pdf' ? 'fa-file-pdf' : 'fa-link');
+                    const icon = isBlog ? 'fa-feather-alt' : (item.type === 'pdf' ? 'fa-file-pdf' : (item.type === 'notebooklm' ? 'fa-book-open' : 'fa-link'));
                     const color = isBlog ? '#ec4899' : '#6366f1';
 
                     const card = document.createElement("div");
